@@ -47,7 +47,7 @@ const Hero = () => {
       <div className="max-w-7xl mx-auto w-full">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
-          <div className="animate-fade-in">
+          <div className="animate-fade-in flex flex-col justify-center">
             <div className="mb-8">
               <h1 className="text-5xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
                 Hello, I'm{" "}
@@ -83,13 +83,13 @@ const Hero = () => {
 
           {/* Right Content - Photo & Timeline */}
           <div className="animate-slide-up">
-            {/* Profile Photo - Desktop */}
+            {/* Profile Photo - Desktop - Aligned with name */}
             <div className="hidden lg:block mb-12">
-              <div className="relative">
+              <div className="relative flex justify-center">
                 <img
                   src={profilePhoto}
                   alt="Alex Johnson"
-                  className="w-full max-w-md mx-auto object-cover rounded-2xl shadow-soft hover-lift"
+                  className="w-full max-w-sm object-cover rounded-2xl shadow-soft hover-lift"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent rounded-2xl"></div>
               </div>
@@ -97,7 +97,7 @@ const Hero = () => {
 
             {/* Interactive Timeline */}
             <div className="space-y-4">
-              <h3 className="text-2xl font-semibold text-foreground mb-6">Career Milestones</h3>
+              <h3 className="text-2xl font-semibold text-foreground mb-6 text-center lg:text-left">Career Milestones</h3>
               <div className="space-y-4">
                 {timelineData.map((item, index) => (
                   <Card 
