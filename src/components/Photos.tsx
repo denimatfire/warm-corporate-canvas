@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { X, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Photos = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // For demo purposes, we'll use placeholder images
   const photos = [
@@ -79,7 +81,7 @@ const Photos = () => {
         <div className="text-center mb-16 animate-fade-in">
           <h2 
             className="text-4xl lg:text-5xl font-bold text-foreground mb-6 cursor-pointer hover:text-primary transition-colors"
-            onClick={() => window.location.href = '/photos'}
+            onClick={() => navigate('/photos')}
           >
             Photo <span className="bg-gradient-accent bg-clip-text text-transparent">Gallery</span>
           </h2>

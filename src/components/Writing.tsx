@@ -4,11 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 import BlogModal from "./BlogModal";
 
 const Writing = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
+  const navigate = useNavigate();
 
   const articles = [
     {
@@ -80,7 +82,7 @@ const Writing = () => {
         <div className="text-center mb-16 animate-fade-in">
           <h2 
             className="text-4xl lg:text-5xl font-bold text-foreground mb-6 cursor-pointer hover:text-primary transition-colors"
-            onClick={() => window.location.href = '/writing'}
+            onClick={() => navigate('/writing')}
           >
             My <span className="bg-gradient-accent bg-clip-text text-transparent">Writing</span>
           </h2>
