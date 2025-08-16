@@ -4,9 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import BlogModal from "./BlogModal";
 
 const Writing = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedArticle, setSelectedArticle] = useState<any>(null);
 
   const articles = [
     {
@@ -76,7 +78,10 @@ const Writing = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16 animate-fade-in">
-          <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
+          <h2 
+            className="text-4xl lg:text-5xl font-bold text-foreground mb-6 cursor-pointer hover:text-primary transition-colors"
+            onClick={() => window.location.href = '/writing'}
+          >
             My <span className="bg-gradient-accent bg-clip-text text-transparent">Writing</span>
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
@@ -104,6 +109,7 @@ const Writing = () => {
               key={article.title}
               className="glass-card hover-lift cursor-pointer group"
               style={{ animationDelay: `${index * 0.1}s` }}
+              onClick={() => setSelectedArticle(article)}
             >
               <CardHeader>
                 <div className="flex items-center justify-between mb-4">
@@ -168,6 +174,13 @@ const Writing = () => {
           </div>
         )}
       </div>
+
+      {/* Blog Modal */}
+      <BlogModal
+        article={selectedArticle}
+        isOpen={!!selectedArticle}
+        onClose={() => setSelectedArticle(null)}
+      />
     </section>
   );
 };
