@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, User, FileText, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,11 +11,22 @@ import {
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    if (window.location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -59,14 +71,14 @@ const Navigation = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-card border-border">
                 <DropdownMenuItem 
-                  onClick={() => scrollToSection('writing')}
+                  onClick={() => navigate('/writing')}
                   className="cursor-pointer hover:bg-secondary"
                 >
                   <FileText className="w-4 h-4 mr-2" />
                   Writing
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => scrollToSection('photos')}
+                  onClick={() => navigate('/photos')}
                   className="cursor-pointer hover:bg-secondary"
                 >
                   <Camera className="w-4 h-4 mr-2" />
@@ -107,10 +119,10 @@ const Navigation = () => {
               <Button variant="ghost" onClick={() => scrollToSection('about')} className="justify-start">
                 About Me
               </Button>
-              <Button variant="ghost" onClick={() => scrollToSection('writing')} className="justify-start">
+              <Button variant="ghost" onClick={() => navigate('/writing')} className="justify-start">
                 Writing
               </Button>
-              <Button variant="ghost" onClick={() => scrollToSection('photos')} className="justify-start">
+              <Button variant="ghost" onClick={() => navigate('/photos')} className="justify-start">
                 Photos
               </Button>
               <Button variant="outline" onClick={() => scrollToSection('contact')} className="justify-start mt-2">

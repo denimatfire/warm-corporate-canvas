@@ -14,7 +14,7 @@ const Hero = () => {
             <div className="relative flex justify-center lg:justify-start">
               <img
                 src={profilePhoto}
-                alt="Alex Johnson"
+                alt="Dhrubajyoti Das"
                 className="w-80 h-80 lg:w-96 lg:h-96 object-cover rounded-2xl shadow-soft hover-lift"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent rounded-2xl"></div>
@@ -27,7 +27,7 @@ const Hero = () => {
               <h1 className="text-5xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
                 Hello, I'm{" "}
                 <span className="bg-gradient-accent bg-clip-text text-transparent">
-                  Alex Johnson
+                  Dhrubajyoti Das
                 </span>
               </h1>
               <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
