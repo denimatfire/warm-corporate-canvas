@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 
+
 const Photos = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
   const navigate = useNavigate();
@@ -12,14 +13,14 @@ const Photos = () => {
   const photos = [
     {
       id: 1,
-      src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop",
-      alt: "Mountain landscape at sunrise",
-      title: "Morning Light",
-      category: "Landscape",
-      caption: "Golden hour at the mountain peak. Sometimes you need to climb higher to see clearer. 🏔️✨",
-      likes: 1247,
-      comments: 23,
-      timestamp: "2 hours ago"
+      src: "/Henkle.JPG",
+      alt: "Henkle photo",
+      title: "Henkle Hackathon Finalist Presentation",
+      category: "Personal",
+      caption: "Presenting our project on Use of AIML in Supplychain in Control Towerat the Henkle Hackathon Finalist Presentation",
+      likes: 42,
+      comments: 8,
+      timestamp: "1 day ago"
     },
     {
       id: 2,
