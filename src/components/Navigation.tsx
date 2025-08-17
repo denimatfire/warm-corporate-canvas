@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ChevronDown, User, FileText, Camera } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronDown, User, FileText, Camera, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
@@ -11,7 +11,17 @@ import {
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
   const navigate = useNavigate();
+
+  // Update date every day
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDate(new Date());
+    }, 24 * 60 * 60 * 1000); // Update every 24 hours
+
+    return () => clearInterval(timer);
+  }, []);
 
   // Function to get time-based greeting
   const getTimeBasedGreeting = () => {
@@ -26,6 +36,16 @@ const Navigation = () => {
     } else {
       return "Good Night";
     }
+  };
+
+  // Format date as Day, Month Date, Year
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -49,12 +69,22 @@ const Navigation = () => {
     <nav className="fixed top-0 w-full z-50 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => scrollToSection('hero')}>
+          {/* Logo and Greeting */}
+          <div className="flex items-center space-x-4 cursor-pointer" onClick={() => scrollToSection('hero')}>
             <div className="w-10 h-10 bg-gradient-accent rounded-lg flex items-center justify-center">
               <User className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-semibold text-foreground italic">{getTimeBasedGreeting()}</span>
+            <span className="text-2xl font-bold text-foreground font-pacifico tracking-wide">
+              {getTimeBasedGreeting()}
+            </span>
+          </div>
+
+          {/* Date Display - Left side */}
+          <div className="hidden md:flex items-center space-x-2 text-muted-foreground">
+            <Calendar className="w-4 h-4" />
+            <span className="text-sm font-medium font-serif">
+              {formatDate(currentDate)}
+            </span>
           </div>
 
           {/* Navigation Menu */}
@@ -128,6 +158,12 @@ const Navigation = () => {
         {isOpen && (
           <div className="md:hidden mt-4 pb-4 border-t border-border animate-fade-in">
             <div className="flex flex-col space-y-2 pt-4">
+              {/* Mobile Date */}
+              <div className="flex items-center space-x-2 text-muted-foreground mb-3 px-2">
+                <Calendar className="w-4 h-4" />
+                <span className="text-sm font-serif">{formatDate(currentDate)}</span>
+              </div>
+              
               <Button variant="ghost" onClick={() => scrollToSection('hero')} className="justify-start">
                 Home
               </Button>

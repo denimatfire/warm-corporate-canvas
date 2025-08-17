@@ -20,6 +20,7 @@ export default {
 		extend: {
 			fontFamily: {
 				inter: ['Inter', 'sans-serif'],
+				pacifico: ['Pacifico', 'cursive'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
