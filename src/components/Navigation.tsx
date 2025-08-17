@@ -13,6 +13,21 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
+  // Function to get time-based greeting
+  const getTimeBasedGreeting = () => {
+    const hour = new Date().getHours();
+    
+    if (hour >= 5 && hour < 12) {
+      return "Good Morning";
+    } else if (hour >= 12 && hour < 17) {
+      return "Good Afternoon";
+    } else if (hour >= 17 && hour < 21) {
+      return "Good Evening";
+    } else {
+      return "Good Night";
+    }
+  };
+
   const scrollToSection = (sectionId: string) => {
     if (window.location.pathname !== '/') {
       navigate('/');
@@ -39,7 +54,7 @@ const Navigation = () => {
             <div className="w-10 h-10 bg-gradient-accent rounded-lg flex items-center justify-center">
               <User className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-semibold text-foreground">Portfolio</span>
+            <span className="text-xl font-semibold text-foreground italic">{getTimeBasedGreeting()}</span>
           </div>
 
           {/* Navigation Menu */}
