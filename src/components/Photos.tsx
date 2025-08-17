@@ -130,7 +130,7 @@ const Photos = () => {
 
         {/* Instagram-style Photo Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-slide-up">
-          {photos.map((photo, index) => (
+          {photos.slice(0, 3).map((photo, index) => (
             <div
               key={photo.id}
               className="group cursor-pointer animate-slide-up"
