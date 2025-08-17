@@ -180,10 +180,10 @@ const Contact = () => {
                   <strong className="text-foreground">Response Time:</strong> Usually within 24 hours
                 </div>
                 <div>
-                  <strong className="text-foreground">Best Time to Reach:</strong> Monday-Friday, 9AM-6PM EST
+                  <strong className="text-foreground">Best Time to Reach:</strong> Monday-Friday, 9AM-6PM IST
                 </div>
                 <div>
-                  <strong className="text-foreground">Location:</strong> San Francisco, CA
+                  <strong className="text-foreground">Location:</strong> Chennai, India
                 </div>
               </div>
             </div>
