@@ -24,25 +24,25 @@ const Photos = () => {
     },
     {
       id: 2,
-      src: "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=600&h=600&fit=crop",
-      alt: "Urban architecture photography",
-      title: "City Lines",
-      category: "Architecture",
-      caption: "Urban geometry and modern architecture. The city has its own rhythm and flow. 🏙️📐",
-      likes: 892,
-      comments: 15,
-      timestamp: "5 hours ago"
+      src: "/MBAconvocation.JPG",
+      alt: "MBA Convocation Ceremony",
+      title: "MBA Convocation",
+      category: "Academic",
+      caption: "Celebrating the completion of my MBA journey! A milestone achievement that represents years of hard work and dedication ��✨",
+      likes: 156,
+      comments: 23,
+      timestamp: "2 days ago"
     },
     {
       id: 3,
-      src: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=400&fit=crop",
-      alt: "Forest path in autumn",
-      title: "Autumn Walk",
-      category: "Nature",
-      caption: "Lost in the forest, found myself in nature. Every path leads to a new discovery. 🌲🍃",
-      likes: 2156,
-      comments: 47,
-      timestamp: "1 day ago"
+      src: "/MtechConvocation.JPG",
+      alt: "M.Tech Convocation Ceremony",
+      title: "M.Tech Convocation",
+      category: "Academic",
+      caption: "Another milestone achieved! M.Tech convocation - representing the culmination of advanced studies and research in technology ��🔬",
+      likes: 203,
+      comments: 31,
+      timestamp: "1 week ago"
     },
     {
       id: 4,
