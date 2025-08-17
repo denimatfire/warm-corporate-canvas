@@ -96,10 +96,10 @@ The future belongs to those who can adapt, learn, and apply their knowledge effe
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+      <DialogContent className="max-w-4xl h-[90vh] p-0 flex flex-col">
         <div className="flex flex-col h-full">
           {/* Header */}
-          <DialogHeader className="px-6 py-4 border-b border-border">
+          <DialogHeader className="px-6 py-4 border-b border-border flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <Avatar className="w-10 h-10">
@@ -130,8 +130,8 @@ The future belongs to those who can adapt, learn, and apply their knowledge effe
             </div>
           </DialogHeader>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto px-6 py-6">
+          {/* Content - Fixed scrolling area */}
+          <div className="flex-1 overflow-y-auto px-6 py-6 min-h-0">
             <div className="max-w-none prose prose-lg dark:prose-invert">
               {/* Article Header */}
               <div className="mb-8">
@@ -156,7 +156,7 @@ The future belongs to those who can adapt, learn, and apply their knowledge effe
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-border">
+          <div className="px-6 py-4 border-t border-border flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Button

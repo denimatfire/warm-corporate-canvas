@@ -1,0 +1,37 @@
+[1mdiff --git a/src/components/BlogModal.tsx b/src/components/BlogModal.tsx[m
+[1mindex c886acc..1540e3c 100644[m
+[1m--- a/src/components/BlogModal.tsx[m
+[1m+++ b/src/components/BlogModal.tsx[m
+[36m@@ -96,10 +96,10 @@[m [mThe future belongs to those who can adapt, learn, and apply their knowledge effe[m
+ [m
+   return ([m
+     <Dialog open={isOpen} onOpenChange={onClose}>[m
+[31m-      <DialogContent className="max-w-4xl max-h-[90vh] p-0">[m
+[32m+[m[32m      <DialogContent className="max-w-4xl h-[90vh] p-0 flex flex-col">[m
+         <div className="flex flex-col h-full">[m
+           {/* Header */}[m
+[31m-          <DialogHeader className="px-6 py-4 border-b border-border">[m
+[32m+[m[32m          <DialogHeader className="px-6 py-4 border-b border-border flex-shrink-0">[m
+             <div className="flex items-center justify-between">[m
+               <div className="flex items-center space-x-3">[m
+                 <Avatar className="w-10 h-10">[m
+[36m@@ -130,8 +130,8 @@[m [mThe future belongs to those who can adapt, learn, and apply their knowledge effe[m
+             </div>[m
+           </DialogHeader>[m
+ [m
+[31m-          {/* Content */}[m
+[31m-          <div className="flex-1 overflow-y-auto px-6 py-6">[m
+[32m+[m[32m          {/* Content - Fixed scrolling area */}[m
+[32m+[m[32m          <div className="flex-1 overflow-y-auto px-6 py-6 min-h-0">[m
+             <div className="max-w-none prose prose-lg dark:prose-invert">[m
+               {/* Article Header */}[m
+               <div className="mb-8">[m
+[36m@@ -156,7 +156,7 @@[m [mThe future belongs to those who can adapt, learn, and apply their knowledge effe[m
+           </div>[m
+ [m
+           {/* Footer */}[m
+[31m-          <div className="px-6 py-4 border-t border-border">[m
+[32m+[m[32m          <div className="px-6 py-4 border-t border-border flex-shrink-0">[m
+             <div className="flex items-center justify-between">[m
+               <div className="flex items-center space-x-4">[m
+                 <Button[m
