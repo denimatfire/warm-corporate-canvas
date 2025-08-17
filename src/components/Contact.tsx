@@ -66,11 +66,11 @@ const Contact = () => {
   };
 
   const socialLinks = [
-    { icon: Linkedin, label: "LinkedIn", href: "#", color: "hover:text-blue-500" },
-    { icon: Github, label: "GitHub", href: "#", color: "hover:text-purple-500" },
-    { icon: Twitter, label: "Twitter", href: "#", color: "hover:text-sky-500" },
-    { icon: Instagram, label: "Instagram", href: "#", color: "hover:text-pink-500" },
-    { icon: Mail, label: "Email", href: "mailto:alex@example.com", color: "hover:text-primary" }
+    { icon: Linkedin, label: "LinkedIn", href: "https://www.linkedin.com/in/mrdhrubajyotidas/", color: "hover:text-blue-500" },
+    { icon: Github, label: "GitHub", href: "https://github.com/denimatfire", color: "hover:text-purple-500" },
+    { icon: Twitter, label: "Twitter", href: "https://x.com/Dhrubajyoti57", color: "hover:text-sky-500" },
+    { icon: Instagram, label: "Instagram", href: "https://www.instagram.com/dhruba_das_?igsh=MXFtbHdxM3hqdmUwNw%3D%3D&utm_source=qr", color: "hover:text-pink-500" },
+    { icon: Mail, label: "Email", href: "mailto:dhrubajyoti.das5793@gmail.com", color: "hover:text-primary" }
   ];
 
   return (
