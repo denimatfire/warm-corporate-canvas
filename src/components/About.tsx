@@ -34,14 +34,20 @@ const About = () => {
           </h2>
           <div className="max-w-3xl mx-auto">
             <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-              I'm a dedicated professional with over 6 years of experience in technology and innovation. 
-              My journey has been defined by a passion for solving complex problems, leading teams, 
-              and creating solutions that make a meaningful difference.
+              I'm a dedicated professional with over 7 years of experience in the automotive industry, 
+              specializing in product management, corporate strategy, and digital transformation. 
+              My work spans connected vehicles, software-defined vehicles, telematics, and 
+              IoT solutions—where I bridge the gap between technology and user needs. 
+              With a strong engineering foundation and an MBA from SPJIMR, 
+              I combine technical depth with strategic insight to deliver products that drive 
+              measurable business outcomes and enhance customer experiences.
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              When I'm not working, you'll find me exploring new technologies, writing about my experiences, 
-              capturing moments through photography, and mentoring the next generation of professionals. 
-              I believe in the power of continuous learning and the importance of giving back to the community.
+            Beyond work, I am passionate about continuous learning and collaboration. 
+            I enjoy swimming, badminton, and traveling, which help me explore new perspectives 
+            and fuel creativity. I believe in shaping products that not only solve complex 
+            challenges but also create meaningful impact—connecting people, technology, and 
+            possibilities.
             </p>
           </div>
         </div>
