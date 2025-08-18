@@ -55,32 +55,37 @@ const Timeline = () => {
     {
       year: 2018,
       title: "Started Career",
-      description: "Began professional journey in technology with focus on innovation",
+      description: "Began professional journey in technology",
       icon: Briefcase,
+      color: "text-primary"
     },
     {
       year: 2020,
       title: "First Major Achievement",
-      description: "Led a team of 5 developers on a successful project delivery",
+      description: "Led a team of 5 developers on a successful project",
       icon: Award,
+      color: "text-primary"
     },
     {
       year: 2021,
       title: "Advanced Certification",
-      description: "Completed advanced professional development and specialization",
+      description: "Completed advanced professional development",
       icon: GraduationCap,
+      color: "text-primary"
     },
     {
       year: 2023,
       title: "Leadership Role",
-      description: "Promoted to senior position, mentoring and guiding teams",
+      description: "Promoted to senior position, mentoring others",
       icon: Award,
+      color: "text-primary"
     },
     {
       year: 2024,
       title: "Current Focus",
-      description: "Building innovative solutions and sharing industry knowledge",
+      description: "Building innovative solutions and sharing knowledge",
       icon: Calendar,
+      color: "text-primary"
     }
   ];
 
@@ -89,101 +94,47 @@ const Timeline = () => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Career <span className="bg-gradient-accent bg-clip-text text-transparent">Timeline</span>
+            Career <span className="bg-gradient-accent bg-clip-text text-transparent">Milestones</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             A journey through key moments that shaped my professional path
           </p>
         </div>
 
-        {/* Timeline Container */}
-        <div className="relative max-w-6xl mx-auto">
-          {/* Main Timeline Bar */}
-          <div className="hidden lg:block">
-            <div className="absolute top-1/2 left-0 right-0 h-12 bg-gray-800 transform -translate-y-1/2 rounded-lg shadow-lg"></div>
-            
-            {/* Year Labels on Timeline Bar */}
-            <div className="relative flex justify-between items-center h-24">
-              {timelineData.map((item, index) => (
-                <div key={item.year} className="flex flex-col items-center relative">
-                  {/* Year Label on Bar */}
-                  <div className="absolute top-1/2 transform -translate-y-1/2 bg-gray-800 text-white font-bold text-lg px-4 py-2 rounded">
-                    {item.year}
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Horizontal Timeline */}
+        <div className="relative">
+          {/* Timeline Line */}
+          <div className="absolute top-1/2 left-0 right-0 h-1 bg-border transform -translate-y-1/2 hidden lg:block"></div>
+          <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-accent transform -translate-y-1/2 hidden lg:block opacity-50"></div>
 
-            {/* Timeline Items with Alternating Positions */}
-            <div className="relative">
-              {timelineData.map((item, index) => {
-                const isTop = index % 2 === 0;
-                const leftPosition = (index / (timelineData.length - 1)) * 100;
-                
-                return (
-                  <div
-                    key={item.year}
-                    className="absolute"
-                    style={{ left: `${leftPosition}%`, transform: 'translateX(-50%)' }}
-                  >
-                    {/* Connecting Line */}
-                    <div 
-                      className={`absolute left-1/2 w-0.5 bg-green-600 transform -translate-x-1/2 ${
-                        isTop ? 'top-12 h-16' : 'top-0 h-16'
-                      }`}
-                    ></div>
-                    
-                    {/* Timeline Circle */}
-                    <div 
-                      className={`absolute left-1/2 transform -translate-x-1/2 w-16 h-16 bg-green-600 rounded-full flex items-center justify-center shadow-lg border-4 border-white ${
-                        isTop ? 'top-24' : '-top-8'
-                      }`}
-                    >
-                      <item.icon className="w-8 h-8 text-white" />
-                    </div>
-
-                    {/* Caption Box */}
-                    <Card 
-                      className={`w-72 bg-white border-2 border-green-600 shadow-lg hover:shadow-xl transition-all duration-300 ${
-                        isTop ? 'mt-44' : '-mt-32'
-                      }`}
-                    >
-                      <CardContent className="p-6">
-                        <h3 className="text-lg font-bold text-gray-800 mb-2">
-                          {item.title}
-                        </h3>
-                        <p className="text-gray-600 text-sm leading-relaxed">
-                          {item.description}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Mobile Timeline */}
-          <div className="lg:hidden space-y-8">
+          {/* Timeline Items */}
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 relative">
             {timelineData.map((item, index) => (
-              <div key={item.year} className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center">
-                    <item.icon className="w-8 h-8 text-white" />
-                  </div>
+              <Card 
+                key={item.year}
+                className="glass-card hover-lift cursor-pointer group relative"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                {/* Timeline Dot */}
+                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-glow hidden lg:flex">
+                  <item.icon className="w-6 h-6 text-primary-foreground" />
                 </div>
-                <Card className="flex-1 bg-white border-2 border-green-600">
-                  <CardContent className="p-6">
-                    <div className="text-2xl font-bold text-green-600 mb-2">{item.year}</div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-2">
-                      {item.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {item.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
+
+                <CardContent className="p-6 text-center">
+                  {/* Mobile Icon */}
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4 lg:hidden">
+                    <item.icon className={`w-6 h-6 ${item.color}`} />
+                  </div>
+
+                  <div className="text-3xl font-bold text-primary mb-2">{item.year}</div>
+                  <h3 className="text-lg font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {item.description}
+                  </p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
