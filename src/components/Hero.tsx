@@ -1,6 +1,5 @@
 import { Calendar, Award, Briefcase, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import profilePhoto from "@/assets/profile-photo.jpg";
 
 const Hero = () => {
@@ -101,41 +100,70 @@ const Timeline = () => {
           </p>
         </div>
 
-        {/* Horizontal Timeline */}
-        <div className="relative">
-          {/* Timeline Line */}
-          <div className="absolute top-1/2 left-0 right-0 h-1 bg-border transform -translate-y-1/2 hidden lg:block"></div>
-          <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-accent transform -translate-y-1/2 hidden lg:block opacity-50"></div>
+        {/* Alternating horizontal timeline */}
+        <div className="relative h-[360px]">
+          {/* Core timeline bar */}
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-3 rounded-full bg-muted" />
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-3 rounded-full bg-muted opacity-60" />
 
-          {/* Timeline Items */}
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 relative">
-            {timelineData.map((item, index) => (
-              <Card 
-                key={item.year}
-                className="glass-card hover-lift cursor-pointer group relative"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                {/* Timeline Dot */}
-                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-glow hidden lg:flex">
-                  <item.icon className="w-6 h-6 text-primary-foreground" />
-                </div>
-
-                <CardContent className="p-6 text-center">
-                  {/* Mobile Icon */}
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4 lg:hidden">
-                    <item.icon className={`w-6 h-6 ${item.color}`} />
+          {/* Columns for items */}
+          <div className="grid grid-cols-5 h-full">
+            {timelineData.map((item, index) => {
+              const isTop = index % 2 === 0; // alternate like the reference: top, bottom, top, bottom, top
+              const Icon = item.icon;
+              return (
+                <div key={item.year} className="relative flex items-center justify-center">
+                  {/* Circle on the bar */}
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-secondary shadow-glow ring-4 ring-background flex items-center justify-center">
+                    <Icon className="w-7 h-7 text-secondary-foreground" />
                   </div>
 
-                  <div className="text-3xl font-bold text-primary mb-2">{item.year}</div>
-                  <h3 className="text-lg font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {item.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+                  {/* Year label on the bar */}
+                  <div className="absolute left-1/2 -translate-x-1/2 top-[calc(50%+22px)] text-sm font-semibold text-foreground/80">
+                    {item.year}
+                  </div>
+
+                  {/* Stem to caption */}
+                  {isTop ? (
+                    <>
+                      <div
+                        className="absolute left-1/2 -translate-x-1/2 w-1 bg-foreground/40"
+                        style={{ bottom: "calc(50% + 28px)", height: "72px" }}
+                      />
+                      <div
+                        className="absolute -translate-x-1/2 left-1/2"
+                        style={{ bottom: "calc(50% + 112px)" }}
+                      >
+                        <div className="bg-secondary text-secondary-foreground px-4 py-2 rounded-md shadow-soft text-center whitespace-nowrap">
+                          {item.title}
+                        </div>
+                        <div className="mt-3 w-56 text-sm text-muted-foreground text-center leading-relaxed">
+                          {item.description}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div
+                        className="absolute left-1/2 -translate-x-1/2 w-1 bg-foreground/40"
+                        style={{ top: "calc(50% + 28px)", height: "72px" }}
+                      />
+                      <div
+                        className="absolute -translate-x-1/2 left-1/2"
+                        style={{ top: "calc(50% + 112px)" }}
+                      >
+                        <div className="bg-secondary text-secondary-foreground px-4 py-2 rounded-md shadow-soft text-center whitespace-nowrap">
+                          {item.title}
+                        </div>
+                        <div className="mt-3 w-56 text-sm text-muted-foreground text-center leading-relaxed">
+                          {item.description}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
