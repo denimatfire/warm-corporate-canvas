@@ -52,37 +52,37 @@ const Hero = () => {
 const Timeline = () => {
   const timelineData = [
     {
-      year: 2018,
+      year: 2017,
       title: "Started Career",
-      description: "Began professional journey in technology",
+      description: "Began professional journey in Factory Planning",
       icon: Briefcase,
       color: "text-primary"
     },
     {
-      year: 2020,
+      year: 2019,
       title: "First Major Achievement",
-      description: "Led a team of 5 developers on a successful project",
+      description: "Successfully completed the first project on Autonomous Grinding Manufacturing Line",
       icon: Award,
       color: "text-primary"
     },
     {
       year: 2021,
-      title: "Advanced Certification",
-      description: "Completed advanced professional development",
+      title: "Career Shift",
+      description: "Moved to Corporate/ Product Strategy and Planning",
       icon: GraduationCap,
       color: "text-primary"
     },
     {
       year: 2023,
-      title: "Leadership Role",
-      description: "Promoted to senior position, mentoring others",
+      title: "Academic Excellence",
+      description: "Awarded the prestigious MBA degree from SPJIMR",
       icon: Award,
       color: "text-primary"
     },
     {
       year: 2024,
       title: "Current Focus",
-      description: "Building innovative solutions and sharing knowledge",
+      description: "Building Software Defined Vehicles Solutions in Autonomous Driving",
       icon: Calendar,
       color: "text-primary"
     }
