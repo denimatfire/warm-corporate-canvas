@@ -100,8 +100,37 @@ const Timeline = () => {
           </p>
         </div>
 
-        {/* Alternating horizontal timeline */}
-        <div className="relative h-[360px]">
+        {/* Mobile: vertical timeline */}
+        <div className="lg:hidden">
+          <div className="relative pl-12">
+            <div className="absolute left-6 top-0 bottom-0 w-1 bg-muted" />
+            {timelineData.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.year} className="relative mb-12">
+                  <div className="absolute left-0 top-0 w-10 h-10 rounded-full bg-primary ring-3 ring-background flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <div className="ml-2">
+                    <div className="text-base font-semibold text-primary ml-12">{item.year}</div>
+                    <div className="mt-2 inline-block bg-card text-card-foreground border border-primary/40 px-3 py-1 rounded-md shadow-soft ml-12">
+                      {item.title}
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed ml-12">
+                      {item.description}
+                    </p>
+                    {index < timelineData.length - 1 && (
+                      <div className="ml-12 mt-6 border-t border-dashed border-muted opacity-60" />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Desktop: alternating horizontal timeline */}
+        <div className="relative h-[360px] hidden lg:block">
           {/* Core timeline bar */}
           <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-3 rounded-full bg-muted" />
           <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-3 rounded-full bg-muted opacity-60" />
@@ -111,15 +140,16 @@ const Timeline = () => {
             {timelineData.map((item, index) => {
               const isTop = index % 2 === 0; // alternate like the reference: top, bottom, top, bottom, top
               const Icon = item.icon;
+              const yearPositionClass = isTop ? "top-[calc(50%+56px)]" : "top-[calc(50%-64px)]";
               return (
                 <div key={item.year} className="relative flex items-center justify-center">
                   {/* Circle on the bar */}
-                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-secondary shadow-glow ring-4 ring-background flex items-center justify-center">
-                    <Icon className="w-7 h-7 text-secondary-foreground" />
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-primary shadow-glow ring-4 ring-background flex items-center justify-center">
+                    <Icon className="w-7 h-7 text-primary-foreground" />
                   </div>
 
                   {/* Year label on the bar */}
-                  <div className="absolute left-1/2 -translate-x-1/2 top-[calc(50%+22px)] text-sm font-semibold text-foreground/80">
+                  <div className={`absolute left-1/2 -translate-x-1/2 ${yearPositionClass} text-lg font-semibold text-primary`}>
                     {item.year}
                   </div>
 
@@ -134,7 +164,7 @@ const Timeline = () => {
                         className="absolute -translate-x-1/2 left-1/2"
                         style={{ bottom: "calc(50% + 112px)" }}
                       >
-                        <div className="bg-secondary text-secondary-foreground px-4 py-2 rounded-md shadow-soft text-center whitespace-nowrap">
+                        <div className="bg-card text-card-foreground border border-primary/40 px-4 py-2 rounded-md shadow-soft text-center whitespace-nowrap">
                           {item.title}
                         </div>
                         <div className="mt-3 w-56 text-sm text-muted-foreground text-center leading-relaxed">
@@ -152,7 +182,7 @@ const Timeline = () => {
                         className="absolute -translate-x-1/2 left-1/2"
                         style={{ top: "calc(50% + 112px)" }}
                       >
-                        <div className="bg-secondary text-secondary-foreground px-4 py-2 rounded-md shadow-soft text-center whitespace-nowrap">
+                        <div className="bg-card text-card-foreground border border-primary/40 px-4 py-2 rounded-md shadow-soft text-center whitespace-nowrap">
                           {item.title}
                         </div>
                         <div className="mt-3 w-56 text-sm text-muted-foreground text-center leading-relaxed">
