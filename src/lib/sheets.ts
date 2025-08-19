@@ -40,6 +40,11 @@ export const logContactToSheet = async (
 		return { ok: true };
 	} catch (error: any) {
 		console.error("Failed to log to Google Sheets:", error);
+		console.error("Error details:", {
+			message: error?.message,
+			stack: error?.stack,
+			response: error?.response,
+		});
 		return { ok: false, error: String(error?.message || error) };
 	}
 };
