@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { sendNotificationEmail, sendWelcomeEmail } from "@/lib/email-config";
+import { logContactToSheet } from "@/lib/sheets";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -37,6 +38,16 @@ const Contact = () => {
 
       // Send welcome email to the user
       await sendWelcomeEmail(formData);
+
+      // Log to Google Sheets (non-blocking error handling)
+      const result = await logContactToSheet(formData);
+      if (!result.ok) {
+        console.warn("Sheets logging failed:", result.error);
+        toast({
+          title: "Message sent, but logging skipped",
+          description: "Email delivered successfully. Couldn't log to Google Sheets.",
+        });
+      }
 
       toast({
         title: "Message sent successfully!",

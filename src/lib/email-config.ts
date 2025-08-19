@@ -1,7 +1,9 @@
 // EmailJS Configuration
 export const EMAILJS_CONFIG = {
   SERVICE_ID: "service_l2hds2a", // EmailJS service ID
-  TEMPLATE_ID: "template_guzvtrl", // EmailJS template ID
+  // Separate templates so we can customize copy/recipients independently
+  TEMPLATE_NOTIFY_ID: "template_ncudiau", // TODO: replace with your Notification template ID
+  TEMPLATE_WELCOME_ID: "template_b3co9iq", // TODO: replace with your Welcome template ID
   PUBLIC_KEY: "Vo3HZtehAtALMRxnT", // EmailJS public key
 };
 
@@ -17,18 +19,16 @@ export const initializeEmailJS = async () => {
   }
 };
 
-// Send email function
-export const sendEmail = async (templateParams: any) => {
+// Generic send email function for a specific template
+export const sendEmail = async (templateId: string, templateParams: any) => {
   try {
     const emailjs = await initializeEmailJS();
-    
     const response = await emailjs.send(
       EMAILJS_CONFIG.SERVICE_ID,
-      EMAILJS_CONFIG.TEMPLATE_ID,
+      templateId,
       templateParams,
       EMAILJS_CONFIG.PUBLIC_KEY
     );
-    
     return response;
   } catch (error) {
     console.error('EmailJS error:', error);
@@ -49,8 +49,7 @@ export const sendNotificationEmail = async (formData: {
     message: formData.message,
     subject: `New Contact Form Submission from ${formData.name}`,
   };
-  
-  return sendEmail(params);
+  return sendEmail(EMAILJS_CONFIG.TEMPLATE_NOTIFY_ID, params);
 };
 
 // Send welcome email to user
@@ -65,6 +64,5 @@ export const sendWelcomeEmail = async (formData: {
     subject: "Thank you for reaching out!",
     message: `Hi ${formData.name},\n\nThank you for reaching out to me. I've received your message and will get back to you within 24 hours.\n\nBest regards,\nDhrubajyoti Das`,
   };
-  
-  return sendEmail(params);
+  return sendEmail(EMAILJS_CONFIG.TEMPLATE_WELCOME_ID, params);
 };
