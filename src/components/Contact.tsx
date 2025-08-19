@@ -59,9 +59,10 @@ const Contact = () => {
       
     } catch (error) {
       console.error('Failed to send email:', error);
+      const detail = (error as any)?.text || (error as any)?.message || (typeof error === 'string' ? error : '');
       toast({
         title: "Failed to send message",
-        description: "There was an error sending your message. Please try again or contact me directly.",
+        description: detail ? String(detail).slice(0, 400) : "There was an error sending your message. Please try again or contact me directly.",
         variant: "destructive"
       });
     } finally {
