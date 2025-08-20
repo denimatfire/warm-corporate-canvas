@@ -1,15 +1,17 @@
-import { useState } from "react";
-import { X, ZoomIn, Heart, MessageCircle, Send, Bookmark } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 
+interface PhotosProps {
+  showAll?: boolean;
+}
 
-const Photos = () => {
+const Photos = ({ showAll = false }: PhotosProps) => {
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
   const navigate = useNavigate();
 
-  // Enhanced photos data with Instagram-like properties
+  // Enhanced photos data with simplified properties
   const photos = [
     {
       id: 1,
@@ -17,10 +19,7 @@ const Photos = () => {
       alt: "Henkle photo",
       title: "Henkle Hackathon Finalist Presentation",
       category: "Personal",
-      caption: "Presenting our project on Use of AIML in Supplychain in Control Towerat the Henkle Hackathon Finalist Presentation",
-      likes: 42,
-      comments: 8,
-      timestamp: "1 day ago"
+      caption: "Presenting our project on Use of AIML in Supplychain in Control Towerat the Henkle Hackathon Finalist Presentation"
     },
     {
       id: 2,
@@ -28,10 +27,7 @@ const Photos = () => {
       alt: "MBA Convocation Ceremony",
       title: "MBA Convocation",
       category: "Academic",
-      caption: "Celebrating the completion of my MBA journey! A milestone achievement that represents years of hard work and dedication ��✨",
-      likes: 156,
-      comments: 23,
-      timestamp: "2 days ago"
+      caption: "Celebrating the completion of my MBA journey! A milestone achievement that represents years of hard work and dedication ✨"
     },
     {
       id: 3,
@@ -39,10 +35,7 @@ const Photos = () => {
       alt: "M.Tech Convocation Ceremony",
       title: "M.Tech Convocation",
       category: "Academic",
-      caption: "Another milestone achieved! M.Tech convocation - representing the culmination of advanced studies and research in technology ��🔬",
-      likes: 203,
-      comments: 31,
-      timestamp: "1 week ago"
+      caption: "Another milestone achieved! M.Tech convocation - representing the culmination of advanced studies and research in technology 🔬"
     },
     {
       id: 4,
@@ -50,10 +43,7 @@ const Photos = () => {
       alt: "Ocean waves at beach",
       title: "Ocean Waves",
       category: "Seascape",
-      caption: "Morning coffee with a view. Simple moments, profound beauty. ☕️🌊",
-      likes: 763,
-      comments: 12,
-      timestamp: "2 days ago"
+      caption: "Morning coffee with a view. Simple moments, profound beauty. ☕️🌊"
     },
     {
       id: 5,
@@ -61,10 +51,7 @@ const Photos = () => {
       alt: "Night city skyline",
       title: "City Lights",
       category: "Urban",
-      caption: "The city never sleeps, and neither do the dreams it inspires. 🌃✨",
-      likes: 1389,
-      comments: 31,
-      timestamp: "3 days ago"
+      caption: "The city never sleeps, and neither do the dreams it inspires. 🌃✨"
     },
     {
       id: 6,
@@ -72,10 +59,7 @@ const Photos = () => {
       alt: "Desert dunes at sunset",
       title: "Desert Dreams",
       category: "Landscape",
-      caption: "Adventures await beyond the horizon. Every journey begins with a single step. 🥾⛰️",
-      likes: 1024,
-      comments: 18,
-      timestamp: "4 days ago"
+      caption: "Adventures await beyond the horizon. Every journey begins with a single step. 🥾⛰️"
     },
     {
       id: 7,
@@ -83,10 +67,7 @@ const Photos = () => {
       alt: "Misty lake reflection",
       title: "Reflection",
       category: "Nature",
-      caption: "Reflections in still waters. Finding peace in nature's mirror. 🏔️💧",
-      likes: 1567,
-      comments: 28,
-      timestamp: "5 days ago"
+      caption: "Reflections in still waters. Finding peace in nature's mirror. 🏔️💧"
     },
     {
       id: 8,
@@ -94,10 +75,7 @@ const Photos = () => {
       alt: "Street photography scene",
       title: "Street Life",
       category: "Street",
-      caption: "Capturing the pulse of the city, one moment at a time. 🚶‍♂️📸",
-      likes: 743,
-      comments: 19,
-      timestamp: "6 days ago"
+      caption: "Capturing the pulse of the city, one moment at a time. 🚶‍♂️📸"
     },
     {
       id: 9,
@@ -105,12 +83,43 @@ const Photos = () => {
       alt: "Wildflower field",
       title: "Wild Beauty",
       category: "Nature",
-      caption: "Nature's palette at its finest. Wildflowers dancing in the breeze. 🌸💨",
-      likes: 1892,
-      comments: 34,
-      timestamp: "1 week ago"
+      caption: "Nature's palette at its finest. Wildflowers dancing in the breeze. 🌸💨"
     }
   ];
+
+  const currentPhotoIndex = selectedPhoto ? photos.findIndex(p => p.id === selectedPhoto.id) : -1;
+
+  const goToNextPhoto = () => {
+    if (currentPhotoIndex < photos.length - 1) {
+      setSelectedPhoto(photos[currentPhotoIndex + 1]);
+    }
+  };
+
+  const goToPreviousPhoto = () => {
+    if (currentPhotoIndex > 0) {
+      setSelectedPhoto(photos[currentPhotoIndex - 1]);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (selectedPhoto) {
+      if (e.key === 'ArrowRight') {
+        goToNextPhoto();
+      } else if (e.key === 'ArrowLeft') {
+        goToPreviousPhoto();
+      } else if (e.key === 'Escape') {
+        setSelectedPhoto(null);
+      }
+    }
+  };
+
+  // Fix keyboard event listener with useEffect
+  useEffect(() => {
+    if (selectedPhoto) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [selectedPhoto, currentPhotoIndex]);
 
   return (
     <section id="photos" className="py-20 px-6 bg-gradient-section">
@@ -121,7 +130,7 @@ const Photos = () => {
             className="text-4xl lg:text-5xl font-bold text-foreground mb-6 cursor-pointer hover:text-primary transition-colors"
             onClick={() => navigate('/photos')}
           >
-            Photo <span className="bg-gradient-accent bg-clip-text text-transparent">Gallery</span>
+            Photo <span className="text-primary">Gallery</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Capturing moments and perspectives through the lens. A collection of photographs 
@@ -129,109 +138,128 @@ const Photos = () => {
           </p>
         </div>
 
-        {/* Instagram-style Photo Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-slide-up">
-          {photos.slice(0, 3).map((photo, index) => (
+        {/* Photo Counter */}
+        <div className="text-center mb-8 animate-slide-up">
+          <div className="text-sm text-muted-foreground">
+            {photos.slice(0, showAll ? photos.length : 3).length} photos
+          </div>
+        </div>
+
+        {/* Photo Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-slide-up">
+          {photos.slice(0, showAll ? photos.length : 3).map((photo, index) => (
             <div
               key={photo.id}
-              className="group cursor-pointer animate-slide-up"
+              className="group cursor-pointer animate-slide-up bg-card rounded-lg border border-border overflow-hidden hover:shadow-lg transition-all duration-300"
               style={{ animationDelay: `${index * 0.1}s` }}
               onClick={() => setSelectedPhoto(photo)}
             >
-              <div className="relative aspect-square overflow-hidden rounded-lg bg-card border border-border">
+              {/* Image Container */}
+              <div className="relative aspect-square overflow-hidden">
                 <img
                   src={photo.src}
                   alt={photo.alt}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 
-                {/* Instagram-style Overlay */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <div className="flex items-center space-x-4 text-white">
-                    <div className="flex items-center space-x-1">
-                      <Heart className="w-6 h-6" />
-                      <span className="font-semibold">{photo.likes}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <MessageCircle className="w-6 h-6" />
-                      <span className="font-semibold">{photo.comments}</span>
-                    </div>
+                {/* Lightroom-style Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                    <h3 className="font-semibold text-sm mb-1">{photo.title}</h3>
+                    <p className="text-xs text-gray-200 opacity-90">{photo.category}</p>
                   </div>
                 </div>
+                
+                {/* Zoom Icon */}
+                <div className="absolute top-3 right-3 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <ZoomIn className="w-4 h-4 text-white" />
+                </div>
+              </div>
+              
+              {/* Photo Info */}
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-primary uppercase tracking-wide">
+                    {photo.category}
+                  </span>
+                </div>
+                <h3 className="font-semibold text-foreground text-sm mb-1 line-clamp-1">
+                  {photo.title}
+                </h3>
+                <p className="text-xs text-muted-foreground line-clamp-2">
+                  {photo.caption}
+                </p>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Instagram-style Modal */}
+        {/* Google Photos-style Modal */}
         {selectedPhoto && (
-          <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-            <div className="max-w-4xl w-full bg-card rounded-lg overflow-hidden">
-              <div className="flex flex-col md:flex-row">
-                {/* Image */}
-                <div className="md:w-2/3">
-                  <img
-                    src={selectedPhoto.src}
-                    alt={selectedPhoto.alt}
-                    className="w-full h-[300px] md:h-[500px] object-cover"
-                  />
-                </div>
+          <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+            {/* Close Button - Top Right */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-6 right-6 z-10 bg-black/50 hover:bg-black/70 text-white border border-white/20"
+              onClick={() => setSelectedPhoto(null)}
+            >
+              <X className="w-5 h-5" />
+            </Button>
+
+            {/* Navigation Arrows - Closer to center */}
+            {currentPhotoIndex > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute left-1/4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white border border-white/20"
+                onClick={goToPreviousPhoto}
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </Button>
+            )}
+            
+            {currentPhotoIndex < photos.length - 1 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-1/4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white border border-white/20"
+                onClick={goToNextPhoto}
+              >
+                <ChevronRight className="w-8 h-8" />
+              </Button>
+            )}
+
+            {/* Main Content - Centered */}
+            <div className="max-w-4xl w-full px-6">
+              {/* Photo */}
+              <div className="mb-8">
+                <img
+                  src={selectedPhoto.src}
+                  alt={selectedPhoto.alt}
+                  className="w-full h-auto max-h-[65vh] object-contain rounded-lg"
+                />
+              </div>
+
+              {/* Photo Info - Below Photo with more spacing */}
+              <div className="text-center text-white">
+                <h2 className="text-3xl font-bold mb-4">{selectedPhoto.title}</h2>
+                <p className="text-lg mb-6 leading-relaxed max-w-3xl mx-auto text-gray-300">
+                  {selectedPhoto.caption}
+                </p>
                 
-                {/* Content */}
-                <div className="md:w-1/3 p-6 flex flex-col">
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src="/src/assets/profile-photo.jpg" />
-                        <AvatarFallback>DD</AvatarFallback>
-                      </Avatar>
-                      <span className="font-semibold text-foreground">dhrubajyoti_das</span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedPhoto(null)}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-
-                  {/* Caption */}
-                  <div className="flex-1 mb-4">
-                    <p className="text-muted-foreground">
-                      <span className="font-semibold text-foreground">dhrubajyoti_das</span>{" "}
-                      {selectedPhoto.caption}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2 uppercase">
-                      {selectedPhoto.timestamp}
-                    </p>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="border-t border-border pt-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-4">
-                        <Button variant="ghost" size="sm" className="p-0 h-auto">
-                          <Heart className="w-6 h-6" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="p-0 h-auto">
-                          <MessageCircle className="w-6 h-6" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="p-0 h-auto">
-                          <Send className="w-6 h-6" />
-                        </Button>
-                      </div>
-                      <Button variant="ghost" size="sm" className="p-0 h-auto">
-                        <Bookmark className="w-6 h-6" />
-                      </Button>
-                    </div>
-                    <div className="text-sm font-semibold text-foreground">
-                      {selectedPhoto.likes.toLocaleString()} likes
-                    </div>
-                  </div>
+                {/* Category only */}
+                <div className="flex items-center justify-center">
+                  <span className="px-4 py-2 bg-white/10 rounded-full border border-white/20 text-sm">
+                    {selectedPhoto.category}
+                  </span>
                 </div>
               </div>
+            </div>
+
+            {/* Simple navigation hint */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 text-sm">
+              Arrow keys to navigate • ESC to close
             </div>
           </div>
         )}

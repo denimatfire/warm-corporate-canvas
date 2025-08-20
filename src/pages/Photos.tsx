@@ -1,12 +1,12 @@
 import Navigation from "@/components/Navigation";
-import InstagramPhotos from "@/components/InstagramPhotos";
+import Photos from "@/components/Photos";
 
 const PhotosPage = () => {
   return (
     <div className="min-h-screen bg-gradient-hero text-foreground">
       <Navigation />
       <div className="pt-20">
-        <InstagramPhotos />
+        <Photos showAll={true} />
       </div>
     </div>
   );
