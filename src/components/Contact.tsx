@@ -90,7 +90,7 @@ const Contact = () => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Let's <span className="bg-gradient-accent bg-clip-text text-transparent">Connect</span>
+            Let's <span className="text-white">Connect</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             I'm always interested in new opportunities, collaborations, or just a good conversation. 

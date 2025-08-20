@@ -84,7 +84,7 @@ const Writing = () => {
             className="text-4xl lg:text-5xl font-bold text-foreground mb-6 cursor-pointer hover:text-primary transition-colors"
             onClick={() => navigate('/writing')}
           >
-            My <span className="bg-gradient-accent bg-clip-text text-transparent">Writing</span>
+            My <span className="text-white">Writing</span>
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
             Sharing insights, experiences, and lessons learned throughout my professional journey. 

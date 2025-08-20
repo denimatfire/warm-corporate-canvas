@@ -2,103 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Portfolio Design System - Professional with Warm Accents */
+/* Business Corporate Theme - Tailwind Design System */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 
 @layer base {
   :root {
-    /* Base colors - Professional slate theme */
-    --background: 220 26% 14%;
-    --foreground: 210 40% 98%;
+    /* Brand colors */
+    --primary: 188 78% 45%;        /* Teal / Aqua */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 188 78% 50%;
 
-    /* Card system */
-    --card: 220 23% 18%;
-    --card-foreground: 210 40% 98%;
-    --card-hover: 220 23% 22%;
+    --secondary: 220 47% 20%;      /* Navy Blue */
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 220 47% 25%;
 
-    /* Interactive elements */
-    --primary: 45 93% 70%;
-    --primary-foreground: 220 26% 14%;
-    --primary-hover: 45 93% 75%;
+    /* Backgrounds */
+    --background: 0 0% 100%;       /* White */
+    --foreground: 220 15% 20%;     /* Dark Gray Text */
 
-    --secondary: 215 25% 27%;
-    --secondary-foreground: 210 40% 98%;
-    --secondary-hover: 215 25% 32%;
+    --muted: 220 15% 95%;          /* Light Gray Section */
+    --muted-foreground: 220 15% 35%;
 
-    /* Subtle elements */
-    --muted: 215 25% 27%;
-    --muted-foreground: 217 10% 64%;
-
-    --accent: 45 93% 70%;
-    --accent-foreground: 220 26% 14%;
+    /* Cards */
+    --card: 0 0% 100%;             /* Pure White cards */
+    --card-foreground: 220 15% 20%;
 
     /* Status colors */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-
     --success: 142 71% 45%;
-    --success-foreground: 210 40% 98%;
+    --success-foreground: 0 0% 100%;
 
-    /* Borders and inputs */
-    --border: 215 25% 27%;
-    --input: 215 25% 27%;
-    --ring: 45 93% 70%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    /* Design system tokens */
+    /* Borders & inputs */
+    --border: 220 15% 90%;
+    --input: 220 15% 85%;
+    --ring: 188 78% 45%;
+
+    /* Accent */
+    --accent: 188 78% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(220 26% 8% / 0.1);
+    --shadow-card: 0 8px 30px -8px hsl(220 26% 8% / 0.15);
+    --shadow-glow: 0 0 30px hsl(188 78% 45% / 0.2);
+
+    /* Radius */
     --radius: 0.75rem;
 
     /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(220 26% 14%), hsl(220 23% 18%));
-    --gradient-section: linear-gradient(180deg, hsl(220 26% 14%), hsl(220 23% 16%));
-    --gradient-accent: linear-gradient(135deg, hsl(45 93% 70%), hsl(45 93% 75%));
-
-    /* Shadows */
-    --shadow-soft: 0 4px 20px -4px hsl(220 26% 8% / 0.3);
-    --shadow-card: 0 8px 30px -8px hsl(220 26% 8% / 0.4);
-    --shadow-glow: 0 0 30px hsl(45 93% 70% / 0.2);
+    --gradient-hero: linear-gradient(135deg, hsl(188, 55%, 45%), hsl(188, 62%, 45%));
+    --gradient-section: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 15% 95%));
+    --gradient-accent: linear-gradient(135deg, hsl(188 78% 45%), hsl(188 78% 55%));
 
     /* Animation timings */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    /* Uses same design system as light mode for consistency */
-    --background: 220 26% 14%;
-    --foreground: 210 40% 98%;
-    --card: 220 23% 18%;
-    --card-foreground: 210 40% 98%;
-    --primary: 45 93% 70%;
-    --primary-foreground: 220 26% 14%;
-    --secondary: 215 25% 27%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 215 25% 27%;
-    --muted-foreground: 217 10% 64%;
-    --accent: 45 93% 70%;
-    --accent-foreground: 220 26% 14%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 215 25% 27%;
-    --input: 215 25% 27%;
-    --ring: 45 93% 70%;
+    /* Dark mode overrides */
+    --background: 220 47% 12%;
+    --foreground: 0 0% 100%;
+    --card: 220 47% 18%;
+    --card-foreground: 0 0% 100%;
+    --muted: 220 47% 20%;
+    --muted-foreground: 220 15% 70%;
+    --border: 220 47% 25%;
+    --input: 220 47% 25%;
   }
 }
 
@@ -109,7 +83,7 @@
 
   body {
     @apply bg-background text-foreground font-inter antialiased;
-    background: var(--gradient-hero);
+    background: var(--gradient-section);
   }
 
   html {
@@ -158,7 +132,21 @@
     background: var(--gradient-accent);
   }
 
-  /* Glass effect */
+  /* Cards */
+  .card {
+    background: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    padding: 1.5rem;
+    transition: var(--transition-smooth);
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Glass effect (optional) */
   .glass-card {
     background: hsl(var(--card) / 0.8);
     backdrop-filter: blur(10px);

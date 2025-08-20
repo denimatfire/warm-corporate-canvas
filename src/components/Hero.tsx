@@ -25,7 +25,7 @@ const Hero = () => {
             <div className="text-center lg:text-left">
               <h1 className="text-5xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
                 Hello, I'm{" "}
-                <span className="bg-gradient-accent bg-clip-text text-transparent">
+                <span className="text-white">
                   Dhrubajyoti Das
                 </span>
               </h1>
@@ -132,8 +132,8 @@ const Timeline = () => {
         {/* Desktop: alternating horizontal timeline */}
         <div className="relative h-[360px] hidden lg:block">
           {/* Core timeline bar */}
-          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-3 rounded-full bg-muted" />
-          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-3 rounded-full bg-muted opacity-60" />
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-3 rounded-full bg-foreground/60" />
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-3 rounded-full bg-foreground/30" />
 
           {/* Columns for items */}
           <div className="grid grid-cols-5 h-full">
