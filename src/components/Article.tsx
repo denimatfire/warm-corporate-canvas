@@ -18,7 +18,9 @@ import {
   Check,
   Heart,
   BookOpen,
-  Maximize2
+  Maximize2,
+  Trash2,
+  AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +29,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate, useParams } from "react-router-dom";
 import { blogPosts, BlogPost } from "@/data/blogs";
 import jsPDF from "jspdf";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Comment {
   id: string;
@@ -47,6 +59,8 @@ const Article = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
   
   const articleRef = useRef<HTMLDivElement>(null);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -99,7 +113,7 @@ const Article = () => {
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -172,8 +186,8 @@ const Article = () => {
     setTimeout(() => {
       const comment: Comment = {
         id: Date.now().toString(),
-        name: newComment.name,
-        comment: newComment.comment,
+        name: newComment.name.trim(),
+        comment: newComment.comment.trim(),
         timestamp: new Date(),
         likes: 0
       };
@@ -197,6 +211,27 @@ const Article = () => {
         ? { ...comment, likes: comment.likes + 1 }
         : comment
     ));
+  };
+
+  // Handle comment deletion
+  const handleCommentDelete = (comment: Comment) => {
+    setCommentToDelete(comment);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Confirm comment deletion
+  const confirmCommentDelete = () => {
+    if (commentToDelete) {
+      setComments(prev => prev.filter(comment => comment.id !== commentToDelete.id));
+      setCommentToDelete(null);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  // Cancel comment deletion
+  const cancelCommentDelete = () => {
+    setCommentToDelete(null);
+    setIsDeleteDialogOpen(false);
   };
 
   const totalComments = comments.length + article.comments;
@@ -283,19 +318,6 @@ const Article = () => {
                 <Download className="w-4 h-4 mr-2" />
                 Download
               </Button>
-            </div>
-          </div>
-          
-          {/* Navigation Help Text */}
-          <div className="text-xs text-muted-foreground mt-2 text-center">
-            Use the buttons above to navigate or press the browser back button to return to the previous page
-          </div>
-          
-          {/* Navigation Guide */}
-          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="text-xs text-blue-700 text-center">
-              <strong>Navigation Tips:</strong> Use "Back" to return to previous page, "All Articles" to browse all posts, 
-              or "View in Modal" to return to the compact view. You can also use your browser's back button.
             </div>
           </div>
         </div>
@@ -543,20 +565,33 @@ const Article = () => {
                           <User className="w-5 h-5 text-blue-400" />
                           <h4 className="font-semibold text-blue-900">{comment.name}</h4>
                         </div>
-                        <span className="text-sm text-gray-500">
-                          {comment.timestamp.toLocaleDateString()}
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-gray-500">
+                            {comment.timestamp.toLocaleDateString()}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCommentDelete(comment)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 h-8 w-8"
+                            aria-label="Delete comment"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                       <p className="text-gray-700 mb-4 text-lg">{comment.comment}</p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCommentLike(comment.id)}
-                        className="text-blue-500 hover:text-red-500 hover:bg-red-50"
-                      >
-                        <Heart className="w-4 h-4 mr-2" />
-                        {comment.likes} {comment.likes === 1 ? 'like' : 'likes'}
-                      </Button>
+                      <div className="flex items-center justify-between">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleCommentLike(comment.id)}
+                          className="text-blue-500 hover:text-red-500 hover:bg-red-50"
+                        >
+                          <Heart className="w-4 h-4 mr-2" />
+                          {comment.likes} {comment.likes === 1 ? 'like' : 'likes'}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -572,6 +607,38 @@ const Article = () => {
           </div>
         </motion.div>
       </main>
+
+      {/* Delete Comment Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center space-x-2">
+              <AlertTriangle className="w-5 h-5 text-red-500" />
+              <span>Delete Comment</span>
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this comment? This action cannot be undone.
+              {commentToDelete && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600 font-medium">Comment by {commentToDelete.name}:</p>
+                  <p className="text-sm text-gray-500 mt-1">"{commentToDelete.comment}"</p>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelCommentDelete}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmCommentDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Comment
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
