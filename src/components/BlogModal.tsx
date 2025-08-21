@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Share2, Download, BookOpen, Calendar, MessageCircle, Heart, Send, User, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +32,22 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
   const [newComment, setNewComment] = useState({ name: "", comment: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  const [isNavigating, setIsNavigating] = useState(false);
   const navigate = useNavigate();
+
+  // Handle escape key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [isOpen, onClose]);
 
   if (!article) return null;
 
@@ -105,9 +120,11 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
 
   const totalComments = comments.length + article.comments;
 
-  const handleMaximize = () => {
+  const handleMaximize = async () => {
+    setIsNavigating(true);
     // Close the modal and navigate to full article page
     onClose();
+    // Navigate to full article page without replacing history
     navigate(`/article/${article.id}`);
   };
 
@@ -139,19 +156,39 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={onClose}
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted"
+                  title="Close modal"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={handleMaximize}
-                  className="text-slate-300 hover:text-white hover:bg-slate-800"
+                  disabled={isNavigating}
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                   title="Open in full page"
                 >
-                  <Maximize2 className="w-4 h-4 mr-2" />
-                  Full Page
+                  {isNavigating ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                      <span>Opening...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <Maximize2 className="w-4 h-4 mr-2" />
+                      Full Page
+                    </>
+                  )}
                 </Button>
                 
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleShare}
-                  className="text-slate-300 hover:text-white hover:bg-slate-800"
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                 >
                   <Share2 className="w-4 h-4 mr-2" />
                   Share
@@ -161,7 +198,7 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
                   variant="ghost"
                   size="sm"
                   onClick={handleDownload}
-                  className="text-slate-300 hover:text-white hover:bg-slate-800"
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download
@@ -174,23 +211,54 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
           <div className="flex-1 overflow-y-auto px-6 py-6 min-h-0">
             <div className="max-w-none prose prose-lg dark:prose-invert">
               {/* Article Header */}
-              <div className="mb-8">
-                <div className="flex items-center space-x-2 mb-4">
-                  <Badge variant="secondary">{article.category}</Badge>
+              <div className="mb-8 text-center">
+                <div className="flex items-center justify-center space-x-2 mb-4">
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
+                    {article.category}
+                  </Badge>
                   {article.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
+                    <Badge key={tag} variant="outline" className="text-xs border-blue-300 text-blue-700 bg-blue-50">
                       {tag}
                     </Badge>
                   ))}
                 </div>
-                <h1 className="text-3xl font-bold text-foreground mb-4">{article.title}</h1>
+                <h1 className="text-3xl font-bold text-blue-900 mb-4">{article.title}</h1>
+                <p className="text-lg text-muted-foreground mb-4 max-w-2xl mx-auto">
+                  {article.excerpt}
+                </p>
               </div>
 
               {/* Article Content */}
-              <div className="prose prose-lg dark:prose-invert max-w-none">
-                <div className="whitespace-pre-line text-muted-foreground leading-relaxed">
-                  {article.content}
-                </div>
+              <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-blue-900 prose-h2:text-2xl prose-h2:font-bold prose-h2:mb-4 prose-h2:mt-8 prose-h3:text-xl prose-h3:font-semibold prose-h3:mb-3 prose-h3:mt-6 prose-p:text-base prose-p:leading-relaxed prose-p:mb-4 prose-ul:mb-4 prose-li:mb-1">
+                <div 
+                  className="text-muted-foreground leading-relaxed space-y-6"
+                  dangerouslySetInnerHTML={{ 
+                    __html: article.content
+                      .split('\n\n')
+                      .map(paragraph => {
+                        if (paragraph.trim().startsWith('##')) {
+                          // Convert markdown headings to HTML
+                          const level = paragraph.trim().startsWith('###') ? 3 : 2;
+                          const text = paragraph.trim().replace(/^#+\s*/, '');
+                          return `<h${level} class="text-blue-900 font-bold mb-4 mt-8">${text}</h${level}>`;
+                        } else if (paragraph.trim().startsWith('-')) {
+                          // Convert markdown lists to HTML
+                          const items = paragraph.trim().split('\n').filter(item => item.trim().startsWith('-'));
+                          const listItems = items.map(item => {
+                            const text = item.trim().replace(/^-\s*/, '');
+                            return `<li class="mb-2">${text}</li>`;
+                          }).join('');
+                          return `<ul class="list-disc pl-6 mb-4">${listItems}</ul>`;
+                        } else if (paragraph.trim()) {
+                          // Regular paragraphs
+                          return `<p class="mb-4 leading-relaxed">${paragraph.trim()}</p>`;
+                        }
+                        return '';
+                      })
+                      .filter(Boolean)
+                      .join('')
+                  }}
+                />
               </div>
 
               {/* Comments Section */}

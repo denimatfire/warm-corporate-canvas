@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Calendar, MessageCircle, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import BlogModal from "./BlogModal";
 import { blogPosts, BlogPost } from "@/data/blogs";
 
@@ -12,6 +12,24 @@ const Writing = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArticle, setSelectedArticle] = useState<BlogPost | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Reset modal state when component mounts or location changes
+  useEffect(() => {
+    setSelectedArticle(null);
+  }, [location.pathname]);
+
+  // Handle navigation state for opening specific article
+  useEffect(() => {
+    if (location.state?.openArticle) {
+      const article = blogPosts.find(a => a.id === location.state.openArticle);
+      if (article) {
+        setSelectedArticle(article);
+        // Clear the state to prevent reopening on subsequent renders
+        navigate(location.pathname, { replace: true, state: {} });
+      }
+    }
+  }, [location.state, navigate, location.pathname]);
 
   const filteredArticles = blogPosts.filter(article =>
     article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -17,7 +17,8 @@ import {
   Send,
   Check,
   Heart,
-  BookOpen
+  BookOpen,
+  Maximize2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,7 +61,32 @@ const Article = () => {
     }
   }, [article, navigate]);
 
-  if (!article) return null;
+  // Handle back navigation with fallback
+  const handleBackNavigation = () => {
+    // Try to go back, if no history, go to writing page
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/writing');
+    }
+  };
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Show loading state while checking for article
+  if (!article) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading article...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Reading progress tracking
   useEffect(() => {
@@ -194,14 +220,44 @@ const Article = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate(-1)}
+              onClick={handleBackNavigation}
               className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Writing
+              Back
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            >
+              <User className="w-4 h-4 mr-2" />
+              Home
             </Button>
             
             <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/writing')}
+                className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                All Articles
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/writing', { state: { openArticle: article.id } })}
+                className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
+              >
+                <Maximize2 className="w-4 h-4 mr-2" />
+                View in Modal
+              </Button>
+              
               <Button
                 variant="outline"
                 size="sm"
@@ -227,6 +283,19 @@ const Article = () => {
                 <Download className="w-4 h-4 mr-2" />
                 Download
               </Button>
+            </div>
+          </div>
+          
+          {/* Navigation Help Text */}
+          <div className="text-xs text-muted-foreground mt-2 text-center">
+            Use the buttons above to navigate or press the browser back button to return to the previous page
+          </div>
+          
+          {/* Navigation Guide */}
+          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="text-xs text-blue-700 text-center">
+              <strong>Navigation Tips:</strong> Use "Back" to return to previous page, "All Articles" to browse all posts, 
+              or "View in Modal" to return to the compact view. You can also use your browser's back button.
             </div>
           </div>
         </div>
@@ -346,7 +415,32 @@ const Article = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
           ref={articleRef}
           className="prose prose-lg max-w-none mb-16 text-gray-800 prose-headings:text-blue-900 prose-h2:text-3xl prose-h2:font-bold prose-h2:mb-6 prose-h2:mt-12 prose-h3:text-2xl prose-h3:font-semibold prose-h3:mb-4 prose-h3:mt-8 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-6 prose-ul:mb-6 prose-li:mb-2"
-          dangerouslySetInnerHTML={{ __html: article.content }}
+          dangerouslySetInnerHTML={{ 
+            __html: article.content
+              .split('\n\n')
+              .map(paragraph => {
+                if (paragraph.trim().startsWith('##')) {
+                  // Convert markdown headings to HTML
+                  const level = paragraph.trim().startsWith('###') ? 3 : 2;
+                  const text = paragraph.trim().replace(/^#+\s*/, '');
+                  return `<h${level} class="text-blue-900 font-bold mb-6 mt-12">${text}</h${level}>`;
+                } else if (paragraph.trim().startsWith('-')) {
+                  // Convert markdown lists to HTML
+                  const items = paragraph.trim().split('\n').filter(item => item.trim().startsWith('-'));
+                  const listItems = items.map(item => {
+                    const text = item.trim().replace(/^-\s*/, '');
+                    return `<li class="mb-2">${text}</li>`;
+                  }).join('');
+                  return `<ul class="list-disc pl-6 mb-6">${listItems}</ul>`;
+                } else if (paragraph.trim()) {
+                  // Regular paragraphs
+                  return `<p class="mb-6 leading-relaxed">${paragraph.trim()}</p>`;
+                }
+                return '';
+              })
+              .filter(Boolean)
+              .join('')
+          }}
         />
 
         {/* Article Actions */}
