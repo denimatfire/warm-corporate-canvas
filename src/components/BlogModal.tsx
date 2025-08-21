@@ -1,10 +1,21 @@
 import { useState } from "react";
-import { X, Share2, Download, BookOpen, Calendar, MessageCircle, Heart } from "lucide-react";
+import { X, Share2, Download, BookOpen, Calendar, MessageCircle, Heart, Send, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+
+interface Comment {
+  id: string;
+  name: string;
+  comment: string;
+  timestamp: Date;
+  likes: number;
+}
 
 interface BlogModalProps {
   article: {
@@ -23,6 +34,10 @@ interface BlogModalProps {
 const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState({ name: "", comment: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
 
   if (!article) return null;
 
@@ -94,6 +109,43 @@ The future belongs to those who can adapt, learn, and apply their knowledge effe
     URL.revokeObjectURL(url);
   };
 
+  const handleLike = () => {
+    setLiked(!liked);
+    setLikesCount(prev => liked ? prev - 1 : prev + 1);
+  };
+
+  const handleCommentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.name.trim() || !newComment.comment.trim()) return;
+
+    setIsSubmitting(true);
+    
+    // Simulate API call delay
+    setTimeout(() => {
+      const comment: Comment = {
+        id: Date.now().toString(),
+        name: newComment.name,
+        comment: newComment.comment,
+        timestamp: new Date(),
+        likes: 0
+      };
+      
+      setComments(prev => [comment, ...prev]);
+      setNewComment({ name: "", comment: "" });
+      setIsSubmitting(false);
+    }, 500);
+  };
+
+  const handleCommentLike = (commentId: string) => {
+    setComments(prev => prev.map(comment => 
+      comment.id === commentId 
+        ? { ...comment, likes: comment.likes + 1 }
+        : comment
+    ));
+  };
+
+  const totalComments = comments.length + article.comments;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl h-[90vh] p-0 flex flex-col">
@@ -152,6 +204,89 @@ The future belongs to those who can adapt, learn, and apply their knowledge effe
                   {fullContent}
                 </div>
               </div>
+
+              {/* Comments Section */}
+              <div className="mt-12">
+                <h3 className="text-2xl font-bold text-foreground mb-6">Comments ({totalComments})</h3>
+                
+                {/* Comment Form */}
+                <Card className="mb-8 bg-card/50 border-border">
+                  <CardContent className="p-6">
+                    <form onSubmit={handleCommentSubmit} className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Input
+                          placeholder="Your name"
+                          value={newComment.name}
+                          onChange={(e) => setNewComment(prev => ({ ...prev, name: e.target.value }))}
+                          className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                          required
+                        />
+                        <Input
+                          placeholder="Your comment"
+                          value={newComment.comment}
+                          onChange={(e) => setNewComment(prev => ({ ...prev, comment: e.target.value }))}
+                          className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                          required
+                        />
+                      </div>
+                      
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full md:w-auto bg-primary hover:bg-primary/90 text-white"
+                      >
+                        {isSubmitting ? (
+                          <div className="flex items-center space-x-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span>Posting...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <Send className="w-4 h-4" />
+                            <span>Post Comment</span>
+                          </div>
+                        )}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+
+                {/* Comments List */}
+                <div className="space-y-4">
+                  {comments.map((comment) => (
+                    <Card key={comment.id} className="bg-card/30 border-border">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <User className="w-4 h-4 text-muted-foreground" />
+                            <h4 className="font-semibold text-foreground">{comment.name}</h4>
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {comment.timestamp.toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className="text-muted-foreground mb-3">{comment.comment}</p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleCommentLike(comment.id)}
+                          className="text-muted-foreground hover:text-red-500"
+                        >
+                          <Heart className="w-4 h-4 mr-2" />
+                          {comment.likes} {comment.likes === 1 ? 'like' : 'likes'}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  
+                  {comments.length === 0 && (
+                    <div className="text-center py-8">
+                      <MessageCircle className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
+                      <p className="text-muted-foreground">No comments yet. Be the first to share your thoughts!</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -162,15 +297,15 @@ The future belongs to those who can adapt, learn, and apply their knowledge effe
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setLiked(!liked)}
+                  onClick={handleLike}
                   className={liked ? "text-red-500" : ""}
                 >
                   <Heart className={`w-5 h-5 mr-2 ${liked ? "fill-current" : ""}`} />
-                  {liked ? "Liked" : "Like"}
+                  {liked ? "Liked" : "Like"} {likesCount > 0 && `(${likesCount})`}
                 </Button>
                 <div className="flex items-center space-x-1 text-muted-foreground">
                   <MessageCircle className="w-4 h-4" />
-                  <span>{article.comments} comments</span>
+                  <span>{totalComments} comments</span>
                 </div>
               </div>
               <div className="text-sm text-muted-foreground">
