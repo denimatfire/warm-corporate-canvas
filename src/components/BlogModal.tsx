@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Share2, Download, BookOpen, Calendar, MessageCircle, Heart, Send, User } from "lucide-react";
+import { X, Share2, Download, BookOpen, Calendar, MessageCircle, Heart, Send, User, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,6 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { BlogPost } from "@/data/blogs";
+import { useNavigate } from "react-router-dom";
 
 interface Comment {
   id: string;
@@ -18,15 +20,7 @@ interface Comment {
 }
 
 interface BlogModalProps {
-  article: {
-    title: string;
-    excerpt: string;
-    date: string;
-    category: string;
-    readTime: string;
-    comments: number;
-    tags: string[];
-  } | null;
+  article: BlogPost | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -38,51 +32,9 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
   const [newComment, setNewComment] = useState({ name: "", comment: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  const navigate = useNavigate();
 
   if (!article) return null;
-
-  const fullContent = `
-${article.excerpt}
-
-## Introduction
-
-In today's rapidly evolving technological landscape, the concepts and practices I'm sharing have become more crucial than ever. Through years of hands-on experience and continuous learning, I've discovered patterns and methodologies that consistently deliver results.
-
-## Key Insights
-
-The journey of professional development is multifaceted, requiring not just technical skills but also emotional intelligence, strategic thinking, and adaptability. Here are some fundamental principles that have shaped my approach:
-
-### 1. Continuous Learning Mindset
-
-The technology industry moves at breakneck speed. What worked yesterday might be obsolete tomorrow. Embracing a continuous learning mindset isn't just beneficial—it's essential for survival and growth.
-
-### 2. Building Meaningful Relationships
-
-Success in any field is rarely achieved in isolation. The relationships you build, the networks you cultivate, and the mentorships you engage in often determine the trajectory of your career more than technical skills alone.
-
-### 3. Practical Application
-
-Knowledge without application is merely information. The real value comes from taking what you learn and applying it to solve real-world problems. This is where theory meets practice, and true expertise is born.
-
-## Real-World Examples
-
-Throughout my career, I've encountered numerous situations where these principles proved invaluable. From leading remote teams across different time zones to architecting scalable systems that serve millions of users, the lessons learned are both diverse and universally applicable.
-
-## Implementation Strategies
-
-When implementing new strategies or technologies, I've found that a systematic approach works best:
-
-1. **Research and Planning**: Understanding the problem space thoroughly
-2. **Prototyping**: Building small, testable solutions
-3. **Iteration**: Continuously improving based on feedback
-4. **Documentation**: Sharing knowledge for future reference
-
-## Conclusion
-
-The path to expertise is paved with curiosity, persistence, and a willingness to fail and learn from those failures. As we continue to navigate an increasingly complex professional landscape, these foundational principles remain constant guides toward meaningful growth and success.
-
-The future belongs to those who can adapt, learn, and apply their knowledge effectively. By embracing these concepts, we can build not just successful careers, but also contribute meaningfully to our communities and industries.
-  `;
 
   const handleShare = () => {
     if (navigator.share) {
@@ -97,7 +49,7 @@ The future belongs to those who can adapt, learn, and apply their knowledge effe
   };
 
   const handleDownload = () => {
-    const content = `# ${article.title}\n\n${fullContent}`;
+    const content = `# ${article.title}\n\n${article.content}`;
     const blob = new Blob([content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -144,7 +96,20 @@ The future belongs to those who can adapt, learn, and apply their knowledge effe
     ));
   };
 
+  const scrollToComments = () => {
+    const commentSection = document.querySelector('[data-comment-section]');
+    if (commentSection) {
+      commentSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const totalComments = comments.length + article.comments;
+
+  const handleMaximize = () => {
+    // Close the modal and navigate to full article page
+    onClose();
+    navigate(`/article/${article.id}`);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -169,12 +134,35 @@ The future belongs to those who can adapt, learn, and apply their knowledge effe
                   </div>
                 </div>
               </div>
+              
               <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="sm" onClick={handleShare}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleMaximize}
+                  className="text-slate-300 hover:text-white hover:bg-slate-800"
+                  title="Open in full page"
+                >
+                  <Maximize2 className="w-4 h-4 mr-2" />
+                  Full Page
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleShare}
+                  className="text-slate-300 hover:text-white hover:bg-slate-800"
+                >
                   <Share2 className="w-4 h-4 mr-2" />
                   Share
                 </Button>
-                <Button variant="ghost" size="sm" onClick={handleDownload}>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDownload}
+                  className="text-slate-300 hover:text-white hover:bg-slate-800"
+                >
                   <Download className="w-4 h-4 mr-2" />
                   Download
                 </Button>
@@ -201,12 +189,12 @@ The future belongs to those who can adapt, learn, and apply their knowledge effe
               {/* Article Content */}
               <div className="prose prose-lg dark:prose-invert max-w-none">
                 <div className="whitespace-pre-line text-muted-foreground leading-relaxed">
-                  {fullContent}
+                  {article.content}
                 </div>
               </div>
 
               {/* Comments Section */}
-              <div className="mt-12">
+              <div className="mt-12" data-comment-section>
                 <h3 className="text-2xl font-bold text-foreground mb-6">Comments ({totalComments})</h3>
                 
                 {/* Comment Form */}
@@ -303,10 +291,15 @@ The future belongs to those who can adapt, learn, and apply their knowledge effe
                   <Heart className={`w-5 h-5 mr-2 ${liked ? "fill-current" : ""}`} />
                   {liked ? "Liked" : "Like"} {likesCount > 0 && `(${likesCount})`}
                 </Button>
-                <div className="flex items-center space-x-1 text-muted-foreground">
-                  <MessageCircle className="w-4 h-4" />
-                  <span>{totalComments} comments</span>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={scrollToComments}
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  {totalComments} comments
+                </Button>
               </div>
               <div className="text-sm text-muted-foreground">
                 Published on {article.date}

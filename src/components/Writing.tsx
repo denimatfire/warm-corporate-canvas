@@ -6,70 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import BlogModal from "./BlogModal";
+import { blogPosts, BlogPost } from "@/data/blogs";
 
 const Writing = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedArticle, setSelectedArticle] = useState<any>(null);
+  const [selectedArticle, setSelectedArticle] = useState<BlogPost | null>(null);
   const navigate = useNavigate();
 
-  const articles = [
-    {
-      title: "Building Scalable Frontend Architecture",
-      excerpt: "Explore modern patterns and practices for creating maintainable frontend applications that scale with your team and business needs.",
-      date: "Dec 15, 2024",
-      category: "Development",
-      readTime: "8 min read",
-      comments: 24,
-      tags: ["React", "Architecture", "Best Practices"]
-    },
-    {
-      title: "Leadership Lessons from Remote Teams",
-      excerpt: "Key insights and strategies for effectively leading distributed teams in the modern workplace, based on real-world experience.",
-      date: "Dec 10, 2024",
-      category: "Leadership",
-      readTime: "6 min read",
-      comments: 18,
-      tags: ["Leadership", "Remote Work", "Management"]
-    },
-    {
-      title: "The Art of Code Review Culture",
-      excerpt: "How to build a constructive code review process that improves code quality while fostering team growth and collaboration.",
-      date: "Dec 5, 2024",
-      category: "Process",
-      readTime: "10 min read",
-      comments: 32,
-      tags: ["Code Review", "Culture", "Team"]
-    },
-    {
-      title: "Embracing Continuous Learning",
-      excerpt: "Personal strategies and frameworks for staying current in a rapidly evolving technology landscape while maintaining work-life balance.",
-      date: "Nov 28, 2024",
-      category: "Career",
-      readTime: "7 min read",
-      comments: 15,
-      tags: ["Learning", "Career", "Growth"]
-    },
-    {
-      title: "Design Systems That Scale",
-      excerpt: "Creating and maintaining design systems that grow with your organization while ensuring consistency and usability across products.",
-      date: "Nov 20, 2024",
-      category: "Design",
-      readTime: "12 min read",
-      comments: 28,
-      tags: ["Design Systems", "UI/UX", "Scalability"]
-    },
-    {
-      title: "Mentoring the Next Generation",
-      excerpt: "Practical approaches to mentoring junior developers and creating an environment where everyone can thrive and contribute.",
-      date: "Nov 15, 2024",
-      category: "Mentorship",
-      readTime: "9 min read",
-      comments: 21,
-      tags: ["Mentorship", "Career", "Development"]
-    }
-  ];
-
-  const filteredArticles = articles.filter(article =>
+  const filteredArticles = blogPosts.filter(article =>
     article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
     article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
