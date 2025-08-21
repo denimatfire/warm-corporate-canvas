@@ -1,4 +1,4 @@
-export const SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxDlfVlK2tke2zNyPQwL9f2owyruYrPgGvoBDqTYMUm1_8C5jiQy4bHd2UnmEHSefnSaw/exec"; // TODO: paste your deployed Apps Script Web App URL here
+export const SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyJYrtJwfn0b9WuucHESAljJNjW8rRmBegmJBb21Dj7JEQ1lxPnMO4XtkY3rzHZ-JVlAA/exec"; // TODO: paste your deployed Apps Script Web App URL here
 
 export type ContactFormData = {
 	name: string;

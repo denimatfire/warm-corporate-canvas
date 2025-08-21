@@ -1,27 +1,32 @@
-import { Code, Users, Target, Heart } from "lucide-react";
+import { ClipboardList, Cpu, BarChart3, Users, LineChart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const About = () => {
   const highlights = [
     {
-      icon: Code,
-      title: "Technical Excellence",
-      description: "Passionate about clean code, innovative solutions, and staying current with industry trends."
+      icon: ClipboardList,
+      title: "Product Management & Roadmapping",
+      description: "Defining product vision, prioritizing features, and aligning stakeholders to deliver impactful solutions that enhance user adoption and business growth."
+    },
+    {
+      icon: Cpu,
+      title: "Connected Vehicles & Digital Innovation",
+      description: "Building next-gen mobility products in telematics, IoT, OTA, and SDVs, seamlessly connecting technology with customer needs and experiences."
+    },
+    {
+      icon: BarChart3,
+      title: "Strategy & Business Planning",
+      description: "Crafting data-driven strategies, business cases, and GTM plans that accelerate growth, optimize resources, and ensure long-term competitive advantage."
     },
     {
       icon: Users,
-      title: "Collaborative Leadership",
-      description: "Experience leading cross-functional teams and mentoring junior professionals."
+      title: "Cross-functional Leadership & Stakeholder Management",
+      description: "Driving collaboration across CFTs and CXOs, managing roadmaps, and ensuring smooth execution by reducing roadblocks and delivering measurable outcomes."
     },
     {
-      icon: Target,
-      title: "Strategic Thinking",
-      description: "Focus on delivering measurable results and creating value for organizations."
-    },
-    {
-      icon: Heart,
-      title: "Personal Growth",
-      description: "Committed to continuous learning and helping others achieve their potential."
+      icon: LineChart,
+      title: "Data-driven Decision Making",
+      description: "Leveraging analytics, A/B testing, and visualization tools to refine products, optimize features, and maximize customer satisfaction and engagement."
     }
   ];
 
@@ -52,21 +57,21 @@ const About = () => {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 animate-slide-up">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 animate-slide-up">
           {highlights.map((highlight, index) => (
             <Card 
               key={highlight.title}
-              className="glass-card hover-lift text-center"
+              className="glass-card hover-lift text-center rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <highlight.icon className="w-8 h-8 text-primary" />
+              <CardContent className="p-6">
+                <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <highlight.icon className="w-7 h-7 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-4">
+                <h3 className="text-lg font-bold text-foreground mb-3 leading-tight">
                   {highlight.title}
                 </h3>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {highlight.description}
                 </p>
               </CardContent>
@@ -77,19 +82,19 @@ const About = () => {
         {/* Stats Section */}
         <div className="mt-20 grid grid-cols-2 lg:grid-cols-4 gap-8 animate-fade-in">
           <div className="text-center">
-            <div className="text-4xl lg:text-5xl font-bold text-primary mb-2">6+</div>
+            <div className="text-4xl lg:text-5xl font-bold text-primary mb-2">7</div>
             <div className="text-muted-foreground">Years Experience</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl lg:text-5xl font-bold text-primary mb-2">50+</div>
+            <div className="text-4xl lg:text-5xl font-bold text-primary mb-2">10+</div>
             <div className="text-muted-foreground">Projects Completed</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl lg:text-5xl font-bold text-primary mb-2">20+</div>
+            <div className="text-4xl lg:text-5xl font-bold text-primary mb-2">10+</div>
             <div className="text-muted-foreground">Team Members Led</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl lg:text-5xl font-bold text-primary mb-2">15+</div>
+            <div className="text-4xl lg:text-5xl font-bold text-primary mb-2">20+</div>
             <div className="text-muted-foreground">Articles Written</div>
           </div>
         </div>
