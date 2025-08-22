@@ -18,7 +18,6 @@ import {
   Check,
   Heart,
   BookOpen,
-  Maximize2,
   Trash2,
   AlertTriangle
 } from "lucide-react";
@@ -289,15 +288,7 @@ const Article = () => {
                 {isMobile ? "Articles" : "All Articles"}
               </Button>
               
-              <Button
-                variant="outline"
-                size={isMobile ? "sm" : "sm"}
-                onClick={() => navigate('/writing', { state: { openArticle: article.id } })}
-                className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
-              >
-                <Maximize2 className="w-4 h-4 mr-2" />
-                {isMobile ? "Modal" : "View in Modal"}
-              </Button>
+
               
               <Button
                 variant="outline"

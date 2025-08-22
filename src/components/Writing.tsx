@@ -5,35 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate, useLocation } from "react-router-dom";
-import BlogModal from "./BlogModal";
 import PhotoViewer from "./PhotoViewer";
 import { blogPosts, BlogPost } from "@/data/blogs";
 
 const Writing = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedArticle, setSelectedArticle] = useState<BlogPost | null>(null);
   const [photoViewerOpen, setPhotoViewerOpen] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [selectedPhotoPhotos, setSelectedPhotoPhotos] = useState<string[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Reset modal state when component mounts or location changes
+  // Reset state when component mounts or location changes
   useEffect(() => {
-    setSelectedArticle(null);
+    // Clean up any previous state
   }, [location.pathname]);
-
-  // Handle navigation state for opening specific article
-  useEffect(() => {
-    if (location.state?.openArticle) {
-      const article = blogPosts.find(a => a.id === location.state.openArticle);
-      if (article) {
-        setSelectedArticle(article);
-        // Clear the state to prevent reopening on subsequent renders
-        navigate(location.pathname, { replace: true, state: {} });
-      }
-    }
-  }, [location.state, navigate, location.pathname]);
 
   const filteredArticles = blogPosts.filter(article =>
     article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -52,32 +38,19 @@ const Writing = () => {
     console.log('Article clicked:', article);
     console.log('Article title:', article.title);
     console.log('Article id:', article.id);
-    console.log('Article type:', typeof article);
-    console.log('Setting selectedArticle to:', article);
-    // Open the blog modal instead of navigating
-    setSelectedArticle(article);
-    console.log('selectedArticle state should now be:', article);
+    console.log('Navigating to article page...');
+    // Navigate directly to the article page
+    navigate(`/article/${article.id}`);
     console.log('=== End Debug ===');
   };
 
   const handleReadMoreClick = (e: React.MouseEvent, article: BlogPost) => {
     e.stopPropagation();
     console.log('Read more clicked:', article.title);
-    console.log('Setting selectedArticle to:', article);
-    setSelectedArticle(article);
-    console.log('selectedArticle state should now be:', article);
+    console.log('Navigating to article page...');
+    // Navigate directly to the article page
+    navigate(`/article/${article.id}`);
   };
-
-  // Debug: Log state changes
-  useEffect(() => {
-    console.log('=== selectedArticle State Change ===');
-    console.log('selectedArticle:', selectedArticle);
-    console.log('selectedArticle type:', typeof selectedArticle);
-    console.log('selectedArticle title:', selectedArticle?.title);
-    console.log('selectedArticle id:', selectedArticle?.id);
-    console.log('Modal open state:', !!selectedArticle);
-    console.log('=== End State Change Debug ===');
-  }, [selectedArticle]);
 
   return (
     <section id="writing" className="py-20 px-6">
@@ -139,8 +112,8 @@ const Writing = () => {
                     className="relative overflow-hidden rounded-lg border border-border cursor-pointer group"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Open the blog modal instead of photo viewer
-                      setSelectedArticle(article);
+                      // Navigate to article page instead of opening modal
+                      navigate(`/article/${article.id}`);
                     }}
                   >
                     <img
@@ -201,13 +174,6 @@ const Writing = () => {
           </div>
         )}
       </div>
-
-      {/* Blog Modal */}
-      <BlogModal
-        article={selectedArticle}
-        isOpen={!!selectedArticle}
-        onClose={() => setSelectedArticle(null)}
-      />
 
       {/* Photo Viewer Modal */}
       <PhotoViewer
