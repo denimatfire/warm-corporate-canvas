@@ -450,33 +450,72 @@ const Article = () => {
             ${isMobile ? 
               'prose-h2:text-2xl prose-h2:font-bold prose-h2:mb-4 prose-h2:mt-8 prose-h3:text-xl prose-h3:font-semibold prose-h3:mb-3 prose-h3:mt-6 prose-p:text-base prose-p:leading-relaxed prose-p:mb-4 prose-ul:mb-4 prose-li:mb-2' : 
               'prose-h2:text-3xl prose-h2:font-bold prose-h2:mb-6 prose-h2:mt-12 prose-h3:text-2xl prose-h3:font-semibold prose-h3:mb-4 prose-h3:mt-8 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-6 prose-ul:mb-6 prose-li:mb-2'}`}
-          dangerouslySetInnerHTML={{ 
-            __html: article.content
-              .split('\n\n')
-              .map(paragraph => {
-                if (paragraph.trim().startsWith('##')) {
-                  // Convert markdown headings to HTML
-                  const level = paragraph.trim().startsWith('###') ? 3 : 2;
-                  const text = paragraph.trim().replace(/^#+\s*/, '');
-                  return `<h${level} class="text-blue-900 font-bold mb-6 mt-12">${text}</h${level}>`;
-                } else if (paragraph.trim().startsWith('-')) {
-                  // Convert markdown lists to HTML
-                  const items = paragraph.trim().split('\n').filter(item => item.trim().startsWith('-'));
-                  const listItems = items.map(item => {
-                    const text = item.trim().replace(/^-\s*/, '');
-                    return `<li class="mb-2">${text}</li>`;
-                  }).join('');
-                  return `<ul class="list-disc pl-6 mb-6">${listItems}</ul>`;
-                } else if (paragraph.trim()) {
-                  // Regular paragraphs
-                  return `<p class="mb-6 leading-relaxed">${paragraph.trim()}</p>`;
-                }
-                return '';
-              })
-              .filter(Boolean)
-              .join('')
-          }}
-        />
+        >
+          {(() => {
+            const paragraphs = article.content.split('\n\n').filter(p => p.trim());
+            
+            return paragraphs.map((paragraph, index) => {
+              // Check if paragraph contains a photo marker
+              const photoMatch = paragraph.match(/\[PHOTO:(.*?)\]/);
+              
+              if (photoMatch) {
+                // Extract photo URL and remove marker from paragraph
+                const photoUrl = photoMatch[1];
+                const cleanParagraph = paragraph.replace(/\[PHOTO:.*?\]/, '').trim();
+                
+                return (
+                  <div key={index}>
+                    {cleanParagraph && (
+                      <p className="mb-6 leading-relaxed">{cleanParagraph}</p>
+                    )}
+                    <div className="my-8 text-center">
+                      <img
+                        src={photoUrl}
+                        alt={`${article.title} illustration`}
+                        className="max-w-full h-auto rounded-lg shadow-lg mx-auto cursor-pointer hover:scale-105 transition-transform duration-300"
+                        style={{ maxHeight: '500px' }}
+                      />
+                    </div>
+                  </div>
+                );
+              } else if (paragraph.trim().startsWith('##')) {
+                // Convert markdown headings to HTML
+                const level = paragraph.trim().startsWith('###') ? 3 : 2;
+                const text = paragraph.trim().replace(/^#+\s*/, '');
+                return (
+                  <div key={index}>
+                    {level === 2 ? (
+                      <h2 className="text-blue-900 font-bold mb-6 mt-12">{text}</h2>
+                    ) : (
+                      <h3 className="text-blue-900 font-semibold mb-4 mt-8">{text}</h3>
+                    )}
+                  </div>
+                );
+              } else if (paragraph.trim().startsWith('-')) {
+                // Convert markdown lists to HTML
+                const items = paragraph.trim().split('\n').filter(item => item.trim().startsWith('-'));
+                const listItems = items.map(item => {
+                  const text = item.trim().replace(/^-\s*/, '');
+                  return <li key={item} className="mb-2">{text}</li>;
+                });
+                
+                return (
+                  <div key={index}>
+                    <ul className="list-disc pl-6 mb-6">{listItems}</ul>
+                  </div>
+                );
+              } else if (paragraph.trim()) {
+                // Regular paragraphs
+                return (
+                  <div key={index}>
+                    <p className="mb-6 leading-relaxed">{paragraph.trim()}</p>
+                  </div>
+                );
+              }
+              return null;
+            });
+          })()}
+        </motion.div>
 
         {/* Article Actions */}
         <motion.div

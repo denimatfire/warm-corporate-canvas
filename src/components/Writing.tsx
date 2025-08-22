@@ -6,11 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate, useLocation } from "react-router-dom";
 import BlogModal from "./BlogModal";
+import PhotoViewer from "./PhotoViewer";
 import { blogPosts, BlogPost } from "@/data/blogs";
 
 const Writing = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArticle, setSelectedArticle] = useState<BlogPost | null>(null);
+  const [photoViewerOpen, setPhotoViewerOpen] = useState(false);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [selectedPhotoPhotos, setSelectedPhotoPhotos] = useState<string[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,6 +40,44 @@ const Writing = () => {
     article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
     article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  const handlePhotoClick = (photos: string[], index: number) => {
+    setSelectedPhotoPhotos(photos);
+    setSelectedPhotoIndex(index);
+    setPhotoViewerOpen(true);
+  };
+
+  const handleArticleClick = (article: BlogPost) => {
+    console.log('=== Article Click Debug ===');
+    console.log('Article clicked:', article);
+    console.log('Article title:', article.title);
+    console.log('Article id:', article.id);
+    console.log('Article type:', typeof article);
+    console.log('Setting selectedArticle to:', article);
+    // Open the blog modal instead of navigating
+    setSelectedArticle(article);
+    console.log('selectedArticle state should now be:', article);
+    console.log('=== End Debug ===');
+  };
+
+  const handleReadMoreClick = (e: React.MouseEvent, article: BlogPost) => {
+    e.stopPropagation();
+    console.log('Read more clicked:', article.title);
+    console.log('Setting selectedArticle to:', article);
+    setSelectedArticle(article);
+    console.log('selectedArticle state should now be:', article);
+  };
+
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log('=== selectedArticle State Change ===');
+    console.log('selectedArticle:', selectedArticle);
+    console.log('selectedArticle type:', typeof selectedArticle);
+    console.log('selectedArticle title:', selectedArticle?.title);
+    console.log('selectedArticle id:', selectedArticle?.id);
+    console.log('Modal open state:', !!selectedArticle);
+    console.log('=== End State Change Debug ===');
+  }, [selectedArticle]);
 
   return (
     <section id="writing" className="py-20 px-6">
@@ -73,7 +115,7 @@ const Writing = () => {
               key={article.title}
               className="glass-card hover-lift cursor-pointer group"
               style={{ animationDelay: `${index * 0.1}s` }}
-              onClick={() => setSelectedArticle(article)}
+              onClick={() => handleArticleClick(article)}
             >
               <CardHeader>
                 <div className="flex items-center justify-between mb-4">
@@ -89,11 +131,32 @@ const Writing = () => {
                   {article.title}
                 </CardTitle>
               </CardHeader>
+              
+              {/* Photo Preview */}
+              {article.mainPhoto && (
+                <div className="px-6 -mt-2 mb-4">
+                  <div 
+                    className="relative overflow-hidden rounded-lg border border-border cursor-pointer group"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Open the blog modal instead of photo viewer
+                      setSelectedArticle(article);
+                    }}
+                  >
+                    <img
+                      src={article.mainPhoto}
+                      alt={`${article.title} preview`}
+                      className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=600&fit=crop';
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+              
               <CardContent>
-                <p className="text-muted-foreground mb-4 line-clamp-3">
-                  {article.excerpt}
-                </p>
-                
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mb-4">
                   {article.tags.map((tag) => (
@@ -112,7 +175,7 @@ const Writing = () => {
                       <span>{article.comments}</span>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-1 text-primary group-hover:translate-x-1 transition-transform">
+                  <div className="flex items-center space-x-1 text-primary group-hover:translate-x-1 transition-transform cursor-pointer" onClick={(e) => handleReadMoreClick(e, article)}>
                     <span>Read more</span>
                     <ArrowRight className="w-4 h-4" />
                   </div>
@@ -144,6 +207,14 @@ const Writing = () => {
         article={selectedArticle}
         isOpen={!!selectedArticle}
         onClose={() => setSelectedArticle(null)}
+      />
+
+      {/* Photo Viewer Modal */}
+      <PhotoViewer
+        photos={selectedPhotoPhotos}
+        initialIndex={selectedPhotoIndex}
+        isOpen={photoViewerOpen}
+        onClose={() => setPhotoViewerOpen(false)}
       />
     </section>
   );

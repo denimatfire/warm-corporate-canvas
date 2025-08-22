@@ -9,6 +9,8 @@ export interface BlogPost {
   comments: number;
   tags: string[];
   author: string;
+  photos: string[]; // Array of photo URLs for inline display
+  mainPhoto: string; // Main photo for card display
 }
 
 export const blogPosts: BlogPost[] = [
@@ -16,10 +18,17 @@ export const blogPosts: BlogPost[] = [
     id: "1",
     title: "Building Scalable Frontend Architecture",
     excerpt: "Explore modern patterns and practices for creating maintainable frontend applications that scale with your team and business needs.",
+    mainPhoto: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=600&fit=crop",
+    photos: [
+      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=600&fit=crop"
+    ],
     content: `
 ## Introduction
 
 In today's rapidly evolving digital landscape, building scalable frontend architecture has become more critical than ever. As applications grow in complexity and user expectations rise, developers need robust foundations that can adapt and scale seamlessly.
+
+[PHOTO:https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=600&fit=crop]
 
 ## The Foundation: Component Architecture
 
@@ -36,6 +45,8 @@ Effective state management is crucial for application scalability. Consider thes
 
 ### Local State
 Use local component state for UI-specific data that doesn't need to be shared across components. This keeps components focused and reduces unnecessary re-renders.
+
+[PHOTO:https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=600&fit=crop]
 
 ### Global State
 Implement global state management for data that needs to be accessed by multiple components. Popular solutions include Redux, Zustand, and React Context.
@@ -86,10 +97,17 @@ Remember, scalability isn't just about handling more users or data—it's about 
     id: "2",
     title: "Leadership Lessons from Remote Teams",
     excerpt: "Key insights and strategies for effectively leading distributed teams in the modern workplace, based on real-world experience.",
+    mainPhoto: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop",
+    photos: [
+      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop"
+    ],
     content: `
 ## The New Normal: Remote Leadership
 
 Remote work has transformed how we lead teams, requiring new approaches to communication, collaboration, and culture-building. The challenges are real, but so are the opportunities for creating more inclusive and flexible work environments.
+
+[PHOTO:https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop]
 
 ## Communication: The Foundation of Remote Leadership
 
@@ -106,6 +124,8 @@ Trust is the currency of remote leadership. Build it through:
 
 ### Transparency
 Share information openly, including challenges and uncertainties. When team members understand the context, they can make better decisions and feel more connected to the organization's mission.
+
+[PHOTO:https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop]
 
 ### Consistency
 Follow through on commitments and maintain predictable patterns. Consistency builds reliability and reduces anxiety in uncertain times.
@@ -156,10 +176,17 @@ The future of work is here, and the leaders who adapt will be the ones who succe
     id: "3",
     title: "The Art of Code Review Culture",
     excerpt: "How to build a constructive code review process that improves code quality while fostering team growth and collaboration.",
+    mainPhoto: "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800&h=600&fit=crop",
+    photos: [
+      "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop"
+    ],
     content: `
 ## Beyond Bug Finding: The True Purpose of Code Reviews
 
 Code reviews are often viewed as a quality gate or bug-finding exercise, but their real value lies in knowledge sharing, skill development, and team collaboration. A well-executed code review process can transform your team's culture and codebase quality.
+
+[PHOTO:https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800&h=600&fit=crop]
 
 ## Building a Constructive Review Environment
 
@@ -176,6 +203,8 @@ Structure your reviews to maximize learning and minimize friction:
 
 ### Small, Focused Changes
 Keep changes small and focused on a single concern. This makes reviews more manageable and allows reviewers to provide deeper, more valuable feedback.
+
+[PHOTO:https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop]
 
 ### Clear Context and Purpose
 Provide clear context about what the change accomplishes and why it's needed. This helps reviewers understand the intent and provide more relevant feedback.
@@ -213,10 +242,17 @@ Remember, the goal isn't perfect code—it's continuous improvement, shared lear
     id: "4",
     title: "Embracing Continuous Learning",
     excerpt: "Personal strategies and frameworks for staying current in a rapidly evolving technology landscape while maintaining work-life balance.",
+    mainPhoto: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800&h=600&fit=crop",
+    photos: [
+      "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop"
+    ],
     content: `
 ## The Learning Imperative
 
 In technology, standing still means falling behind. The pace of change is relentless, with new frameworks, tools, and methodologies emerging constantly. Continuous learning isn't just a nice-to-have—it's essential for career longevity and professional satisfaction.
+
+[PHOTO:https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800&h=600&fit=crop]
 
 ## Building Your Learning Framework
 
@@ -233,6 +269,8 @@ Different learning methods suit different people and situations:
 
 ### Hands-On Practice
 Build projects, solve problems, and experiment with new technologies. Practical application is often the most effective way to internalize new concepts.
+
+[PHOTO:https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop]
 
 ### Reading and Research
 Stay informed through technical blogs, documentation, and industry publications. Follow thought leaders and participate in technical discussions.
@@ -273,10 +311,17 @@ Remember, the goal isn't to know everything—it's to keep growing, stay curious
     id: "5",
     title: "Design Systems That Scale",
     excerpt: "Creating and maintaining design systems that grow with your organization while ensuring consistency and usability across products.",
+    mainPhoto: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&h=600&fit=crop",
+    photos: [
+      "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&h=600&fit=crop"
+    ],
     content: `
 ## The Power of Design Systems
 
 Design systems are more than just component libraries—they're comprehensive frameworks that ensure consistency, efficiency, and quality across all your products. When implemented well, they become the foundation for scalable design and development processes.
+
+[PHOTO:https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&h=600&fit=crop]
 
 ## Core Components of a Design System
 
@@ -294,6 +339,8 @@ Design tokens are the atomic units of your design system:
 
 ### Color System
 Establish a comprehensive color palette with semantic naming conventions. Include primary, secondary, and neutral colors, plus variations for different states and contexts.
+
+[PHOTO:https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&h=600&fit=crop]
 
 ### Typography Scale
 Define a consistent typography hierarchy with clear relationships between different text styles. Consider readability, accessibility, and brand personality.
@@ -331,10 +378,17 @@ Remember, a design system is never finished—it's a living ecosystem that grows
     id: "6",
     title: "Mentoring the Next Generation",
     excerpt: "Practical approaches to mentoring junior developers and creating an environment where everyone can thrive and contribute.",
+    mainPhoto: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop",
+    photos: [
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop"
+    ],
     content: `
 ## The Mentorship Imperative
 
 Mentoring isn't just about helping junior developers—it's about building stronger teams, preserving institutional knowledge, and creating a culture of continuous learning. When done well, mentorship benefits everyone involved and strengthens the entire organization.
+
+[PHOTO:https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop]
 
 ## Understanding the Mentorship Relationship
 
@@ -351,6 +405,8 @@ Structured mentorship programs provide the framework for successful relationship
 
 ### Matching Process
 Carefully match mentors and mentees based on skills, interests, and personality compatibility. Consider both technical expertise and communication styles.
+
+[PHOTO:https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop]
 
 ### Clear Expectations
 Establish clear goals, meeting schedules, and communication preferences. Both parties should understand their roles and responsibilities.

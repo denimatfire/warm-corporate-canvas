@@ -61,6 +61,10 @@
     /* Animation timings */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* Additional variables needed for dialog and other components */
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 20%;
   }
 
   .dark {
@@ -73,6 +77,8 @@
     --muted-foreground: 220 15% 70%;
     --border: 220 47% 25%;
     --input: 220 47% 25%;
+    --popover: 220 47% 18%;
+    --popover-foreground: 0 0% 100%;
   }
 }
 
