@@ -20,7 +20,8 @@ import {
   BookOpen,
   Trash2,
   AlertTriangle,
-  Bookmark
+  Bookmark,
+  MoreHorizontal
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +50,7 @@ interface Comment {
   likes: number;
 }
 
-const Article = () => {
+const Article_medium = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [readingProgress, setReadingProgress] = useState(0);
@@ -59,6 +60,7 @@ const Article = () => {
   const [newComment, setNewComment] = useState({ name: "", comment: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
@@ -79,7 +81,6 @@ const Article = () => {
 
   // Handle back navigation with fallback
   const handleBackNavigation = () => {
-    // Try to go back, if no history, go to writing page
     if (window.history.length > 1) {
       navigate(-1);
     } else {
@@ -91,18 +92,6 @@ const Article = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  // Show loading state while checking for article
-  if (!article) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading article...</p>
-        </div>
-      </div>
-    );
-  }
 
   // Reading progress tracking
   useEffect(() => {
@@ -184,7 +173,6 @@ const Article = () => {
 
     setIsSubmitting(true);
     
-    // Simulate API call
     setTimeout(() => {
       const comment: Comment = {
         id: Date.now().toString(),
@@ -238,342 +226,352 @@ const Article = () => {
 
   const totalComments = comments.length + article.comments;
 
+  // Show loading state while checking for article
+  if (!article) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gray-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading article...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Progress Bar */}
-      <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
+      {/* Medium-style Progress Bar */}
+      <div className="fixed top-0 left-0 w-full h-1 bg-gray-100 z-50">
         <motion.div
-          className="h-full bg-blue-600"
+          className="h-full bg-black"
           initial={{ width: 0 }}
           animate={{ width: `${readingProgress}%` }}
           transition={{ duration: 0.3 }}
         />
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 z-40 shadow-sm">
-        <div className={`${isMobile ? 'px-4' : 'max-w-4xl mx-auto px-6'} py-4`}>
-          <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center justify-between'}`}>
-            {/* Navigation Buttons */}
-            <div className={`flex ${isMobile ? 'justify-between' : 'items-center space-x-2'}`}>
+      {/* Medium-style Header */}
+      <header className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 z-40">
+        <div className="max-w-4xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Navigation */}
+            <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleBackNavigation}
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
+                <ArrowLeft className="w-5 h-5" />
               </Button>
               
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/')}
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                onClick={() => navigate('/writing')}
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               >
-                <User className="w-4 h-4 mr-2" />
-                Home
+                <BookOpen className="w-4 h-4 mr-2" />
+                Writing
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`/article/${id}`)}
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                Regular View
               </Button>
             </div>
             
             {/* Action Buttons */}
-            <div className={`flex ${isMobile ? 'flex-wrap justify-center gap-2' : 'items-center space-x-3'}`}>
+            <div className="flex items-center space-x-2">
               <Button
-                variant="outline"
-                size={isMobile ? "sm" : "sm"}
-                onClick={() => navigate('/writing')}
-                className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
-              >
-                <BookOpen className="w-4 h-4 mr-2" />
-                {isMobile ? "Articles" : "All Articles"}
-              </Button>
-              
-              <Button
-                variant="outline"
-                size={isMobile ? "sm" : "sm"}
-                onClick={() => navigate(`/article-medium/${id}`)}
-                className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
-              >
-                <Bookmark className="w-4 h-4 mr-2" />
-                {isMobile ? "Medium" : "Medium View"}
-              </Button>
-              
-              <Button
-                variant="outline"
-                size={isMobile ? "sm" : "sm"}
+                variant="ghost"
+                size="sm"
                 onClick={toggleSpeech}
-                className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
                 aria-label={isPlaying ? "Pause audio" : "Play audio"}
               >
                 {isPlaying ? (
-                  <Pause className="w-4 h-4 mr-2" />
+                  <Pause className="w-4 h-4" />
                 ) : (
-                  <Play className="w-4 h-4 mr-2" />
+                  <Play className="w-4 h-4" />
                 )}
-                {isMobile ? "" : (isPlaying ? "Pause" : "Listen")}
               </Button>
               
               <Button
-                variant="outline"
-                size={isMobile ? "sm" : "sm"}
+                variant="ghost"
+                size="sm"
+                onClick={() => setBookmarked(!bookmarked)}
+                className={`p-2 ${bookmarked ? 'text-blue-600' : 'text-gray-600'} hover:bg-gray-100`}
+                aria-label="Bookmark article"
+              >
+                <Bookmark className={`w-4 h-4 ${bookmarked ? 'fill-current' : ''}`} />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={downloadPDF}
-                className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
                 aria-label="Download article as PDF"
               >
-                <Download className="w-4 h-4 mr-2" />
-                {isMobile ? "" : "Download"}
+                <Download className="w-4 h-4" />
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className={`${isMobile ? 'px-4' : 'max-w-4xl mx-auto px-6'} py-8`}>
-        {/* Article Header */}
+      <main className="max-w-4xl mx-auto">
+        {/* Medium-style Article Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className={`${isMobile ? 'mb-8' : 'mb-12'} text-center`}
+          className="px-6 py-12 text-center"
         >
-          <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center justify-center space-x-3'} mb-6`}>
-            <Badge variant="secondary" className="text-sm bg-blue-100 text-blue-800 border-blue-200">
+          {/* Category Badge */}
+          <div className="mb-6">
+            <Badge variant="secondary" className="text-sm bg-gray-100 text-gray-700 border-gray-200 px-3 py-1 rounded-full">
               {article.category}
             </Badge>
-            <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center space-x-4'} text-sm text-gray-500`}>
-              <div className="flex items-center space-x-1">
-                <Calendar className="w-4 h-4" />
-                <span>{article.date}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Clock className="w-4 h-4" />
-                <span>{article.readTime}</span>
-              </div>
-            </div>
           </div>
           
-          <h1 className={`${isMobile ? 'text-3xl lg:text-4xl' : 'text-5xl lg:text-6xl'} font-bold text-blue-900 mb-6 leading-tight max-w-4xl mx-auto`}>
+          {/* Title - Medium's signature large, bold typography */}
+          <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight max-w-4xl mx-auto font-serif">
             {article.title}
           </h1>
           
-          <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-gray-600 mb-8 leading-relaxed max-w-3xl mx-auto`}>
+          {/* Excerpt - Medium's subtitle style */}
+          <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-3xl mx-auto font-light">
             {article.excerpt}
           </p>
           
-          <div className="flex items-center space-x-2 mb-6">
-            <User className="w-4 h-4 text-blue-400" />
-            <span className="text-blue-600">By {article.author}</span>
+          {/* Author and Meta Info */}
+          <div className="flex items-center justify-center space-x-6 text-sm text-gray-500 mb-8">
+            <div className="flex items-center space-x-2">
+              <User className="w-4 h-4" />
+              <span>{article.author}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Calendar className="w-4 h-4" />
+              <span>{article.date}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Clock className="w-4 h-4" />
+              <span>{article.readTime}</span>
+            </div>
           </div>
           
+          {/* Tags */}
           <div className="flex flex-wrap justify-center gap-2">
             {article.tags.map((tag) => (
-              <Badge key={tag} variant="outline" className="text-sm border-blue-300 text-blue-700 bg-blue-50">
+              <Badge key={tag} variant="outline" className="text-sm border-gray-300 text-gray-700 bg-gray-50 px-3 py-1 rounded-full">
                 {tag}
               </Badge>
             ))}
           </div>
         </motion.div>
 
-        {/* Share Buttons */}
+        {/* Medium-style Share Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className={`${isMobile ? 'mb-8 p-4' : 'mb-12 p-6'} bg-blue-50 rounded-2xl border border-blue-200`}
+          className="px-6 mb-12"
         >
-          <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'items-center justify-between'}`}>
-            <div className="flex items-center space-x-2">
-              <Share2 className="w-5 h-5 text-blue-600" />
-              <span className="text-blue-800 font-medium">Share this article:</span>
-            </div>
+          <div className="flex items-center justify-center space-x-6 py-4 border-t border-gray-100">
+            <span className="text-sm text-gray-500">Share this article:</span>
             
-            <div className={`flex ${isMobile ? 'flex-wrap justify-center gap-2' : 'items-center space-x-3'}`}>
+            <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => shareArticle("linkedin")}
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
                 aria-label="Share on LinkedIn"
               >
-                <Linkedin className="w-5 h-5" />
-                {isMobile && <span className="ml-2">LinkedIn</span>}
+                <Linkedin className="w-4 h-4" />
               </Button>
               
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => shareArticle("twitter")}
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
                 aria-label="Share on Twitter"
               >
-                <Twitter className="w-5 h-5" />
-                {isMobile && <span className="ml-2">Twitter</span>}
+                <Twitter className="w-4 h-4" />
               </Button>
               
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => shareArticle("whatsapp")}
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
                 aria-label="Share on WhatsApp"
               >
-                <MessageCircle className="w-5 h-5" />
-                {isMobile && <span className="ml-2">WhatsApp</span>}
+                <MessageCircle className="w-4 h-4" />
               </Button>
               
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => shareArticle("copy")}
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
                 aria-label="Copy link"
               >
                 {isCopied ? (
-                  <Check className="w-5 h-5 text-green-500" />
+                  <Check className="w-4 h-4 text-green-500" />
                 ) : (
-                  <Copy className="w-5 h-5" />
+                  <Copy className="w-4 h-4" />
                 )}
-                {isMobile && <span className="ml-2">{isCopied ? "Copied!" : "Copy"}</span>}
               </Button>
             </div>
           </div>
         </motion.div>
 
-        {/* Article Content */}
+        {/* Medium-style Article Content */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
           ref={articleRef}
-          className={`prose prose-lg max-w-none mb-16 text-gray-800 prose-headings:text-blue-900 
-            ${isMobile ? 
-              'prose-h2:text-2xl prose-h2:font-bold prose-h2:mb-4 prose-h2:mt-8 prose-h3:text-xl prose-h3:font-semibold prose-h3:mb-3 prose-h3:mt-6 prose-p:text-base prose-p:leading-relaxed prose-p:mb-4 prose-ul:mb-4 prose-li:mb-2' : 
-              'prose-h2:text-3xl prose-h2:font-bold prose-h2:mb-6 prose-h2:mt-12 prose-h3:text-2xl prose-h3:font-semibold prose-h3:mb-4 prose-h3:mt-8 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-6 prose-ul:mb-6 prose-li:mb-2'}`}
+          className="px-6 mb-16"
         >
-          {(() => {
-            const paragraphs = article.content.split('\n\n').filter(p => p.trim());
-            
-            return paragraphs.map((paragraph, index) => {
-              // Check if paragraph contains a photo marker
-              const photoMatch = paragraph.match(/\[PHOTO:(.*?)\]/);
+          <div className="prose prose-lg max-w-none text-gray-800 prose-headings:text-gray-900 prose-headings:font-bold prose-headings:font-serif
+            prose-h2:text-3xl prose-h2:mb-8 prose-h2:mt-16 prose-h3:text-2xl prose-h3:mb-6 prose-h3:mt-12 
+            prose-p:text-lg prose-p:leading-relaxed prose-p:mb-8 prose-p:font-light prose-ul:mb-8 prose-li:mb-3
+            prose-strong:font-semibold prose-strong:text-gray-900 prose-em:text-gray-700 prose-blockquote:border-l-4 
+            prose-blockquote:border-gray-300 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600">
+            {(() => {
+              const paragraphs = article.content.split('\n\n').filter(p => p.trim());
               
-              if (photoMatch) {
-                // Extract photo URL and remove marker from paragraph
-                const photoUrl = photoMatch[1];
-                const cleanParagraph = paragraph.replace(/\[PHOTO:.*?\]/, '').trim();
+              return paragraphs.map((paragraph, index) => {
+                // Check if paragraph contains a photo marker
+                const photoMatch = paragraph.match(/\[PHOTO:(.*?)\]/);
                 
-                return (
-                  <div key={index}>
-                    {cleanParagraph && (
-                      <p className="mb-6 leading-relaxed">{cleanParagraph}</p>
-                    )}
-                    <div className="my-8 text-center">
-                      <img
-                        src={photoUrl}
-                        alt={`${article.title} illustration`}
-                        className="max-w-full h-auto rounded-lg shadow-lg mx-auto cursor-pointer hover:scale-105 transition-transform duration-300"
-                        style={{ maxHeight: '500px' }}
-                      />
+                if (photoMatch) {
+                  // Extract photo URL and remove marker from paragraph
+                  const photoUrl = photoMatch[1];
+                  const cleanParagraph = paragraph.replace(/\[PHOTO:.*?\]/, '').trim();
+                  
+                  return (
+                    <div key={index}>
+                      {cleanParagraph && (
+                        <p className="mb-8 leading-relaxed font-light">{cleanParagraph}</p>
+                      )}
+                      <div className="my-12 text-center">
+                        <img
+                          src={photoUrl}
+                          alt={`${article.title} illustration`}
+                          className="max-w-full h-auto rounded-lg mx-auto cursor-pointer hover:scale-105 transition-transform duration-300"
+                          style={{ maxHeight: '600px' }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                );
-              } else if (paragraph.trim().startsWith('##')) {
-                // Convert markdown headings to HTML
-                const level = paragraph.trim().startsWith('###') ? 3 : 2;
-                const text = paragraph.trim().replace(/^#+\s*/, '');
-                return (
-                  <div key={index}>
-                    {level === 2 ? (
-                      <h2 className="text-blue-900 font-bold mb-6 mt-12">{text}</h2>
-                    ) : (
-                      <h3 className="text-blue-900 font-semibold mb-4 mt-8">{text}</h3>
-                    )}
-                  </div>
-                );
-              } else if (paragraph.trim().startsWith('-')) {
-                // Convert markdown lists to HTML
-                const items = paragraph.trim().split('\n').filter(item => item.trim().startsWith('-'));
-                const listItems = items.map(item => {
-                  const text = item.trim().replace(/^-\s*/, '');
-                  return <li key={item} className="mb-2">{text}</li>;
-                });
-                
-                return (
-                  <div key={index}>
-                    <ul className="list-disc pl-6 mb-6">{listItems}</ul>
-                  </div>
-                );
-              } else if (paragraph.trim()) {
-                // Regular paragraphs
-                return (
-                  <div key={index}>
-                    <p className="mb-6 leading-relaxed">{paragraph.trim()}</p>
-                  </div>
-                );
-              }
-              return null;
-            });
-          })()}
+                  );
+                } else if (paragraph.trim().startsWith('##')) {
+                  // Convert markdown headings to HTML
+                  const level = paragraph.trim().startsWith('###') ? 3 : 2;
+                  const text = paragraph.trim().replace(/^#+\s*/, '');
+                  return (
+                    <div key={index}>
+                      {level === 2 ? (
+                        <h2 className="text-3xl font-bold text-gray-900 mb-8 mt-16 font-serif">{text}</h2>
+                      ) : (
+                        <h3 className="text-2xl font-semibold text-gray-900 mb-6 mt-12 font-serif">{text}</h3>
+                      )}
+                    </div>
+                  );
+                } else if (paragraph.trim().startsWith('-')) {
+                  // Convert markdown lists to HTML
+                  const items = paragraph.trim().split('\n').filter(item => item.trim().startsWith('-'));
+                  const listItems = items.map(item => {
+                    const text = item.trim().replace(/^-\s*/, '');
+                    return <li key={item} className="mb-3 font-light">{text}</li>;
+                  });
+                  
+                  return (
+                    <div key={index}>
+                      <ul className="list-disc pl-8 mb-8 space-y-2">{listItems}</ul>
+                    </div>
+                  );
+                } else if (paragraph.trim()) {
+                  // Regular paragraphs
+                  return (
+                    <div key={index}>
+                      <p className="mb-8 leading-relaxed font-light">{paragraph.trim()}</p>
+                    </div>
+                  );
+                }
+                return null;
+              });
+            })()}
+          </div>
         </motion.div>
 
-        {/* Article Actions */}
+        {/* Medium-style Article Actions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className={`${isMobile ? 'mb-8 p-4' : 'mb-12 p-6'} bg-blue-50 rounded-2xl border border-blue-200`}
+          className="px-6 mb-12"
         >
-          <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'items-center justify-center space-x-6'}`}>
+          <div className="flex items-center justify-center space-x-8 py-8 border-t border-gray-100">
             <Button
               variant="ghost"
-              size={isMobile ? "default" : "lg"}
+              size="lg"
               onClick={handleLike}
-              className={`${isMobile ? 'text-base' : 'text-lg'} ${liked ? "text-red-500" : "text-blue-600"} hover:bg-red-50`}
+              className={`text-lg ${liked ? "text-red-500" : "text-gray-600"} hover:bg-gray-100`}
             >
-              <Heart className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} mr-2 ${liked ? "fill-current" : ""}`} />
+              <Heart className={`w-6 h-6 mr-3 ${liked ? "fill-current" : ""}`} />
               {liked ? "Liked" : "Like"} {likesCount > 0 && `(${likesCount})`}
             </Button>
             
             <Button
               variant="ghost"
-              size={isMobile ? "default" : "lg"}
+              size="lg"
               onClick={() => document.querySelector('[data-comment-section]')?.scrollIntoView({ behavior: 'smooth' })}
-              className={`${isMobile ? 'text-base' : 'text-lg'} text-blue-600 hover:bg-blue-100`}
+              className="text-lg text-gray-600 hover:bg-gray-100"
             >
-              <MessageCircle className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} mr-2`} />
+              <MessageCircle className="w-6 h-6 mr-3" />
               {totalComments} Comments
             </Button>
           </div>
         </motion.div>
 
-        {/* Comments Section */}
+        {/* Medium-style Comments Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="space-y-8"
+          className="px-6 mb-16"
           data-comment-section
         >
-          <h3 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-blue-900 mb-8 text-center`}>Join the Discussion</h3>
+          <h3 className="text-3xl font-bold text-gray-900 mb-12 text-center font-serif">Join the Discussion</h3>
           
           {/* Comment Form */}
-          <Card className="bg-blue-50 border-blue-200">
-            <CardContent className={`${isMobile ? 'p-6' : 'p-8'}`}>
+          <Card className="bg-gray-50 border-gray-200 mb-12">
+            <CardContent className="p-8">
               <form onSubmit={handleCommentSubmit} className="space-y-6">
-                <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-6`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input
                     placeholder="Your name"
                     value={newComment.name}
                     onChange={(e) => setNewComment(prev => ({ ...prev, name: e.target.value }))}
-                    className="bg-white border-blue-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                    className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-gray-500 focus:ring-gray-500"
                     required
                   />
                   <Input
                     placeholder="Your comment"
                     value={newComment.comment}
                     onChange={(e) => setNewComment(prev => ({ ...prev, comment: e.target.value }))}
-                    className="bg-white border-blue-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                    className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-gray-500 focus:ring-gray-500"
                     required
                   />
                 </div>
@@ -581,16 +579,16 @@ const Article = () => {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white ${isMobile ? 'px-6 py-2 text-base' : 'px-8 py-3 text-lg'}`}
+                  className="w-full md:w-auto bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 text-lg"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center space-x-2">
-                      <div className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} border-2 border-white border-t-transparent rounded-full animate-spin`} />
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       <span>Posting...</span>
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <Send className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} />
+                      <Send className="w-5 h-5" />
                       <span>Post Comment</span>
                     </div>
                   )}
@@ -600,7 +598,7 @@ const Article = () => {
           </Card>
 
           {/* Comments List */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             <AnimatePresence>
               {comments.map((comment) => (
                 <motion.div
@@ -610,14 +608,14 @@ const Article = () => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Card className="bg-white border-blue-200 shadow-sm">
-                    <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
-                      <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-start justify-between'} mb-3`}>
-                        <div className="flex items-center space-x-2 min-w-0 flex-1">
-                          <User className="w-5 h-5 text-blue-400 flex-shrink-0" />
-                          <h4 className="font-semibold text-blue-900 truncate">{comment.name}</h4>
+                  <Card className="bg-white border-gray-200 shadow-sm">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center space-x-3 min-w-0 flex-1">
+                          <User className="w-6 h-6 text-gray-400 flex-shrink-0" />
+                          <h4 className="font-semibold text-gray-900 truncate">{comment.name}</h4>
                         </div>
-                        <div className={`flex ${isMobile ? 'justify-between' : 'items-center'} space-x-2`}>
+                        <div className="flex items-center space-x-3">
                           <span className="text-sm text-gray-500">
                             {comment.timestamp.toLocaleDateString()}
                           </span>
@@ -632,13 +630,13 @@ const Article = () => {
                           </Button>
                         </div>
                       </div>
-                      <p className="text-gray-700 mb-4 break-words">{comment.comment}</p>
+                      <p className="text-gray-700 mb-4 break-words font-light leading-relaxed">{comment.comment}</p>
                       <div className="flex items-center justify-between">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleCommentLike(comment.id)}
-                          className="text-blue-500 hover:text-red-500 hover:bg-red-50"
+                          className="text-gray-500 hover:text-red-500 hover:bg-red-50"
                         >
                           <Heart className="w-4 h-4 mr-2" />
                           {comment.likes} {comment.likes === 1 ? 'like' : 'likes'}
@@ -651,9 +649,9 @@ const Article = () => {
             </AnimatePresence>
             
             {comments.length === 0 && (
-              <div className="text-center py-12">
-                <MessageCircle className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} text-blue-300 mx-auto mb-4`} />
-                <p className={`${isMobile ? 'text-base' : 'text-lg'} text-gray-500`}>No comments yet. Be the first to share your thoughts!</p>
+              <div className="text-center py-16">
+                <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-6" />
+                <p className="text-lg text-gray-500 font-light">No comments yet. Be the first to share your thoughts!</p>
               </div>
             )}
           </div>
@@ -662,7 +660,7 @@ const Article = () => {
 
       {/* Delete Comment Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent className={`${isMobile ? 'w-[95vw] mx-4' : ''}`}>
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center space-x-2">
               <AlertTriangle className="w-5 h-5 text-red-500" />
@@ -695,4 +693,4 @@ const Article = () => {
   );
 };
 
-export default Article;
+export default Article_medium;

@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import WritingPage from "./pages/Writing";
 import PhotosPage from "./pages/Photos";
 import Article from "./components/Article";
+import Article_medium from "./components/Article_medium";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/writing" element={<WritingPage />} />
           <Route path="/photos" element={<PhotosPage />} />
           <Route path="/article/:id" element={<Article />} />
+          <Route path="/article-medium/:id" element={<Article_medium />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
