@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PhotosProps {
   showAll?: boolean;
@@ -10,6 +11,7 @@ interface PhotosProps {
 const Photos = ({ showAll = false }: PhotosProps) => {
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Enhanced photos data with simplified properties
   const photos = [
@@ -122,17 +124,17 @@ const Photos = ({ showAll = false }: PhotosProps) => {
   }, [selectedPhoto, currentPhotoIndex]);
 
   return (
-    <section id="photos" className="py-20 px-6 bg-gradient-section">
+    <section id="photos" className={`py-20 ${isMobile ? 'px-4' : 'px-6'} bg-gradient-section`}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-16 animate-fade-in">
+        <div className={`text-center ${isMobile ? 'mb-12' : 'mb-16'} animate-fade-in`}>
           <h2 
-            className="text-4xl lg:text-5xl font-bold text-foreground mb-6 cursor-pointer hover:text-primary transition-colors"
+            className={`${isMobile ? 'text-3xl lg:text-4xl' : 'text-4xl lg:text-5xl'} font-bold text-foreground mb-6 cursor-pointer hover:text-primary transition-colors`}
             onClick={() => navigate('/photos')}
           >
             Photo <span className="text-primary">Gallery</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-muted-foreground max-w-3xl mx-auto`}>
             Capturing moments and perspectives through the lens. A collection of photographs 
             from travels, adventures, and everyday beauty that inspires me.
           </p>
@@ -146,7 +148,7 @@ const Photos = ({ showAll = false }: PhotosProps) => {
         </div>
 
         {/* Photo Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-slide-up">
+        <div className={`grid ${isMobile ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'} gap-4 ${isMobile ? 'gap-4' : 'gap-6'} animate-slide-up`}>
           {photos.slice(0, showAll ? photos.length : 3).map((photo, index) => (
             <div
               key={photo.id}
@@ -165,7 +167,7 @@ const Photos = ({ showAll = false }: PhotosProps) => {
                 {/* Lightroom-style Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                    <h3 className="font-semibold text-sm mb-1">{photo.title}</h3>
+                    <h3 className={`font-semibold ${isMobile ? 'text-xs' : 'text-sm'} mb-1`}>{photo.title}</h3>
                     <p className="text-xs text-gray-200 opacity-90">{photo.category}</p>
                   </div>
                 </div>
@@ -177,13 +179,13 @@ const Photos = ({ showAll = false }: PhotosProps) => {
               </div>
               
               {/* Photo Info */}
-              <div className="p-4">
+              <div className={`${isMobile ? 'p-3' : 'p-4'}`}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium text-primary uppercase tracking-wide">
                     {photo.category}
                   </span>
                 </div>
-                <h3 className="font-semibold text-foreground text-sm mb-1 line-clamp-1">
+                <h3 className={`font-semibold text-foreground ${isMobile ? 'text-xs' : 'text-sm'} mb-1 line-clamp-1`}>
                   {photo.title}
                 </h3>
                 <p className="text-xs text-muted-foreground line-clamp-2">
@@ -201,21 +203,21 @@ const Photos = ({ showAll = false }: PhotosProps) => {
             <Button
               variant="ghost"
               size="sm"
-              className="absolute top-6 right-6 z-10 bg-black/50 hover:bg-black/70 text-white border border-white/20"
+              className={`absolute ${isMobile ? 'top-4 right-4' : 'top-6 right-6'} z-10 bg-black/50 hover:bg-black/70 text-white border border-white/20`}
               onClick={() => setSelectedPhoto(null)}
             >
               <X className="w-5 h-5" />
             </Button>
 
-            {/* Navigation Arrows - Closer to center */}
+            {/* Navigation Arrows - Mobile optimized positioning */}
             {currentPhotoIndex > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="absolute left-1/4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white border border-white/20"
+                className={`absolute ${isMobile ? 'left-2 top-1/2 -translate-y-1/2' : 'left-1/4 top-1/2 -translate-y-1/2'} z-10 bg-black/50 hover:bg-black/70 text-white border border-white/20`}
                 onClick={goToPreviousPhoto}
               >
-                <ChevronLeft className="w-8 h-8" />
+                <ChevronLeft className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
               </Button>
             )}
             
@@ -223,28 +225,28 @@ const Photos = ({ showAll = false }: PhotosProps) => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="absolute right-1/4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white border border-white/20"
+                className={`absolute ${isMobile ? 'right-2 top-1/2 -translate-y-1/2' : 'right-1/4 top-1/2 -translate-y-1/2'} z-10 bg-black/50 hover:bg-black/70 text-white border border-white/20`}
                 onClick={goToNextPhoto}
               >
-                <ChevronRight className="w-8 h-8" />
+                <ChevronRight className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
               </Button>
             )}
 
-            {/* Main Content - Centered */}
-            <div className="max-w-4xl w-full px-6">
+            {/* Main Content - Mobile optimized */}
+            <div className={`${isMobile ? 'w-full px-4' : 'max-w-4xl w-full px-6'}`}>
               {/* Photo */}
-              <div className="mb-8">
+              <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
                 <img
                   src={selectedPhoto.src}
                   alt={selectedPhoto.alt}
-                  className="w-full h-auto max-h-[65vh] object-contain rounded-lg"
+                  className={`w-full h-auto ${isMobile ? 'max-h-[50vh]' : 'max-h-[65vh]'} object-contain rounded-lg`}
                 />
               </div>
 
-              {/* Photo Info - Below Photo with more spacing */}
+              {/* Photo Info - Mobile optimized spacing */}
               <div className="text-center text-white">
-                <h2 className="text-3xl font-bold mb-4">{selectedPhoto.title}</h2>
-                <p className="text-lg mb-6 leading-relaxed max-w-3xl mx-auto text-gray-300">
+                <h2 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold mb-4`}>{selectedPhoto.title}</h2>
+                <p className={`${isMobile ? 'text-base' : 'text-lg'} mb-6 leading-relaxed max-w-3xl mx-auto text-gray-300`}>
                   {selectedPhoto.caption}
                 </p>
                 
@@ -257,9 +259,9 @@ const Photos = ({ showAll = false }: PhotosProps) => {
               </div>
             </div>
 
-            {/* Simple navigation hint */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 text-sm">
-              Arrow keys to navigate • ESC to close
+            {/* Simple navigation hint - Mobile optimized */}
+            <div className={`absolute ${isMobile ? 'bottom-4 left-1/2 -translate-x-1/2' : 'bottom-6 left-1/2 -translate-x-1/2'} text-white/60 ${isMobile ? 'text-xs' : 'text-sm'} text-center`}>
+              {isMobile ? 'Swipe or tap arrows • Tap X to close' : 'Arrow keys to navigate • ESC to close'}
             </div>
           </div>
         )}

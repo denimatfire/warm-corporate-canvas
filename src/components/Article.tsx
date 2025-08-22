@@ -29,6 +29,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate, useParams } from "react-router-dom";
 import { blogPosts, BlogPost } from "@/data/blogs";
 import jsPDF from "jspdf";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,6 +62,7 @@ const Article = () => {
   const [likesCount, setLikesCount] = useState(0);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
+  const isMobile = useIsMobile();
   
   const articleRef = useRef<HTMLDivElement>(null);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -250,52 +252,56 @@ const Article = () => {
 
       {/* Header */}
       <header className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 z-40 shadow-sm">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBackNavigation}
-              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
+        <div className={`${isMobile ? 'px-4' : 'max-w-4xl mx-auto px-6'} py-4`}>
+          <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center justify-between'}`}>
+            {/* Navigation Buttons */}
+            <div className={`flex ${isMobile ? 'justify-between' : 'items-center space-x-2'}`}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBackNavigation}
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/')}
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                <User className="w-4 h-4 mr-2" />
+                Home
+              </Button>
+            </div>
             
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/')}
-              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-            >
-              <User className="w-4 h-4 mr-2" />
-              Home
-            </Button>
-            
-            <div className="flex items-center space-x-3">
+            {/* Action Buttons */}
+            <div className={`flex ${isMobile ? 'flex-wrap justify-center gap-2' : 'items-center space-x-3'}`}>
               <Button
                 variant="outline"
-                size="sm"
+                size={isMobile ? "sm" : "sm"}
                 onClick={() => navigate('/writing')}
                 className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
               >
                 <BookOpen className="w-4 h-4 mr-2" />
-                All Articles
+                {isMobile ? "Articles" : "All Articles"}
               </Button>
               
               <Button
                 variant="outline"
-                size="sm"
+                size={isMobile ? "sm" : "sm"}
                 onClick={() => navigate('/writing', { state: { openArticle: article.id } })}
                 className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
               >
                 <Maximize2 className="w-4 h-4 mr-2" />
-                View in Modal
+                {isMobile ? "Modal" : "View in Modal"}
               </Button>
               
               <Button
                 variant="outline"
-                size="sm"
+                size={isMobile ? "sm" : "sm"}
                 onClick={toggleSpeech}
                 className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
                 aria-label={isPlaying ? "Pause audio" : "Play audio"}
@@ -305,37 +311,37 @@ const Article = () => {
                 ) : (
                   <Play className="w-4 h-4 mr-2" />
                 )}
-                {isPlaying ? "Pause" : "Listen"}
+                {isMobile ? "" : (isPlaying ? "Pause" : "Listen")}
               </Button>
               
               <Button
                 variant="outline"
-                size="sm"
+                size={isMobile ? "sm" : "sm"}
                 onClick={downloadPDF}
                 className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:border-blue-400"
                 aria-label="Download article as PDF"
               >
                 <Download className="w-4 h-4 mr-2" />
-                Download
+                {isMobile ? "" : "Download"}
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className={`${isMobile ? 'px-4' : 'max-w-4xl mx-auto px-6'} py-8`}>
         {/* Article Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-12 text-center"
+          className={`${isMobile ? 'mb-8' : 'mb-12'} text-center`}
         >
-          <div className="flex items-center justify-center space-x-3 mb-6">
+          <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center justify-center space-x-3'} mb-6`}>
             <Badge variant="secondary" className="text-sm bg-blue-100 text-blue-800 border-blue-200">
               {article.category}
             </Badge>
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
+            <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center space-x-4'} text-sm text-gray-500`}>
               <div className="flex items-center space-x-1">
                 <Calendar className="w-4 h-4" />
                 <span>{article.date}</span>
@@ -347,11 +353,11 @@ const Article = () => {
             </div>
           </div>
           
-          <h1 className="text-5xl lg:text-6xl font-bold text-blue-900 mb-6 leading-tight max-w-4xl mx-auto">
+          <h1 className={`${isMobile ? 'text-3xl lg:text-4xl' : 'text-5xl lg:text-6xl'} font-bold text-blue-900 mb-6 leading-tight max-w-4xl mx-auto`}>
             {article.title}
           </h1>
           
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-3xl mx-auto">
+          <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-gray-600 mb-8 leading-relaxed max-w-3xl mx-auto`}>
             {article.excerpt}
           </p>
           
@@ -374,15 +380,15 @@ const Article = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mb-12 p-6 bg-blue-50 rounded-2xl border border-blue-200"
+          className={`${isMobile ? 'mb-8 p-4' : 'mb-12 p-6'} bg-blue-50 rounded-2xl border border-blue-200`}
         >
-          <div className="flex items-center justify-between">
+          <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'items-center justify-between'}`}>
             <div className="flex items-center space-x-2">
               <Share2 className="w-5 h-5 text-blue-600" />
               <span className="text-blue-800 font-medium">Share this article:</span>
             </div>
             
-            <div className="flex items-center space-x-3">
+            <div className={`flex ${isMobile ? 'flex-wrap justify-center gap-2' : 'items-center space-x-3'}`}>
               <Button
                 variant="ghost"
                 size="sm"
@@ -391,6 +397,7 @@ const Article = () => {
                 aria-label="Share on LinkedIn"
               >
                 <Linkedin className="w-5 h-5" />
+                {isMobile && <span className="ml-2">LinkedIn</span>}
               </Button>
               
               <Button
@@ -401,6 +408,7 @@ const Article = () => {
                 aria-label="Share on Twitter"
               >
                 <Twitter className="w-5 h-5" />
+                {isMobile && <span className="ml-2">Twitter</span>}
               </Button>
               
               <Button
@@ -411,6 +419,7 @@ const Article = () => {
                 aria-label="Share on WhatsApp"
               >
                 <MessageCircle className="w-5 h-5" />
+                {isMobile && <span className="ml-2">WhatsApp</span>}
               </Button>
               
               <Button
@@ -425,6 +434,7 @@ const Article = () => {
                 ) : (
                   <Copy className="w-5 h-5" />
                 )}
+                {isMobile && <span className="ml-2">{isCopied ? "Copied!" : "Copy"}</span>}
               </Button>
             </div>
           </div>
@@ -436,7 +446,10 @@ const Article = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
           ref={articleRef}
-          className="prose prose-lg max-w-none mb-16 text-gray-800 prose-headings:text-blue-900 prose-h2:text-3xl prose-h2:font-bold prose-h2:mb-6 prose-h2:mt-12 prose-h3:text-2xl prose-h3:font-semibold prose-h3:mb-4 prose-h3:mt-8 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-6 prose-ul:mb-6 prose-li:mb-2"
+          className={`prose prose-lg max-w-none mb-16 text-gray-800 prose-headings:text-blue-900 
+            ${isMobile ? 
+              'prose-h2:text-2xl prose-h2:font-bold prose-h2:mb-4 prose-h2:mt-8 prose-h3:text-xl prose-h3:font-semibold prose-h3:mb-3 prose-h3:mt-6 prose-p:text-base prose-p:leading-relaxed prose-p:mb-4 prose-ul:mb-4 prose-li:mb-2' : 
+              'prose-h2:text-3xl prose-h2:font-bold prose-h2:mb-6 prose-h2:mt-12 prose-h3:text-2xl prose-h3:font-semibold prose-h3:mb-4 prose-h3:mt-8 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-6 prose-ul:mb-6 prose-li:mb-2'}`}
           dangerouslySetInnerHTML={{ 
             __html: article.content
               .split('\n\n')
@@ -470,26 +483,26 @@ const Article = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="mb-12 p-6 bg-blue-50 rounded-2xl border border-blue-200"
+          className={`${isMobile ? 'mb-8 p-4' : 'mb-12 p-6'} bg-blue-50 rounded-2xl border border-blue-200`}
         >
-          <div className="flex items-center justify-center space-x-6">
+          <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'items-center justify-center space-x-6'}`}>
             <Button
               variant="ghost"
-              size="lg"
+              size={isMobile ? "default" : "lg"}
               onClick={handleLike}
-              className={`text-lg ${liked ? "text-red-500" : "text-blue-600"} hover:bg-red-50`}
+              className={`${isMobile ? 'text-base' : 'text-lg'} ${liked ? "text-red-500" : "text-blue-600"} hover:bg-red-50`}
             >
-              <Heart className={`w-6 h-6 mr-2 ${liked ? "fill-current" : ""}`} />
+              <Heart className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} mr-2 ${liked ? "fill-current" : ""}`} />
               {liked ? "Liked" : "Like"} {likesCount > 0 && `(${likesCount})`}
             </Button>
             
             <Button
               variant="ghost"
-              size="lg"
+              size={isMobile ? "default" : "lg"}
               onClick={() => document.querySelector('[data-comment-section]')?.scrollIntoView({ behavior: 'smooth' })}
-              className="text-lg text-blue-600 hover:bg-blue-100"
+              className={`${isMobile ? 'text-base' : 'text-lg'} text-blue-600 hover:bg-blue-100`}
             >
-              <MessageCircle className="w-6 h-6 mr-2" />
+              <MessageCircle className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} mr-2`} />
               {totalComments} Comments
             </Button>
           </div>
@@ -503,13 +516,13 @@ const Article = () => {
           className="space-y-8"
           data-comment-section
         >
-          <h3 className="text-3xl font-bold text-blue-900 mb-8 text-center">Join the Discussion</h3>
+          <h3 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-blue-900 mb-8 text-center`}>Join the Discussion</h3>
           
           {/* Comment Form */}
           <Card className="bg-blue-50 border-blue-200">
-            <CardContent className="p-8">
+            <CardContent className={`${isMobile ? 'p-6' : 'p-8'}`}>
               <form onSubmit={handleCommentSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-6`}>
                   <Input
                     placeholder="Your name"
                     value={newComment.name}
@@ -529,16 +542,16 @@ const Article = () => {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
+                  className={`w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white ${isMobile ? 'px-6 py-2 text-base' : 'px-8 py-3 text-lg'}`}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center space-x-2">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <div className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} border-2 border-white border-t-transparent rounded-full animate-spin`} />
                       <span>Posting...</span>
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <Send className="w-5 h-5" />
+                      <Send className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} />
                       <span>Post Comment</span>
                     </div>
                   )}
@@ -559,13 +572,13 @@ const Article = () => {
                   transition={{ duration: 0.3 }}
                 >
                   <Card className="bg-white border-blue-200 shadow-sm">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center space-x-2">
-                          <User className="w-5 h-5 text-blue-400" />
-                          <h4 className="font-semibold text-blue-900">{comment.name}</h4>
+                    <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
+                      <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-start justify-between'} mb-3`}>
+                        <div className="flex items-center space-x-2 min-w-0 flex-1">
+                          <User className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                          <h4 className="font-semibold text-blue-900 truncate">{comment.name}</h4>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className={`flex ${isMobile ? 'justify-between' : 'items-center'} space-x-2`}>
                           <span className="text-sm text-gray-500">
                             {comment.timestamp.toLocaleDateString()}
                           </span>
@@ -580,7 +593,7 @@ const Article = () => {
                           </Button>
                         </div>
                       </div>
-                      <p className="text-gray-700 mb-4 text-lg">{comment.comment}</p>
+                      <p className="text-gray-700 mb-4 break-words">{comment.comment}</p>
                       <div className="flex items-center justify-between">
                         <Button
                           variant="ghost"
@@ -600,8 +613,8 @@ const Article = () => {
             
             {comments.length === 0 && (
               <div className="text-center py-12">
-                <MessageCircle className="w-16 h-16 text-blue-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg">No comments yet. Be the first to share your thoughts!</p>
+                <MessageCircle className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} text-blue-300 mx-auto mb-4`} />
+                <p className={`${isMobile ? 'text-base' : 'text-lg'} text-gray-500`}>No comments yet. Be the first to share your thoughts!</p>
               </div>
             )}
           </div>
@@ -610,7 +623,7 @@ const Article = () => {
 
       {/* Delete Comment Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className={`${isMobile ? 'w-[95vw] mx-4' : ''}`}>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center space-x-2">
               <AlertTriangle className="w-5 h-5 text-red-500" />

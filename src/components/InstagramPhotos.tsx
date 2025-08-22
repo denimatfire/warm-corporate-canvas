@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const InstagramPhotos = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
+  const isMobile = useIsMobile();
 
   const photos = [
     {
@@ -58,20 +60,20 @@ const InstagramPhotos = () => {
   ];
 
   return (
-    <section id="photos" className="py-20 px-6">
+    <section id="photos" className={`py-20 ${isMobile ? 'px-4' : 'px-6'}`}>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-16 animate-fade-in">
-          <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
+        <div className={`text-center ${isMobile ? 'mb-12' : 'mb-16'} animate-fade-in`}>
+          <h2 className={`${isMobile ? 'text-3xl lg:text-4xl' : 'text-4xl lg:text-5xl'} font-bold text-foreground mb-6`}>
             Photo <span className="bg-gradient-accent bg-clip-text text-transparent">Gallery</span>
           </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+          <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-muted-foreground mb-8 max-w-3xl mx-auto`}>
             A collection of moments captured through my lens. Stories told through images.
           </p>
         </div>
 
         {/* Instagram-style Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className={`grid ${isMobile ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'} gap-4 ${isMobile ? 'gap-4' : 'gap-6'}`}>
           {photos.map((photo, index) => (
             <div
               key={photo.id}
@@ -86,14 +88,14 @@ const InstagramPhotos = () => {
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <div className="flex items-center space-x-4 text-white">
+                  <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center space-x-4'} text-white`}>
                     <div className="flex items-center space-x-1">
-                      <Heart className="w-6 h-6" />
-                      <span className="font-semibold">{photo.likes}</span>
+                      <Heart className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                      <span className={`font-semibold ${isMobile ? 'text-sm' : ''}`}>{photo.likes}</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <MessageCircle className="w-6 h-6" />
-                      <span className="font-semibold">{photo.comments}</span>
+                      <MessageCircle className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                      <span className={`font-semibold ${isMobile ? 'text-sm' : ''}`}>{photo.comments}</span>
                     </div>
                   </div>
                 </div>
@@ -105,19 +107,19 @@ const InstagramPhotos = () => {
         {/* Modal for selected photo */}
         {selectedPhoto && (
           <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-            <div className="max-w-4xl w-full bg-card rounded-lg overflow-hidden">
-              <div className="flex flex-col md:flex-row">
+            <div className={`${isMobile ? 'w-full h-full' : 'max-w-4xl w-full'} bg-card rounded-lg overflow-hidden`}>
+              <div className={`flex ${isMobile ? 'flex-col h-full' : 'flex-row'}`}>
                 {/* Image */}
-                <div className="md:w-2/3">
+                <div className={`${isMobile ? 'flex-1' : 'md:w-2/3'}`}>
                   <img
                     src={selectedPhoto.src}
                     alt={`Photo ${selectedPhoto.id}`}
-                    className="w-full h-[300px] md:h-[500px] object-cover"
+                    className={`w-full ${isMobile ? 'h-[40vh]' : 'h-[300px] md:h-[500px]'} object-cover`}
                   />
                 </div>
                 
                 {/* Content */}
-                <div className="md:w-1/3 p-6 flex flex-col">
+                <div className={`${isMobile ? 'flex-1 p-4' : 'md:w-1/3 p-6'} flex flex-col`}>
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-3">
@@ -125,7 +127,7 @@ const InstagramPhotos = () => {
                         <AvatarImage src="/src/assets/profile-photo.jpg" />
                         <AvatarFallback>DD</AvatarFallback>
                       </Avatar>
-                      <span className="font-semibold text-foreground">dhrubajyoti_das</span>
+                      <span className={`font-semibold text-foreground ${isMobile ? 'text-sm' : ''}`}>dhrubajyoti_das</span>
                     </div>
                     <Button
                       variant="ghost"
@@ -138,7 +140,7 @@ const InstagramPhotos = () => {
 
                   {/* Caption */}
                   <div className="flex-1 mb-4">
-                    <p className="text-muted-foreground">
+                    <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>
                       <span className="font-semibold text-foreground">dhrubajyoti_das</span>{" "}
                       {selectedPhoto.caption}
                     </p>
@@ -152,20 +154,20 @@ const InstagramPhotos = () => {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-4">
                         <Button variant="ghost" size="sm" className="p-0 h-auto">
-                          <Heart className="w-6 h-6" />
+                          <Heart className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
                         </Button>
                         <Button variant="ghost" size="sm" className="p-0 h-auto">
-                          <MessageCircle className="w-6 h-6" />
+                          <MessageCircle className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
                         </Button>
                         <Button variant="ghost" size="sm" className="p-0 h-auto">
-                          <Send className="w-6 h-6" />
+                          <Send className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
                         </Button>
                       </div>
                       <Button variant="ghost" size="sm" className="p-0 h-auto">
-                        <Bookmark className="w-6 h-6" />
+                        <Bookmark className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
                       </Button>
                     </div>
-                    <div className="text-sm font-semibold text-foreground">
+                    <div className={`font-semibold text-foreground ${isMobile ? 'text-sm' : ''}`}>
                       {selectedPhoto.likes.toLocaleString()} likes
                     </div>
                   </div>

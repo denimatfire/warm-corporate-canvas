@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { BlogPost } from "@/data/blogs";
 import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Comment {
   id: string;
@@ -34,6 +35,7 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
   const [likesCount, setLikesCount] = useState(0);
   const [isNavigating, setIsNavigating] = useState(false);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Handle escape key to close modal
   useEffect(() => {
@@ -130,42 +132,45 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[90vh] p-0 flex flex-col">
+      <DialogContent className={`${isMobile ? 'w-[95vw] h-[95vh] mx-2' : 'max-w-4xl h-[90vh]'} p-0 flex flex-col`}>
         <div className="flex flex-col h-full">
           {/* Header */}
-          <DialogHeader className="px-6 py-4 border-b border-border flex-shrink-0">
-            <div className="flex items-center justify-between">
+          <DialogHeader className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} border-b border-border flex-shrink-0`}>
+            <div className="flex flex-col space-y-3">
+              {/* Author Info */}
               <div className="flex items-center space-x-3">
                 <Avatar className="w-10 h-10">
                   <AvatarImage src="/src/assets/profile-photo.jpg" />
                   <AvatarFallback>DD</AvatarFallback>
                 </Avatar>
-                <div>
-                  <DialogTitle className="text-lg font-semibold">Dhrubajyoti Das</DialogTitle>
+                <div className="flex-1 min-w-0">
+                  <DialogTitle className="text-lg font-semibold truncate">Dhrubajyoti Das</DialogTitle>
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <Calendar className="w-4 h-4" />
-                    <span>{article.date}</span>
+                    <Calendar className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">{article.date}</span>
                     <span>•</span>
-                    <BookOpen className="w-4 h-4" />
+                    <BookOpen className="w-4 h-4 flex-shrink-0" />
                     <span>{article.readTime}</span>
                   </div>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-2">
+              {/* Action Buttons */}
+              <div className={`flex items-center ${isMobile ? 'justify-between' : 'justify-end'} space-x-2`}>
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size={isMobile ? "sm" : "sm"}
                   onClick={onClose}
                   className="text-muted-foreground hover:text-foreground hover:bg-muted"
                   title="Close modal"
                 >
                   <X className="w-4 h-4" />
+                  {isMobile && <span className="ml-2">Close</span>}
                 </Button>
                 
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size={isMobile ? "sm" : "sm"}
                   onClick={handleMaximize}
                   disabled={isNavigating}
                   className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
@@ -174,45 +179,45 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
                   {isNavigating ? (
                     <div className="flex items-center space-x-2">
                       <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                      <span>Opening...</span>
+                      <span className={isMobile ? "text-sm" : ""}>Opening...</span>
                     </div>
                   ) : (
                     <>
                       <Maximize2 className="w-4 h-4 mr-2" />
-                      Full Page
+                      {isMobile ? "Full" : "Full Page"}
                     </>
                   )}
                 </Button>
                 
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size={isMobile ? "sm" : "sm"}
                   onClick={handleShare}
                   className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                 >
                   <Share2 className="w-4 h-4 mr-2" />
-                  Share
+                  {isMobile ? "" : "Share"}
                 </Button>
                 
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size={isMobile ? "sm" : "sm"}
                   onClick={handleDownload}
                   className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  Download
+                  {isMobile ? "" : "Download"}
                 </Button>
               </div>
             </div>
           </DialogHeader>
 
           {/* Content - Fixed scrolling area */}
-          <div className="flex-1 overflow-y-auto px-6 py-6 min-h-0">
+          <div className={`flex-1 overflow-y-auto ${isMobile ? 'px-4 py-4' : 'px-6 py-6'} min-h-0`}>
             <div className="max-w-none prose prose-lg dark:prose-invert">
               {/* Article Header */}
-              <div className="mb-8 text-center">
-                <div className="flex items-center justify-center space-x-2 mb-4">
+              <div className={`${isMobile ? 'mb-6' : 'mb-8'} text-center`}>
+                <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
                   <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
                     {article.category}
                   </Badge>
@@ -222,14 +227,16 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
                     </Badge>
                   ))}
                 </div>
-                <h1 className="text-3xl font-bold text-blue-900 mb-4">{article.title}</h1>
-                <p className="text-lg text-muted-foreground mb-4 max-w-2xl mx-auto">
+                <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-blue-900 mb-4 leading-tight`}>{article.title}</h1>
+                <p className={`${isMobile ? 'text-base' : 'text-lg'} text-muted-foreground mb-4 max-w-2xl mx-auto leading-relaxed`}>
                   {article.excerpt}
                 </p>
               </div>
 
               {/* Article Content */}
-              <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-blue-900 prose-h2:text-2xl prose-h2:font-bold prose-h2:mb-4 prose-h2:mt-8 prose-h3:text-xl prose-h3:font-semibold prose-h3:mb-3 prose-h3:mt-6 prose-p:text-base prose-p:leading-relaxed prose-p:mb-4 prose-ul:mb-4 prose-li:mb-1">
+              <div className={`prose prose-lg dark:prose-invert max-w-none prose-headings:text-blue-900 
+                ${isMobile ? 'prose-h2:text-xl prose-h2:font-bold prose-h2:mb-3 prose-h2:mt-6 prose-h3:text-lg prose-h3:font-semibold prose-h3:mb-2 prose-h3:mt-4 prose-p:text-sm prose-p:leading-relaxed prose-p:mb-3 prose-ul:mb-3 prose-li:mb-1' : 
+                'prose-h2:text-2xl prose-h2:font-bold prose-h2:mb-4 prose-h2:mt-8 prose-h3:text-xl prose-h3:font-semibold prose-h3:mb-3 prose-h3:mt-6 prose-p:text-base prose-p:leading-relaxed prose-p:mb-4 prose-ul:mb-4 prose-li:mb-1'}`}>
                 <div 
                   className="text-muted-foreground leading-relaxed space-y-6"
                   dangerouslySetInnerHTML={{ 
@@ -262,14 +269,14 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
               </div>
 
               {/* Comments Section */}
-              <div className="mt-12" data-comment-section>
-                <h3 className="text-2xl font-bold text-foreground mb-6">Comments ({totalComments})</h3>
+              <div className={`${isMobile ? 'mt-8' : 'mt-12'}`} data-comment-section>
+                <h3 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-foreground mb-6`}>Comments ({totalComments})</h3>
                 
                 {/* Comment Form */}
                 <Card className="mb-8 bg-card/50 border-border">
-                  <CardContent className="p-6">
+                  <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
                     <form onSubmit={handleCommentSubmit} className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-4`}>
                         <Input
                           placeholder="Your name"
                           value={newComment.name}
@@ -311,17 +318,17 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
                 <div className="space-y-4">
                   {comments.map((comment) => (
                     <Card key={comment.id} className="bg-card/30 border-border">
-                      <CardContent className="p-4">
+                      <CardContent className={`${isMobile ? 'p-3' : 'p-4'}`}>
                         <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <User className="w-4 h-4 text-muted-foreground" />
-                            <h4 className="font-semibold text-foreground">{comment.name}</h4>
+                          <div className="flex items-center space-x-2 min-w-0 flex-1">
+                            <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                            <h4 className="font-semibold text-foreground truncate">{comment.name}</h4>
                           </div>
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-sm text-muted-foreground flex-shrink-0 ml-2">
                             {comment.timestamp.toLocaleDateString()}
                           </span>
                         </div>
-                        <p className="text-muted-foreground mb-3">{comment.comment}</p>
+                        <p className="text-muted-foreground mb-3 break-words">{comment.comment}</p>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -347,8 +354,8 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-border flex-shrink-0">
-            <div className="flex items-center justify-between">
+          <div className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} border-t border-border flex-shrink-0`}>
+            <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center justify-between'}`}>
               <div className="flex items-center space-x-4">
                 <Button
                   variant="ghost"
@@ -369,7 +376,7 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
                   {totalComments} comments
                 </Button>
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className={`text-sm text-muted-foreground ${isMobile ? 'text-center' : ''}`}>
                 Published on {article.date}
               </div>
             </div>

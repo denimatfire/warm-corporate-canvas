@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ChevronDown, User, FileText, Camera, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +12,10 @@ import {
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Update date every day
   useEffect(() => {
@@ -22,6 +25,62 @@ const Navigation = () => {
 
     return () => clearInterval(timer);
   }, []);
+
+  // Close mobile menu on scroll with animation
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleScroll = () => {
+      if (isOpen && !isAnimating) {
+        closeMenuGracefully();
+      }
+    };
+
+    // Add scroll event listener
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Add touch move event listener for mobile devices
+    const handleTouchMove = () => {
+      if (isOpen && !isAnimating) {
+        closeMenuGracefully();
+      }
+    };
+    
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [isOpen, isAnimating, isMobile]);
+
+  // Graceful menu close function
+  const closeMenuGracefully = () => {
+    setIsAnimating(true);
+    // Add a small delay to allow the animation to complete
+    setTimeout(() => {
+      setIsOpen(false);
+      setIsAnimating(false);
+    }, 200); // Match the CSS transition duration
+  };
+
+  // Toggle menu with animation
+  const toggleMenu = () => {
+    if (isOpen) {
+      closeMenuGracefully();
+    } else {
+      setIsOpen(true);
+      setIsAnimating(false);
+    }
+  };
+
+  // Close mobile menu when navigating
+  const handleNavigation = (action: () => void) => {
+    if (isMobile) {
+      closeMenuGracefully();
+    }
+    action();
+  };
 
   // Function to get time-based greeting
   const getTimeBasedGreeting = () => {
@@ -146,7 +205,7 @@ const Navigation = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={toggleMenu}
               className="text-foreground"
             >
               ☰
@@ -154,34 +213,40 @@ const Navigation = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-border animate-fade-in">
-            <div className="flex flex-col space-y-2 pt-4">
-              {/* Mobile Date */}
-              <div className="flex items-center space-x-2 text-muted-foreground mb-3 px-2">
-                <Calendar className="w-4 h-4" />
-                <span className="text-sm font-serif">{formatDate(currentDate)}</span>
-              </div>
-              
-              <Button variant="ghost" onClick={() => scrollToSection('hero')} className="justify-start">
-                Home
-              </Button>
-              <Button variant="ghost" onClick={() => scrollToSection('about')} className="justify-start">
-                About Me
-              </Button>
-              <Button variant="ghost" onClick={() => navigate('/writing')} className="justify-start">
-                Writing
-              </Button>
-              <Button variant="ghost" onClick={() => navigate('/photos')} className="justify-start">
-                Photos
-              </Button>
-              <Button variant="outline" onClick={() => scrollToSection('contact')} className="justify-start mt-2">
-                Contact
-              </Button>
+        {/* Mobile Menu with smooth animations */}
+        <div 
+          className={`md:hidden overflow-hidden transition-all duration-200 ease-in-out ${
+            isOpen 
+              ? 'max-h-96 opacity-100 mt-4 pb-4 border-t border-border' 
+              : 'max-h-0 opacity-0 mt-0 pb-0 border-t-0'
+          }`}
+        >
+          <div className={`flex flex-col space-y-2 pt-4 transform transition-all duration-200 ease-in-out ${
+            isOpen ? 'translate-y-0' : '-translate-y-4'
+          }`}>
+            {/* Mobile Date */}
+            <div className="flex items-center space-x-2 text-muted-foreground mb-3 px-2">
+              <Calendar className="w-4 h-4" />
+              <span className="text-sm font-serif">{formatDate(currentDate)}</span>
             </div>
+            
+            <Button variant="ghost" onClick={() => handleNavigation(() => scrollToSection('hero'))} className="justify-start">
+              Home
+            </Button>
+            <Button variant="ghost" onClick={() => handleNavigation(() => scrollToSection('about'))} className="justify-start">
+              About Me
+            </Button>
+            <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/writing'))} className="justify-start">
+              Writing
+            </Button>
+            <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/photos'))} className="justify-start">
+              Photos
+            </Button>
+            <Button variant="outline" onClick={() => handleNavigation(() => scrollToSection('contact'))} className="justify-start mt-2">
+              Contact
+            </Button>
           </div>
-        )}
+        </div>
       </div>
     </nav>
   );
