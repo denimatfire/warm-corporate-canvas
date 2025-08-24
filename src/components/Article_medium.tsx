@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate, useParams } from "react-router-dom";
-import { blogPosts, BlogPost } from "@/data/blogs";
+import { getArticleById, Article as ArticleType } from "@/data/articles";
 import jsPDF from "jspdf";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -64,23 +64,55 @@ const Article_medium = () => {
   const [likesCount, setLikesCount] = useState(0);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
+  const [article, setArticle] = useState<ArticleType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
   
   const articleRef = useRef<HTMLDivElement>(null);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Find the current article based on ID
-  const article = blogPosts.find(a => a.id === id);
-
-  // Redirect if article not found
   useEffect(() => {
-    if (!article) {
+    console.log('=== Article_medium Component Debug ===');
+    console.log('Component mounted with ID:', id);
+    console.log('ID type:', typeof id);
+    console.log('ID length:', id?.length);
+    console.log('Current articles in system:', (window as any).getArticles ? (window as any).getArticles().length : 'getArticles not available');
+    
+    setIsLoading(true);
+    
+    if (id) {
+      console.log('Looking for article with ID:', id);
+      const foundArticle = getArticleById(id);
+      console.log('Found article:', foundArticle);
+      
+      if (foundArticle) {
+        console.log('Article details:', {
+          title: foundArticle.title,
+          author: foundArticle.author,
+          status: foundArticle.status,
+          contentLength: foundArticle.content.length
+        });
+        setArticle(foundArticle);
+      } else {
+        console.log('Article not found!');
+        setArticle(null);
+      }
+      setIsLoading(false);
+    }
+  }, [id]);
+
+  // Redirect if article not found (only after loading is complete)
+  useEffect(() => {
+    if (!isLoading && article === null && id) {
+      console.log('Article not found after loading, redirecting to writing page');
       navigate('/writing');
     }
-  }, [article, navigate]);
+  }, [article, id, navigate, isLoading]);
 
   // Handle back navigation with fallback
   const handleBackNavigation = () => {
+    // Try to go back, if no history, go to writing page
     if (window.history.length > 1) {
       navigate(-1);
     } else {
@@ -129,6 +161,8 @@ const Article_medium = () => {
 
   // Share functionality
   const shareArticle = (platform: string) => {
+    if (!article) return;
+    
     const url = window.location.href;
     const title = article.title;
     const text = article.excerpt;
@@ -153,6 +187,8 @@ const Article_medium = () => {
 
   // Download as PDF
   const downloadPDF = () => {
+    if (!article) return;
+    
     const doc = new jsPDF();
     const text = articleRef.current?.innerText || "";
     
@@ -173,6 +209,7 @@ const Article_medium = () => {
 
     setIsSubmitting(true);
     
+    // Simulate API call
     setTimeout(() => {
       const comment: Comment = {
         id: Date.now().toString(),
@@ -224,15 +261,43 @@ const Article_medium = () => {
     setIsDeleteDialogOpen(false);
   };
 
-  const totalComments = comments.length + article.comments;
+  const totalComments = comments.length;
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   // Show loading state while checking for article
-  if (!article) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-gray-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading article...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if article not found
+  if (!article) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-red-600">Article not found...</p>
+          <Button 
+            onClick={() => navigate('/writing')}
+            className="mt-4"
+          >
+            Back to Articles
+          </Button>
         </div>
       </div>
     );
@@ -337,7 +402,7 @@ const Article_medium = () => {
           {/* Category Badge */}
           <div className="mb-6">
             <Badge variant="secondary" className="text-sm bg-gray-100 text-gray-700 border-gray-200 px-3 py-1 rounded-full">
-              {article.category}
+              {article.status === 'published' ? 'Published' : 'Draft'}
             </Badge>
           </div>
           
@@ -359,11 +424,11 @@ const Article_medium = () => {
             </div>
             <div className="flex items-center space-x-2">
               <Calendar className="w-4 h-4" />
-              <span>{article.date}</span>
+              <span>{formatDate(article.publishedAt || article.createdAt)}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Clock className="w-4 h-4" />
-              <span>{article.readTime}</span>
+              <span>{article.readTime} min read</span>
             </div>
           </div>
           
@@ -447,72 +512,9 @@ const Article_medium = () => {
             prose-h2:text-3xl prose-h2:mb-8 prose-h2:mt-16 prose-h3:text-2xl prose-h3:mb-6 prose-h3:mt-12 
             prose-p:text-lg prose-p:leading-relaxed prose-p:mb-8 prose-p:font-light prose-ul:mb-8 prose-li:mb-3
             prose-strong:font-semibold prose-strong:text-gray-900 prose-em:text-gray-700 prose-blockquote:border-l-4 
-            prose-blockquote:border-gray-300 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600">
-            {(() => {
-              const paragraphs = article.content.split('\n\n').filter(p => p.trim());
-              
-              return paragraphs.map((paragraph, index) => {
-                // Check if paragraph contains a photo marker
-                const photoMatch = paragraph.match(/\[PHOTO:(.*?)\]/);
-                
-                if (photoMatch) {
-                  // Extract photo URL and remove marker from paragraph
-                  const photoUrl = photoMatch[1];
-                  const cleanParagraph = paragraph.replace(/\[PHOTO:.*?\]/, '').trim();
-                  
-                  return (
-                    <div key={index}>
-                      {cleanParagraph && (
-                        <p className="mb-8 leading-relaxed font-light">{cleanParagraph}</p>
-                      )}
-                      <div className="my-12 text-center">
-                        <img
-                          src={photoUrl}
-                          alt={`${article.title} illustration`}
-                          className="max-w-full h-auto rounded-lg mx-auto cursor-pointer hover:scale-105 transition-transform duration-300"
-                          style={{ maxHeight: '600px' }}
-                        />
-                      </div>
-                    </div>
-                  );
-                } else if (paragraph.trim().startsWith('##')) {
-                  // Convert markdown headings to HTML
-                  const level = paragraph.trim().startsWith('###') ? 3 : 2;
-                  const text = paragraph.trim().replace(/^#+\s*/, '');
-                  return (
-                    <div key={index}>
-                      {level === 2 ? (
-                        <h2 className="text-3xl font-bold text-gray-900 mb-8 mt-16 font-serif">{text}</h2>
-                      ) : (
-                        <h3 className="text-2xl font-semibold text-gray-900 mb-6 mt-12 font-serif">{text}</h3>
-                      )}
-                    </div>
-                  );
-                } else if (paragraph.trim().startsWith('-')) {
-                  // Convert markdown lists to HTML
-                  const items = paragraph.trim().split('\n').filter(item => item.trim().startsWith('-'));
-                  const listItems = items.map(item => {
-                    const text = item.trim().replace(/^-\s*/, '');
-                    return <li key={item} className="mb-3 font-light">{text}</li>;
-                  });
-                  
-                  return (
-                    <div key={index}>
-                      <ul className="list-disc pl-8 mb-8 space-y-2">{listItems}</ul>
-                    </div>
-                  );
-                } else if (paragraph.trim()) {
-                  // Regular paragraphs
-                  return (
-                    <div key={index}>
-                      <p className="mb-8 leading-relaxed font-light">{paragraph.trim()}</p>
-                    </div>
-                  );
-                }
-                return null;
-              });
-            })()}
-          </div>
+            prose-blockquote:border-gray-300 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600"
+            dangerouslySetInnerHTML={{ __html: article.content }}
+          />
         </motion.div>
 
         {/* Medium-style Article Actions */}

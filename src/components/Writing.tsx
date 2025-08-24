@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate, useLocation } from "react-router-dom";
 import PhotoViewer from "./PhotoViewer";
-import { blogPosts, BlogPost } from "@/data/blogs";
+import { getPublishedArticles, Article } from "@/data/articles";
 
 const Writing = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,8 +14,15 @@ const Writing = () => {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [selectedPhotoPhotos, setSelectedPhotoPhotos] = useState<string[]>([]);
   const [useMediumView, setUseMediumView] = useState(false);
+  const [articles, setArticles] = useState<Article[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Load articles from the unified system
+  useEffect(() => {
+    const publishedArticles = getPublishedArticles();
+    setArticles(publishedArticles);
+  }, []);
 
   // Load user preference from localStorage
   useEffect(() => {
@@ -36,7 +43,7 @@ const Writing = () => {
     // Clean up any previous state
   }, [location.pathname]);
 
-  const filteredArticles = blogPosts.filter(article =>
+  const filteredArticles = articles.filter(article =>
     article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
     article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -48,25 +55,16 @@ const Writing = () => {
     setPhotoViewerOpen(true);
   };
 
-  const handleArticleClick = (article: BlogPost) => {
-    console.log('=== Article Click Debug ===');
-    console.log('Article clicked:', article);
-    console.log('Article title:', article.title);
-    console.log('Article id:', article.id);
-    console.log('Use Medium view:', useMediumView);
-    console.log('Navigating to article page...');
-    
+  const handleArticleClick = (article: Article) => {
     // Navigate to the appropriate article view based on toggle state
     if (useMediumView) {
       navigate(`/article-medium/${article.id}`);
     } else {
       navigate(`/article/${article.id}`);
     }
-    
-    console.log('=== End Debug ===');
   };
 
-  const handleReadMoreClick = (e: React.MouseEvent, article: BlogPost) => {
+  const handleReadMoreClick = (e: React.MouseEvent, article: Article) => {
     e.stopPropagation();
     console.log('Read more clicked:', article.title);
     console.log('Use Medium view:', useMediumView);
@@ -78,6 +76,16 @@ const Writing = () => {
     } else {
       navigate(`/article/${article.id}`);
     }
+  };
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   return (
@@ -155,7 +163,7 @@ const Writing = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 animate-slide-up">
           {filteredArticles.map((article, index) => (
             <Card 
-              key={article.title}
+              key={article.id}
               className="glass-card hover-lift cursor-pointer group"
               style={{ animationDelay: `${index * 0.1}s` }}
               onClick={() => handleArticleClick(article)}
@@ -163,11 +171,11 @@ const Writing = () => {
               <CardHeader>
                 <div className="flex items-center justify-between mb-4">
                   <Badge variant="secondary" className="text-xs">
-                    {article.category}
+                    {article.status === 'published' ? 'Published' : 'Draft'}
                   </Badge>
                   <div className="text-xs text-muted-foreground flex items-center space-x-2">
                     <Calendar className="w-3 h-3" />
-                    <span>{article.date}</span>
+                    <span>{formatDate(article.publishedAt || article.createdAt)}</span>
                   </div>
                 </div>
                 <CardTitle className="text-xl group-hover:text-primary transition-colors">
@@ -176,22 +184,11 @@ const Writing = () => {
               </CardHeader>
               
               {/* Photo Preview */}
-              {article.mainPhoto && (
+              {article.coverImage && (
                 <div className="px-6 -mt-2 mb-4">
-                  <div 
-                    className="relative overflow-hidden rounded-lg border border-border cursor-pointer group"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Navigate to article page instead of opening modal
-                      if (useMediumView) {
-                        navigate(`/article-medium/${article.id}`);
-                      } else {
-                        navigate(`/article/${article.id}`);
-                      }
-                    }}
-                  >
+                  <div className="relative overflow-hidden rounded-lg border border-border">
                     <img
-                      src={article.mainPhoto}
+                      src={article.coverImage}
                       alt={`${article.title} preview`}
                       className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
@@ -216,10 +213,10 @@ const Writing = () => {
                 {/* Article Meta */}
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <div className="flex items-center space-x-4">
-                    <span>{article.readTime}</span>
+                    <span>{article.readTime} min read</span>
                     <div className="flex items-center space-x-1">
                       <MessageCircle className="w-4 h-4" />
-                      <span>{article.comments}</span>
+                      <span>0</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-1 text-primary group-hover:translate-x-1 transition-transform cursor-pointer" onClick={(e) => handleReadMoreClick(e, article)}>

@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate, useParams } from "react-router-dom";
-import { blogPosts, BlogPost } from "@/data/blogs";
+import { getArticleById, Article as ArticleType } from "@/data/articles";
 import jsPDF from "jspdf";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -62,20 +62,33 @@ const Article = () => {
   const [likesCount, setLikesCount] = useState(0);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
+  const [article, setArticle] = useState<ArticleType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
   
   const articleRef = useRef<HTMLDivElement>(null);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Find the current article based on ID
-  const article = blogPosts.find(a => a.id === id);
-
-  // Redirect if article not found
   useEffect(() => {
-    if (!article) {
+    console.log('Article component: Looking for article with ID:', id);
+    setIsLoading(true);
+    
+    if (id) {
+      const foundArticle = getArticleById(id);
+      console.log('Article component: Found article:', foundArticle);
+      setArticle(foundArticle || null);
+      setIsLoading(false);
+    }
+  }, [id]);
+
+  // Redirect if article not found (only after loading is complete)
+  useEffect(() => {
+    if (!isLoading && article === null && id) {
+      console.log('Article not found after loading, redirecting to writing page');
       navigate('/writing');
     }
-  }, [article, navigate]);
+  }, [article, id, navigate, isLoading]);
 
   // Handle back navigation with fallback
   const handleBackNavigation = () => {
@@ -91,18 +104,6 @@ const Article = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  // Show loading state while checking for article
-  if (!article) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading article...</p>
-        </div>
-      </div>
-    );
-  }
 
   // Reading progress tracking
   useEffect(() => {
@@ -140,6 +141,8 @@ const Article = () => {
 
   // Share functionality
   const shareArticle = (platform: string) => {
+    if (!article) return;
+    
     const url = window.location.href;
     const title = article.title;
     const text = article.excerpt;
@@ -164,6 +167,8 @@ const Article = () => {
 
   // Download as PDF
   const downloadPDF = () => {
+    if (!article) return;
+    
     const doc = new jsPDF();
     const text = articleRef.current?.innerText || "";
     
@@ -236,7 +241,47 @@ const Article = () => {
     setIsDeleteDialogOpen(false);
   };
 
-  const totalComments = comments.length + article.comments;
+  const totalComments = comments.length;
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  // Show loading state while checking for article
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gray-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading article...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if article not found
+  if (!article) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-red-600">Article not found...</p>
+          <Button 
+            onClick={() => navigate('/writing')}
+            className="mt-4"
+          >
+            Back to Articles
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -339,16 +384,16 @@ const Article = () => {
         >
           <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center justify-center space-x-3'} mb-6`}>
             <Badge variant="secondary" className="text-sm bg-blue-100 text-blue-800 border-blue-200">
-              {article.category}
+              {article.status === 'published' ? 'Published' : 'Draft'}
             </Badge>
             <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center space-x-4'} text-sm text-gray-500`}>
               <div className="flex items-center space-x-1">
                 <Calendar className="w-4 h-4" />
-                <span>{article.date}</span>
+                <span>{formatDate(article.publishedAt || article.createdAt)}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <Clock className="w-4 h-4" />
-                <span>{article.readTime}</span>
+                <span>{article.readTime} min read</span>
               </div>
             </div>
           </div>
@@ -450,72 +495,8 @@ const Article = () => {
             ${isMobile ? 
               'prose-h2:text-2xl prose-h2:font-bold prose-h2:mb-4 prose-h2:mt-8 prose-h3:text-xl prose-h3:font-semibold prose-h3:mb-3 prose-h3:mt-6 prose-p:text-base prose-p:leading-relaxed prose-p:mb-4 prose-ul:mb-4 prose-li:mb-2' : 
               'prose-h2:text-3xl prose-h2:font-bold prose-h2:mb-6 prose-h2:mt-12 prose-h3:text-2xl prose-h3:font-semibold prose-h3:mb-4 prose-h3:mt-8 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-6 prose-ul:mb-6 prose-li:mb-2'}`}
-        >
-          {(() => {
-            const paragraphs = article.content.split('\n\n').filter(p => p.trim());
-            
-            return paragraphs.map((paragraph, index) => {
-              // Check if paragraph contains a photo marker
-              const photoMatch = paragraph.match(/\[PHOTO:(.*?)\]/);
-              
-              if (photoMatch) {
-                // Extract photo URL and remove marker from paragraph
-                const photoUrl = photoMatch[1];
-                const cleanParagraph = paragraph.replace(/\[PHOTO:.*?\]/, '').trim();
-                
-                return (
-                  <div key={index}>
-                    {cleanParagraph && (
-                      <p className="mb-6 leading-relaxed">{cleanParagraph}</p>
-                    )}
-                    <div className="my-8 text-center">
-                      <img
-                        src={photoUrl}
-                        alt={`${article.title} illustration`}
-                        className="max-w-full h-auto rounded-lg shadow-lg mx-auto cursor-pointer hover:scale-105 transition-transform duration-300"
-                        style={{ maxHeight: '500px' }}
-                      />
-                    </div>
-                  </div>
-                );
-              } else if (paragraph.trim().startsWith('##')) {
-                // Convert markdown headings to HTML
-                const level = paragraph.trim().startsWith('###') ? 3 : 2;
-                const text = paragraph.trim().replace(/^#+\s*/, '');
-                return (
-                  <div key={index}>
-                    {level === 2 ? (
-                      <h2 className="text-blue-900 font-bold mb-6 mt-12">{text}</h2>
-                    ) : (
-                      <h3 className="text-blue-900 font-semibold mb-4 mt-8">{text}</h3>
-                    )}
-                  </div>
-                );
-              } else if (paragraph.trim().startsWith('-')) {
-                // Convert markdown lists to HTML
-                const items = paragraph.trim().split('\n').filter(item => item.trim().startsWith('-'));
-                const listItems = items.map(item => {
-                  const text = item.trim().replace(/^-\s*/, '');
-                  return <li key={item} className="mb-2">{text}</li>;
-                });
-                
-                return (
-                  <div key={index}>
-                    <ul className="list-disc pl-6 mb-6">{listItems}</ul>
-                  </div>
-                );
-              } else if (paragraph.trim()) {
-                // Regular paragraphs
-                return (
-                  <div key={index}>
-                    <p className="mb-6 leading-relaxed">{paragraph.trim()}</p>
-                  </div>
-                );
-              }
-              return null;
-            });
-          })()}
-        </motion.div>
+          dangerouslySetInnerHTML={{ __html: article.content }}
+        />
 
         {/* Article Actions */}
         <motion.div
