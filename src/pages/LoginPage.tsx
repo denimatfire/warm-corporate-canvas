@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, Lock, User, AlertCircle, Home } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -16,6 +17,7 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,6 +147,19 @@ const LoginPage: React.FC = () => {
               <p className="text-xs text-muted-foreground mt-2">
                 Use these credentials to access the admin dashboard and create articles.
               </p>
+            </div>
+            
+            {/* Go Back to Home Button */}
+            <div className="mt-6 text-center">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/')}
+                disabled={isLoading}
+                className="w-full flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              >
+                <Home className="w-4 h-4" />
+                Go Back to Home
+              </Button>
             </div>
           </CardContent>
         </Card>

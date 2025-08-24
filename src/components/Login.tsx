@@ -232,13 +232,13 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onCancel }) => {
             </div>
           </motion.div>
 
-          {/* Go Back to Home Button */}
+          {/* Go Back to Home Button - Always Visible */}
           <div className="mt-6 text-center">
             <Button
               variant="outline"
               onClick={() => navigate('/')}
               disabled={isLoading}
-              className="w-full flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              className="w-full flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50"
             >
               <Home className="w-4 h-4" />
               Go Back to Home
