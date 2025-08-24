@@ -188,6 +188,13 @@ const Navigation = () => {
                   <Camera className="w-4 h-4 mr-2" />
                   Photos
                 </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => navigate('/admin/articles')}
+                  className="cursor-pointer hover:bg-secondary"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Article Management
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -241,6 +248,9 @@ const Navigation = () => {
             </Button>
             <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/photos'))} className="justify-start">
               Photos
+            </Button>
+            <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/admin/articles'))} className="justify-start">
+              Article Management
             </Button>
             <Button variant="outline" onClick={() => handleNavigation(() => scrollToSection('contact'))} className="justify-start mt-2">
               Contact

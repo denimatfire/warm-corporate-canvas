@@ -1,11 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Business Corporate Theme - Tailwind Design System */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 
 @layer base {
   :root {
@@ -157,6 +157,111 @@
     background: hsl(var(--card) / 0.8);
     backdrop-filter: blur(10px);
     border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  /* Line clamp utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .line-clamp-4 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+  }
+
+  /* Article content styles */
+  .prose {
+    @apply text-foreground;
+  }
+
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    @apply text-foreground font-semibold;
+  }
+
+  .prose h1 {
+    @apply text-3xl font-bold mb-6;
+  }
+
+  .prose h2 {
+    @apply text-2xl font-bold mb-4 mt-8;
+  }
+
+  .prose h3 {
+    @apply text-xl font-semibold mb-3 mt-6;
+  }
+
+  .prose p {
+    @apply mb-4 leading-relaxed;
+  }
+
+  .prose ul,
+  .prose ol {
+    @apply mb-4 pl-6;
+  }
+
+  .prose li {
+    @apply mb-2;
+  }
+
+  .prose blockquote {
+    @apply border-l-4 border-primary/30 pl-4 italic text-muted-foreground my-6;
+  }
+
+  .prose code {
+    @apply bg-muted px-2 py-1 rounded text-sm font-mono;
+  }
+
+  .prose pre {
+    @apply bg-muted p-4 rounded-lg overflow-x-auto my-6;
+  }
+
+  .prose a {
+    @apply text-primary hover:text-primary-hover underline;
+  }
+
+  .prose img {
+    @apply rounded-lg my-6 max-w-full h-auto;
+  }
+
+  /* React Quill custom styles */
+  .ql-editor {
+    @apply text-foreground;
+  }
+
+  .ql-toolbar {
+    @apply border-border bg-muted/50;
+  }
+
+  .ql-container {
+    @apply border-border;
+  }
+
+  .ql-editor.ql-blank::before {
+    @apply text-muted-foreground;
   }
 }
 

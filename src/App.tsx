@@ -8,6 +8,8 @@ import WritingPage from "./pages/Writing";
 import PhotosPage from "./pages/Photos";
 import Article from "./components/Article";
 import Article_medium from "./components/Article_medium";
+import ArticleManagement from "./pages/ArticleManagement";
+import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +26,9 @@ const App = () => (
           <Route path="/photos" element={<PhotosPage />} />
           <Route path="/article/:id" element={<Article />} />
           <Route path="/article-medium/:id" element={<Article_medium />} />
+          <Route path="/admin/articles" element={<ArticleManagement />} />
+          <Route path="/login" element={<LoginPage />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
