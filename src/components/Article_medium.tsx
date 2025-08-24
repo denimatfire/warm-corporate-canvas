@@ -73,29 +73,14 @@ const Article_medium = () => {
 
   // Find the current article based on ID
   useEffect(() => {
-    console.log('=== Article_medium Component Debug ===');
-    console.log('Component mounted with ID:', id);
-    console.log('ID type:', typeof id);
-    console.log('ID length:', id?.length);
-    console.log('Current articles in system:', (window as any).getArticles ? (window as any).getArticles().length : 'getArticles not available');
-    
     setIsLoading(true);
     
     if (id) {
-      console.log('Looking for article with ID:', id);
       const foundArticle = getArticleById(id);
-      console.log('Found article:', foundArticle);
       
       if (foundArticle) {
-        console.log('Article details:', {
-          title: foundArticle.title,
-          author: foundArticle.author,
-          status: foundArticle.status,
-          contentLength: foundArticle.content.length
-        });
         setArticle(foundArticle);
       } else {
-        console.log('Article not found!');
         setArticle(null);
       }
       setIsLoading(false);
@@ -105,7 +90,6 @@ const Article_medium = () => {
   // Redirect if article not found (only after loading is complete)
   useEffect(() => {
     if (!isLoading && article === null && id) {
-      console.log('Article not found after loading, redirecting to writing page');
       navigate('/writing');
     }
   }, [article, id, navigate, isLoading]);

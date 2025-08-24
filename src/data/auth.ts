@@ -8,6 +8,11 @@ export interface User {
   lastLogin?: string;
 }
 
+export interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
 // In-memory storage for users
 let users: User[] = [];
 let currentUser: User | null = null;
@@ -235,4 +240,10 @@ export const hasRole = (role: User['role']): boolean => {
 export const hasAnyRole = (roles: User['role'][]): boolean => {
   const user = getCurrentUser();
   return user ? roles.includes(user.role) : false;
+};
+
+// Check if user can access article management
+export const canAccessArticleManagement = (): boolean => {
+  const user = getCurrentUser();
+  return user?.role === 'admin' || user?.role === 'writer';
 };

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   User, 
   Lock, 
@@ -7,7 +8,8 @@ import {
   EyeOff, 
   LogIn, 
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  Home
 } from 'lucide-react';
 import { login, LoginCredentials } from '../data/auth';
 import { Button } from './ui/button';
@@ -30,6 +32,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onCancel }) => {
   const [errors, setErrors] = useState<string[]>([]);
   
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const validateForm = (): boolean => {
     const newErrors: string[] = [];
@@ -228,6 +231,19 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onCancel }) => {
               <div><strong>Password:</strong> admin123</div>
             </div>
           </motion.div>
+
+          {/* Go Back to Home Button */}
+          <div className="mt-6 text-center">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/')}
+              disabled={isLoading}
+              className="w-full flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <Home className="w-4 h-4" />
+              Go Back to Home
+            </Button>
+          </div>
 
           {/* Cancel Button */}
           {onCancel && (

@@ -288,17 +288,7 @@ export const getPublishedArticles = (): Article[] => {
 
 // Get article by ID
 export const getArticleById = (id: string): Article | undefined => {
-  console.log(`Looking for article with ID: ${id}`);
-  console.log('Available articles:', articles.map(a => ({ id: a.id, title: a.title })));
-  
   const article = articles.find(article => article.id === id);
-  
-  if (article) {
-    console.log(`Found article: ${article.title}`);
-  } else {
-    console.log(`Article with ID ${id} not found`);
-  }
-  
   return article;
 };
 
@@ -456,3 +446,10 @@ if (typeof window !== 'undefined') {
   (window as any).getArticleById = getArticleById;
   (window as any).testArticleSystem = testArticleSystem;
 }
+
+// Initialize articles when the module is loaded
+initializeArticles();
+
+// Debug: Log the current state after initialization
+console.log('Articles initialized. Total articles:', articles.length);
+console.log('Article titles:', articles.map(a => a.title));

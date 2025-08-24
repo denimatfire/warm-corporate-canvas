@@ -66,9 +66,6 @@ const Writing = () => {
 
   const handleReadMoreClick = (e: React.MouseEvent, article: Article) => {
     e.stopPropagation();
-    console.log('Read more clicked:', article.title);
-    console.log('Use Medium view:', useMediumView);
-    console.log('Navigating to article page...');
     
     // Navigate to the appropriate article view based on toggle state
     if (useMediumView) {

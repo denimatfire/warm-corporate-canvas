@@ -189,7 +189,7 @@ const Navigation = () => {
                   Photos
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => navigate('/admin/articles')}
+                  onClick={() => navigate('/login')}
                   className="cursor-pointer hover:bg-secondary"
                 >
                   <FileText className="w-4 h-4 mr-2" />
@@ -249,7 +249,7 @@ const Navigation = () => {
             <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/photos'))} className="justify-start">
               Photos
             </Button>
-            <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/admin/articles'))} className="justify-start">
+            <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/login'))} className="justify-start">
               Article Management
             </Button>
             <Button variant="outline" onClick={() => handleNavigation(() => scrollToSection('contact'))} className="justify-start mt-2">

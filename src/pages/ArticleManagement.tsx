@@ -33,8 +33,7 @@ import {
   canCreateArticles, 
   canDeleteArticles, 
   canPublishArticles,
-  canEditArticles,
-  logout 
+  canEditArticles
 } from '../data/auth';
 import { useToast } from '../hooks/use-toast';
 import { Article } from '../data/articles';
@@ -150,15 +149,7 @@ const ArticleManagement: React.FC = () => {
     setEditingArticle(null);
   };
 
-  const handleLogout = () => {
-    logout();
-    toast({
-      title: 'Logged Out',
-      description: 'You have been successfully logged out.',
-    });
-    // Redirect to login or home page
-    window.location.href = '/';
-  };
+
 
   const getUniqueTags = () => {
     const allTags = articles.flatMap(article => article.tags);
@@ -192,14 +183,7 @@ const ArticleManagement: React.FC = () => {
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Welcome back,</p>
                 <p className="font-medium">{currentUser?.username}</p>
-                <Badge variant={currentUser?.role === 'admin' ? 'default' : 'secondary'}>
-                  {currentUser?.role}
-                </Badge>
               </div>
-              
-              <Button variant="outline" onClick={handleLogout}>
-                Logout
-              </Button>
             </div>
           </div>
         </div>

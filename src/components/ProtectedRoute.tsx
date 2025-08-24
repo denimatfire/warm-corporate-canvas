@@ -15,7 +15,6 @@ import {
   logout 
 } from '../data/auth';
 import { Button } from './ui/button';
-import { Badge } from './ui/badge';
 import Login from './Login';
 
 interface ProtectedRouteProps {
@@ -40,11 +39,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   const checkAuth = () => {
     const authenticated = isAuthenticated();
-    const hasAccess = canAccessArticleManagement();
+    const currentUser = getCurrentUser();
+    
+    // Check if user has the required role
+    const hasRequiredRole = currentUser && (
+      requiredRole === 'admin' ? currentUser.role === 'admin' :
+      requiredRole === 'writer' ? ['admin', 'writer'].includes(currentUser.role) :
+      requiredRole === 'viewer' ? ['admin', 'writer', 'viewer'].includes(currentUser.role) :
+      true
+    );
+    
+    const hasAccess = authenticated && hasRequiredRole;
     
     setIsAuth(authenticated);
     setCanAccess(hasAccess);
-    setCurrentUser(getCurrentUser());
+    setCurrentUser(currentUser);
     
     if (!authenticated && showLogin) {
       setShowLoginForm(true);
@@ -62,19 +71,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     setShowLoginForm(true);
   };
 
-  const getRoleBadge = (role: string) => {
-    const roleColors = {
-      admin: 'bg-red-500 text-white',
-      writer: 'bg-blue-500 text-white',
-      viewer: 'bg-gray-500 text-white'
-    };
-    
-    return (
-      <Badge className={roleColors[role as keyof typeof roleColors] || 'bg-gray-500'}>
-        {role.charAt(0).toUpperCase() + role.slice(1)}
-      </Badge>
-    );
-  };
+
 
   // If user is authenticated and has access, show the protected content
   if (isAuth && canAccess) {
@@ -91,7 +88,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Shield className="w-5 h-5 text-primary" />
-                  <span className="text-sm font-medium text-muted-foreground">
+                  <span className="text-lg font-semibold text-foreground">
                     Article Management
                   </span>
                 </div>
@@ -101,12 +98,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
                     <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
                       <User className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground">
-                        {currentUser.username}
-                      </span>
-                      {getRoleBadge(currentUser.role)}
-                    </div>
+                    <span className="text-sm font-medium text-foreground">
+                      {currentUser.username}
+                    </span>
                   </div>
                 )}
               </div>

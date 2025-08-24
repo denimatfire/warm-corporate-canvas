@@ -71,12 +71,10 @@ const Article = () => {
 
   // Find the current article based on ID
   useEffect(() => {
-    console.log('Article component: Looking for article with ID:', id);
     setIsLoading(true);
     
     if (id) {
       const foundArticle = getArticleById(id);
-      console.log('Article component: Found article:', foundArticle);
       setArticle(foundArticle || null);
       setIsLoading(false);
     }
@@ -85,7 +83,6 @@ const Article = () => {
   // Redirect if article not found (only after loading is complete)
   useEffect(() => {
     if (!isLoading && article === null && id) {
-      console.log('Article not found after loading, redirecting to writing page');
       navigate('/writing');
     }
   }, [article, id, navigate, isLoading]);

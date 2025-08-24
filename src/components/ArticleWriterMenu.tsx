@@ -64,7 +64,12 @@ const ArticleWriterMenu: React.FC = () => {
       href: '/admin/articles',
       icon: FileText,
       highlight: true
-    }] : [])
+    }] : [{
+      label: 'Article Writer',
+      href: '/login',
+      icon: FileText,
+      highlight: true
+    }])
   ];
 
   return (
@@ -153,9 +158,18 @@ const ArticleWriterMenu: React.FC = () => {
                       </div>
 
                       <div className="p-2">
-                        {canAccess && (
+                        {canAccess ? (
                           <Link
                             to="/admin/articles"
+                            className="flex items-center gap-3 w-full px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+                            onClick={() => setShowUserMenu(false)}
+                          >
+                            <FileText className="w-4 h-4" />
+                            Article Management
+                          </Link>
+                        ) : (
+                          <Link
+                            to="/login"
                             className="flex items-center gap-3 w-full px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
                             onClick={() => setShowUserMenu(false)}
                           >

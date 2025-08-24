@@ -43,6 +43,7 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
   const [errors, setErrors] = useState<string[]>([]);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const quillRef = useRef<ReactQuill>(null);
   const { toast } = useToast();
   const currentUser = getCurrentUser();
   const canPublish = canPublishArticles();
@@ -404,6 +405,7 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
         <Label className="text-base font-medium">Content *</Label>
         <div className="border rounded-lg overflow-hidden">
           <ReactQuill
+            ref={quillRef}
             value={content}
             onChange={setContent}
             modules={quillModules}

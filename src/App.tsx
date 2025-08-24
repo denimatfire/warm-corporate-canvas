@@ -11,6 +11,7 @@ import Article_medium from "./components/Article_medium";
 import ArticleManagement from "./pages/ArticleManagement";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -19,14 +20,23 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/writing" element={<WritingPage />} />
           <Route path="/photos" element={<PhotosPage />} />
           <Route path="/article/:id" element={<Article />} />
           <Route path="/article-medium/:id" element={<Article_medium />} />
-          <Route path="/admin/articles" element={<ArticleManagement />} />
+          <Route path="/admin/articles" element={
+            <ProtectedRoute requiredRole="admin" showLogin={true}>
+              <ArticleManagement />
+            </ProtectedRoute>
+          } />
           <Route path="/login" element={<LoginPage />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

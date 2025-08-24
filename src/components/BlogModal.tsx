@@ -41,8 +41,7 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Debug logging
-  console.log('BlogModal render:', { isOpen, article: article?.title, photos: article?.photos });
+  // Component rendered
 
   // Handle escape key to close modal
   useEffect(() => {
@@ -58,10 +57,7 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
     }
   }, [isOpen, onClose]);
 
-  // Debug: Show modal state
-  if (isOpen) {
-    console.log('Modal should be open with article:', article?.title);
-  }
+  // Modal state handled
 
   const handleShare = () => {
     if (navigator.share) {
