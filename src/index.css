@@ -98,6 +98,31 @@
 }
 
 @layer components {
+  /* QuillEditor custom styles */
+  .quill-wrapper .ql-editor {
+    min-height: 400px;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  .quill-wrapper .ql-container {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  .quill-wrapper .ql-toolbar {
+    border-top: 1px solid hsl(var(--border));
+    border-left: 1px solid hsl(var(--border));
+    border-right: 1px solid hsl(var(--border));
+    border-bottom: none;
+    border-radius: 0.5rem 0.5rem 0 0;
+  }
+  
+  .quill-wrapper .ql-container {
+    border: 1px solid hsl(var(--border));
+    border-top: none;
+    border-radius: 0 0 0.5rem 0.5rem;
+  }
   /* Animation utilities */
   .animate-fade-in {
     animation: fadeIn 0.8s ease-out forwards;

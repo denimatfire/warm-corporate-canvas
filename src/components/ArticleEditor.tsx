@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Save, 
@@ -27,6 +27,22 @@ interface ArticleEditorProps {
   onSave?: (article: Article) => void;
   onCancel?: () => void;
 }
+
+// Wrapper component to minimize findDOMNode warnings
+const QuillEditor = forwardRef<ReactQuill, any>((props, ref) => {
+  return (
+    <div className="quill-wrapper relative">
+      <ReactQuill
+        ref={ref}
+        {...props}
+        preserveWhitespace={true}
+        bounds=".quill-wrapper"
+      />
+    </div>
+  );
+});
+
+QuillEditor.displayName = 'QuillEditor';
 
 const ArticleEditor: React.FC<ArticleEditorProps> = ({ 
   article, 
@@ -404,7 +420,7 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
       <div className="space-y-2">
         <Label className="text-base font-medium">Content *</Label>
         <div className="border rounded-lg overflow-hidden">
-          <ReactQuill
+          <QuillEditor
             ref={quillRef}
             value={content}
             onChange={setContent}
