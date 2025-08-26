@@ -30,6 +30,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { articlesApi, Article as ArticleType } from "@/lib/articles-api";
 import jsPDF from "jspdf";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { formatArticleContent } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -502,7 +503,7 @@ const Article = () => {
             ${isMobile ? 
               'prose-h2:text-2xl prose-h2:font-bold prose-h2:mb-4 prose-h2:mt-8 prose-h3:text-xl prose-h3:font-semibold prose-h3:mb-3 prose-h3:mt-6 prose-p:text-base prose-p:leading-relaxed prose-p:mb-4 prose-ul:mb-4 prose-li:mb-2' : 
               'prose-h2:text-3xl prose-h2:font-bold prose-h2:mb-6 prose-h2:mt-12 prose-h3:text-2xl prose-h3:font-semibold prose-h3:mb-4 prose-h3:mt-8 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-6 prose-ul:mb-6 prose-li:mb-2'}`}
-          dangerouslySetInnerHTML={{ __html: article.content }}
+                          dangerouslySetInnerHTML={{ __html: formatArticleContent(article.content) }}
         />
 
         {/* Article Actions */}

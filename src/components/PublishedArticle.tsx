@@ -24,6 +24,7 @@ import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { useToast } from '../hooks/use-toast';
 import jsPDF from 'jspdf';
+import { formatArticleContent } from '../lib/utils';
 
 interface PublishedArticleProps {
   article: Article;
@@ -370,7 +371,7 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         className="prose prose-lg max-w-none pb-12"
-        dangerouslySetInnerHTML={{ __html: article.content }}
+                        dangerouslySetInnerHTML={{ __html: formatArticleContent(article.content) }}
       />
 
       {/* Comments Section */}

@@ -12,6 +12,7 @@ import { BlogPost } from "@/data/blogs";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import PhotoViewer from "./PhotoViewer";
+import { formatArticleContent } from "@/lib/utils";
 
 interface Comment {
   id: string;
@@ -279,7 +280,7 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
                     {/* Content with inline photos */}
                     <div className="text-muted-foreground leading-relaxed space-y-6">
                       {(() => {
-                        const paragraphs = article.content.split('\n\n').filter(p => p.trim());
+                        const paragraphs = formatArticleContent(article.content).split('</p>').filter(p => p.trim());
                         const photos = article.photos || [];
                         let photoIndex = 0;
                         

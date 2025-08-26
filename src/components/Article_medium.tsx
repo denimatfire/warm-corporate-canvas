@@ -31,6 +31,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { articlesApi, Article as ArticleType } from "@/lib/articles-api";
 import jsPDF from "jspdf";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { formatArticleContent } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -502,7 +503,7 @@ const Article_medium = () => {
             prose-p:text-lg prose-p:leading-relaxed prose-p:mb-8 prose-p:font-light prose-ul:mb-8 prose-li:mb-3
             prose-strong:font-semibold prose-strong:text-gray-900 prose-em:text-gray-700 prose-blockquote:border-l-4 
             prose-blockquote:border-gray-300 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600"
-            dangerouslySetInnerHTML={{ __html: article.content }}
+                            dangerouslySetInnerHTML={{ __html: formatArticleContent(article.content) }}
           />
         </motion.div>
 
