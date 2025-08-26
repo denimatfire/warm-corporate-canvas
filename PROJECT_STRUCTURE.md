@@ -1,7 +1,7 @@
 # 🏗️ Warm Corporate Canvas - Project Structure & Architecture
 
 ## 📋 **Project Overview**
-A modern, responsive portfolio website built with React, TypeScript, and Tailwind CSS, featuring article management, photo galleries, and professional presentation capabilities.
+A modern, responsive portfolio website built with React, TypeScript, and Tailwind CSS, featuring article management, photo galleries, and professional presentation capabilities. Now powered by Supabase for robust backend functionality with automatic fallback support.
 
 ---
 
@@ -18,10 +18,13 @@ warm-corporate-canvas/
 ├── 🚀 SETUP_GUIDE.md            # Development setup instructions
 ├── 🔄 BACKEND_COMPARISON.md     # Backend approach analysis
 ├── 📊 ARTICLE_MANAGEMENT_README.md  # Article system documentation
+├── 🔐 SUPABASE_SETUP.md         # Supabase backend setup guide
+├── 📚 ARTICLES_BACKEND_README.md    # Articles backend system docs
 ├── ⚙️ eslint.config.js          # Code linting rules
 ├── 🎯 postcss.config.js         # PostCSS configuration
 ├── 📦 bun.lockb                 # Bun package lock
 ├── 📦 package-lock.json         # NPM package lock
+├── 🎨 components.json           # Shadcn/UI configuration
 └── 🗂️ dist/                     # Production build output
 ```
 
@@ -136,7 +139,7 @@ components/
 │   ├── View toggle (regular/medium)
 │   ├── Article filtering by tags
 │   ├── Photo viewer integration
-│   └── Google Apps Script API
+│   └── Supabase API integration
 │
 ├── 📄 Article.tsx                # Full article view
 │   ├── Reading progress tracking
@@ -148,10 +151,13 @@ components/
 │   └── Mobile-responsive design
 │
 ├── 📄 Article_medium.tsx         # Compact article view
+├── 📄 PublishedArticle.tsx       # Published article display
 ├── ✏️ ArticleEditor.tsx          # Rich text editor
 ├── 📋 ArticleList.tsx            # Article listing with filters
+├── 📋 ArticleListExample.tsx     # Example article list implementation
 ├── 📝 ArticleWriterMenu.tsx      # Writing tools menu
-└── 📚 BlogModal.tsx              # Blog post modal
+├── 📚 BlogModal.tsx              # Blog post modal
+└── 🔧 GoogleSheetsTest.tsx       # Google Sheets integration test
 ```
 
 #### **📸 Photo Gallery**
@@ -186,6 +192,16 @@ components/
 └── 🔐 ProtectedRoute.tsx         # Role-based access control
 ```
 
+#### **🔐 Authentication**
+```
+components/
+├── 🔐 Login.tsx                  # User authentication component
+│   ├── Supabase authentication
+│   ├── Form validation
+│   ├── Error handling
+│   └── Responsive design
+```
+
 ### **📄 Pages (`src/pages/`)**
 ```
 pages/
@@ -197,7 +213,8 @@ pages/
 │   ├── CRUD operations
 │   ├── Search and filtering
 │   ├── Statistics dashboard
-│   └── Role-based access control
+│   ├── Role-based access control
+│   └── Supabase integration
 ├── 🔐 LoginPage.tsx              # Authentication page
 ├── ❌ NotFound.tsx               # 404 error page
 ├── 🧪 ArticleTest.tsx            # Article testing page
@@ -208,7 +225,7 @@ pages/
 
 #### **📚 Articles API (`src/lib/articles-api.ts`)**
 ```typescript
-// Core API functions:
+// Core API functions with Supabase integration:
 export const articlesApi = {
   getAll(): Promise<Article[]>           // Fetch all articles
   getPublished(): Promise<Article[]>     // Fetch published articles
@@ -217,6 +234,15 @@ export const articlesApi = {
   update(id: string, data: UpdateArticleData): Promise<Article>  // Update article
   delete(id: string): Promise<boolean>  // Delete article
   search(query: string): Promise<Article[]>  // Search articles
+  getByTag(tag: string): Promise<Article[]>  // Get articles by tag
+  getStats(): Promise<ArticleStats>      // Get article statistics
+  subscribeToChanges(callback): void     // Real-time updates
+}
+
+// Enhanced fallback API with localStorage support:
+export const articlesApiWithFallback = {
+  // All CRUD operations with automatic fallback
+  // Graceful degradation when Supabase is unavailable
 }
 
 // Data interfaces:
@@ -234,11 +260,18 @@ interface Article {
   created_at: string
   updated_at: string
 }
+
+interface ArticleStats {
+  total: number
+  published: number
+  drafts: number
+  totalTags: number
+}
 ```
 
 #### **📊 Articles Hook (`src/hooks/use-articles.ts`)**
 ```typescript
-// State management hooks:
+// Enhanced state management hooks:
 export function useArticles() {
   // Returns:
   articles, publishedArticles           // Data arrays
@@ -310,15 +343,17 @@ data/
 
 ### **📝 Content Management**
 - Full CRUD operations for articles
-- Rich text editing
+- Rich text editing with React Quill
 - Image management
 - Publishing workflow
+- Supabase backend with automatic fallback
 
 ### **🔐 Security & Access Control**
 - Role-based permissions
 - Protected admin routes
-- User authentication
+- Supabase authentication
 - Secure API endpoints
+- Row Level Security (RLS)
 
 ### **📧 Communication Integration**
 - EmailJS for contact forms
@@ -331,6 +366,12 @@ data/
 - User engagement metrics
 - Performance monitoring
 - SEO optimization
+
+### **🔄 Real-time Updates**
+- Supabase real-time subscriptions
+- Live article updates
+- Instant data synchronization
+- Offline support with localStorage fallback
 
 ---
 
@@ -353,14 +394,16 @@ data/
 - **Context API** - Global state sharing
 
 ### **Backend & APIs**
-- **Supabase** - Backend-as-a-Service
-- **Google Apps Script** - Custom API endpoints
+- **Supabase** - Backend-as-a-Service (Primary)
+- **Google Apps Script** - Legacy API endpoints
 - **EmailJS** - Email service integration
+- **LocalStorage** - Offline fallback support
 
 ### **Development Tools**
 - **ESLint** - Code linting
 - **PostCSS** - CSS processing
 - **Autoprefixer** - CSS compatibility
+- **TypeScript ESLint** - TypeScript-specific linting
 
 ---
 
@@ -396,6 +439,9 @@ npm run dev
 # Build for production
 npm run build
 
+# Build for development
+npm run build:dev
+
 # Lint code
 npm run lint
 
@@ -406,9 +452,20 @@ npm run preview
 ### **🌐 Environment Configuration**
 ```
 env.example:
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_key
+VITE_SUPABASE_URL=your_supabase_project_url_here
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+
+# Example:
+# VITE_SUPABASE_URL=https://your-project-id.supabase.co
+# VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
+
+### **🔐 Supabase Setup**
+1. Create Supabase project at [supabase.com](https://supabase.com)
+2. Set up database schema (see `SUPABASE_SETUP.md`)
+3. Configure environment variables
+4. Enable Row Level Security (RLS)
+5. Test CRUD operations
 
 ---
 
@@ -417,11 +474,12 @@ VITE_SUPABASE_ANON_KEY=your_supabase_key
 - **Total Components**: 50+ React components
 - **UI Components**: 40+ Shadcn/UI components
 - **Custom Hooks**: 5+ specialized hooks
-- **API Endpoints**: 10+ backend functions
+- **API Endpoints**: 15+ backend functions
 - **Pages**: 8 main application pages
 - **File Types**: TypeScript, CSS, Markdown, JSON
-- **Dependencies**: 60+ npm packages
+- **Dependencies**: 70+ npm packages
 - **Build Size**: Optimized for production
+- **Backend**: Supabase + LocalStorage fallback
 
 ---
 
@@ -440,10 +498,48 @@ VITE_SUPABASE_ANON_KEY=your_supabase_key
 
 ### **Data Flow**
 - **Unidirectional** - Data flows down, events flow up
-- **API Integration** - Centralized API service layer
+- **API Integration** - Centralized API service layer with fallback
 - **Error Handling** - Comprehensive error boundaries
 - **Loading States** - Consistent loading indicators
+- **Offline Support** - Automatic fallback to localStorage
+
+### **Backend Architecture**
+- **Primary**: Supabase (PostgreSQL + Real-time)
+- **Fallback**: LocalStorage for offline support
+- **Legacy**: Google Apps Script integration
+- **Security**: Row Level Security (RLS) policies
 
 ---
 
-*This document serves as the comprehensive reference for the Warm Corporate Canvas project structure, architecture, and implementation details.*
+## 📚 **Documentation Files**
+
+### **Core Documentation**
+- **README.md** - Project overview and quick start
+- **SETUP_GUIDE.md** - Development environment setup
+- **PROJECT_STRUCTURE.md** - This comprehensive structure guide
+
+### **Backend Documentation**
+- **SUPABASE_SETUP.md** - Complete Supabase setup guide
+- **ARTICLES_BACKEND_README.md** - Articles system documentation
+- **BACKEND_COMPARISON.md** - Backend approach analysis
+- **ARTICLE_MANAGEMENT_README.md** - Article management system
+
+---
+
+## 🔄 **Migration & Updates**
+
+### **Recent Major Changes**
+1. **Supabase Integration** - Replaced Google Sheets as primary backend
+2. **Enhanced API Layer** - Added fallback support and real-time updates
+3. **Updated Dependencies** - Latest React, TypeScript, and UI libraries
+4. **Improved Error Handling** - Better offline support and user experience
+5. **Security Enhancements** - Row Level Security and authentication
+
+### **Backward Compatibility**
+- Google Sheets integration maintained for legacy support
+- LocalStorage fallback ensures offline functionality
+- Gradual migration path for existing data
+
+---
+
+*This document serves as the comprehensive reference for the Warm Corporate Canvas project structure, architecture, and implementation details. Last updated to reflect Supabase integration and latest project enhancements.*

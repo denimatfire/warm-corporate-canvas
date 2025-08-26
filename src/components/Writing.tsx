@@ -18,12 +18,14 @@ const Writing = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Load articles from Google Apps Script API
+  // Load only published articles
   useEffect(() => {
     const fetchArticles = async () => {
       try {
         const publishedArticles = await articlesApi.getPublished();
-        setArticles(publishedArticles);
+        // Filter to ensure only published articles are shown
+        const filtered = publishedArticles.filter(article => article.status === 'published');
+        setArticles(filtered);
       } catch (error) {
         console.error('Error fetching articles:', error);
         setArticles([]);

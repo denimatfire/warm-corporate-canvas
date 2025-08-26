@@ -169,6 +169,42 @@ const ArticleManagement: React.FC = () => {
     setEditingArticle(null);
   };
 
+  const handleTogglePublish = async (article: Article) => {
+    if (!canPublishArticles()) {
+      toast({
+        title: 'Permission Denied',
+        description: 'You do not have permission to publish/unpublish articles.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const newStatus = article.status === 'published' ? 'draft' : 'published';
+      const updates: any = { 
+        status: newStatus,
+        ...(newStatus === 'published' && { published_at: new Date().toISOString() })
+      };
+
+      await articlesApi.update(article.id, updates);
+      
+      toast({
+        title: `Article ${newStatus === 'published' ? 'Published' : 'Unpublished'}`,
+        description: `"${article.title}" has been ${newStatus === 'published' ? 'published' : 'unpublished'}.`,
+      });
+      
+      loadArticles();
+      loadStats();
+    } catch (error) {
+      console.error('Error toggling publish status:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update article status. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
 
 
   const getUniqueTags = () => {
@@ -376,6 +412,27 @@ const ArticleManagement: React.FC = () => {
                       >
                         <Edit className="h-4 w-4" />
                         Edit
+                      </Button>
+                    )}
+                    
+                    {canPublishArticles() && (
+                      <Button
+                        variant={article.status === 'published' ? 'destructive' : 'default'}
+                        size="sm"
+                        onClick={() => handleTogglePublish(article)}
+                        className="flex items-center gap-1"
+                      >
+                        {article.status === 'published' ? (
+                          <>
+                            <Eye className="h-4 w-4" />
+                            Unpublish
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="h-4 w-4" />
+                            Publish
+                          </>
+                        )}
                       </Button>
                     )}
                     

@@ -13,6 +13,102 @@ import {
 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+
+// Enhanced CSS for Word content display
+const quillStyles = `
+  .quill-wrapper .ql-editor {
+    min-height: 400px;
+    font-size: 16px;
+    line-height: 1.6;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  /* List styling */
+  .quill-wrapper .ql-editor ul,
+  .quill-wrapper .ql-editor ol {
+    padding-left: 20px;
+    margin: 10px 0;
+  }
+  
+  .quill-wrapper .ql-editor li {
+    margin: 5px 0;
+    line-height: 1.6;
+  }
+  
+  .quill-wrapper .ql-editor ul li {
+    list-style-type: disc;
+  }
+  
+  .quill-wrapper .ql-editor ol li {
+    list-style-type: decimal;
+  }
+  
+  /* Heading styles */
+  .quill-wrapper .ql-editor h1,
+  .quill-wrapper .ql-editor h2,
+  .quill-wrapper .ql-editor h3 {
+    margin: 20px 0 10px 0;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  
+  .quill-wrapper .ql-editor h1 {
+    font-size: 24px;
+  }
+  
+  .quill-wrapper .ql-editor h2 {
+    font-size: 20px;
+  }
+  
+  .quill-wrapper .ql-editor h3 {
+    font-size: 18px;
+  }
+  
+  /* Paragraph spacing */
+  .quill-wrapper .ql-editor p {
+    margin: 10px 0;
+    line-height: 1.6;
+  }
+  
+  /* Blockquote styling */
+  .quill-wrapper .ql-editor blockquote {
+    border-left: 4px solid #ddd;
+    margin: 20px 0;
+    padding: 10px 20px;
+    background-color: #f9f9f9;
+    font-style: italic;
+  }
+  
+  /* Code block styling */
+  .quill-wrapper .ql-editor pre {
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 15px 0;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+  }
+  
+  /* Toolbar styling */
+  .quill-wrapper .ql-toolbar {
+    border-top: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    background-color: #f8f9fa;
+  }
+  
+  .quill-wrapper .ql-container {
+    border-bottom: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+  }
+  
+  /* Word content cleanup */
+  .quill-wrapper .ql-editor .word-content {
+    font-family: inherit;
+  }
+`;
 import { Article, calculateReadTime, generateExcerpt } from '../data/articles';
 import { articlesApi } from '../lib/articles-api';
 import { canPublishArticles, getCurrentUser } from '../data/auth';
@@ -38,6 +134,9 @@ const QuillEditor = forwardRef<ReactQuill, any>((props, ref) => {
         {...props}
         preserveWhitespace={true}
         bounds=".quill-wrapper"
+        theme="snow"
+        placeholder="Start writing your article..."
+        style={{ minHeight: '400px' }}
       />
     </div>
   );
@@ -52,6 +151,80 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
 }) => {
   const [title, setTitle] = useState(article?.title || '');
   const [content, setContent] = useState(article?.content || '');
+
+  // Enhanced content change handler with Word content processing
+  const handleContentChange = (newContent: string) => {
+    console.log('Content changed:', newContent);
+    console.log('Content length:', newContent.length);
+    console.log('Contains list elements:', newContent.includes('<ul>') || newContent.includes('<ol>'));
+    
+    // Process Word-specific content
+    let processedContent = newContent;
+    
+    // Clean up Word-specific HTML
+    processedContent = processedContent
+      // Remove Word-specific classes and styles
+      .replace(/class="[^"]*"/g, '')
+      .replace(/style="[^"]*"/g, '')
+      // Clean up Word list formatting
+      .replace(/<p[^>]*>\s*<span[^>]*>\s*•\s*<\/span>/g, '<li>')
+      .replace(/<p[^>]*>\s*<span[^>]*>\s*\d+\.\s*<\/span>/g, '<li>')
+      // Fix Word list structure
+      .replace(/<p[^>]*>\s*<li>/g, '<li>')
+      .replace(/<\/li>\s*<\/p>/g, '</li>')
+      // Clean up empty paragraphs
+      .replace(/<p[^>]*>\s*<\/p>/g, '')
+      // Fix Word heading styles
+      .replace(/<p[^>]*>\s*<span[^>]*>\s*<strong[^>]*>/g, '<h2>')
+      .replace(/<\/strong>\s*<\/span>\s*<\/p>/g, '</h2>');
+    
+    console.log('Processed content:', processedContent);
+    setContent(processedContent);
+  };
+
+  // Handle paste events for Word content
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const clipboardData = e.clipboardData;
+    if (clipboardData) {
+      const html = clipboardData.getData('text/html');
+      const text = clipboardData.getData('text/plain');
+      
+      console.log('Pasted HTML:', html);
+      console.log('Pasted text:', text);
+      
+      if (html && html.includes('mso-')) {
+        // This is Word content, process it
+        e.preventDefault();
+        
+        // Clean Word HTML
+        let cleanHtml = html
+          .replace(/<!--[\s\S]*?-->/g, '') // Remove comments
+          .replace(/<o:p[^>]*>.*?<\/o:p>/g, '') // Remove Office-specific tags
+          .replace(/<mso-[^>]*>/g, '') // Remove MSO styles
+          .replace(/<w:[^>]*>/g, '') // Remove Word-specific tags
+          .replace(/class="[^"]*"/g, '') // Remove classes
+          .replace(/style="[^"]*"/g, '') // Remove inline styles
+          .replace(/<p[^>]*>\s*<span[^>]*>\s*•\s*<\/span>/g, '<li>') // Fix bullets
+          .replace(/<p[^>]*>\s*<span[^>]*>\s*\d+\.\s*<\/span>/g, '<li>') // Fix numbers
+          .replace(/<p[^>]*>\s*<li>/g, '<li>') // Fix list structure
+          .replace(/<\/li>\s*<\/p>/g, '</li>')
+          .replace(/<p[^>]*>\s*<\/p>/g, '') // Remove empty paragraphs
+          .replace(/<p[^>]*>\s*<strong[^>]*>/g, '<h2>') // Fix headings
+          .replace(/<\/strong>\s*<\/p>/g, '</h2>');
+        
+        console.log('Cleaned Word HTML:', cleanHtml);
+        
+        // Insert the cleaned content
+        if (quillRef.current) {
+          const quill = quillRef.current.getEditor();
+          const range = quill.getSelection();
+          if (range) {
+            quill.clipboard.dangerouslyPasteHTML(range.index, cleanHtml);
+          }
+        }
+      }
+    }
+  };
   const [coverImage, setCoverImage] = useState(article?.cover_image || '');
   const [tags, setTags] = useState<string[]>(article?.tags || []);
   const [tagInput, setTagInput] = useState('');
@@ -200,6 +373,20 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
     setTimeout(() => handleSave(), 100);
   };
 
+  const handleUnpublish = () => {
+    if (!canPublish) {
+      toast({
+        title: 'Permission Denied',
+        description: 'Only administrators can unpublish articles.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setStatus('draft');
+    setTimeout(() => handleSave(), 100);
+  };
+
   const quillModules = {
     toolbar: [
       [{ 'header': [1, 2, 3, false] }],
@@ -210,20 +397,58 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
       ['link', 'image', 'blockquote', 'code-block'],
       ['clean']
     ],
+    clipboard: {
+      matchVisual: false,
+      // Enhanced Word paste handling
+      matchers: [
+        ['p', (node: any, delta: any) => {
+          // Handle Word paragraph formatting
+          if (node.style && node.style.textAlign) {
+            delta.attributes = { ...delta.attributes, align: node.style.textAlign };
+          }
+          return delta;
+        }],
+        ['li', (node: any, delta: any) => {
+          // Handle Word list items
+          if (node.parentNode && node.parentNode.tagName === 'OL') {
+            delta.attributes = { ...delta.attributes, list: 'ordered' };
+          } else if (node.parentNode && node.parentNode.tagName === 'UL') {
+            delta.attributes = { ...delta.attributes, list: 'bullet' };
+          }
+          return delta;
+        }]
+      ]
+    },
+    list: {
+      keepWhitespace: true,
+    },
+    keyboard: {
+      bindings: {
+        list: {
+          key: 'enter',
+          handler: function() {
+            return true;
+          }
+        }
+      }
+    }
   };
 
   const quillFormats = [
     'header', 'bold', 'italic', 'underline', 'strike',
     'list', 'bullet', 'color', 'background', 'align',
-    'link', 'image', 'blockquote', 'code-block'
+    'link', 'image', 'blockquote', 'code-block',
+    'indent', 'direction', 'size', 'script'
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-4xl mx-auto p-6 space-y-6"
-    >
+    <>
+      <style>{quillStyles}</style>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-4xl mx-auto p-6 space-y-6"
+      >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -256,14 +481,27 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
           </Button>
           
           <Button
-            onClick={handlePublish}
-            disabled={isSaving || status === 'published' || !canPublish}
-            className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary-hover hover:from-primary-hover hover:to-primary"
+            onClick={status === 'published' ? handleUnpublish : handlePublish}
+            disabled={isSaving || !canPublish}
+            className={`flex items-center gap-2 ${
+              status === 'published' 
+                ? 'bg-destructive hover:bg-destructive/90' 
+                : 'bg-gradient-to-r from-primary to-primary-hover hover:from-primary-hover hover:to-primary'
+            }`}
           >
             {canPublish ? (
               <>
-                <Eye className="w-4 h-4" />
-                Publish
+                {status === 'published' ? (
+                  <>
+                    <Shield className="w-4 h-4" />
+                    Unpublish
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-4 h-4" />
+                    Publish
+                  </>
+                )}
               </>
             ) : (
               <>
@@ -424,13 +662,47 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
           <QuillEditor
             ref={quillRef}
             value={content}
-            onChange={setContent}
+            onChange={handleContentChange}
             modules={quillModules}
             formats={quillFormats}
-            placeholder="Start writing your article..."
-            className="min-h-[400px]"
-            theme="snow"
+            onPaste={handlePaste}
           />
+          {/* Enhanced debug info for Word content */}
+          <div className="p-2 bg-gray-100 text-xs text-gray-600 border-t">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <strong>Content Analysis:</strong><br/>
+                Length: {content.length} | 
+                Lists: {(content.includes('<ul>') || content.includes('<ol>')).toString()}<br/>
+                Headings: {(content.includes('<h1>') || content.includes('<h2>') || content.includes('<h3>')).toString()}<br/>
+                Word Content: {content.includes('mso-') || content.includes('o:p') ? 'Yes' : 'No'}
+              </div>
+              <div>
+                <strong>Test Tools:</strong><br/>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const testContent = content + '<ul><li>Test bullet point</li></ul>';
+                    handleContentChange(testContent);
+                  }}
+                  className="mr-2"
+                >
+                  Test List
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const testContent = content + '<h2>Test Heading</h2><p>Test paragraph</p>';
+                    handleContentChange(testContent);
+                  }}
+                >
+                  Test Heading
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -456,14 +728,27 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
         </Button>
         
         <Button
-          onClick={handlePublish}
-          disabled={isSaving || status === 'published' || !canPublish}
-          className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary-hover hover:from-primary-hover hover:to-primary"
+          onClick={status === 'published' ? handleUnpublish : handlePublish}
+          disabled={isSaving || !canPublish}
+          className={`flex items-center gap-2 ${
+            status === 'published' 
+              ? 'bg-destructive hover:bg-destructive/90' 
+              : 'bg-gradient-to-r from-primary to-primary-hover hover:from-primary-hover hover:to-primary'
+          }`}
         >
           {canPublish ? (
             <>
-              <Eye className="w-4 h-4" />
-              Publish Article
+              {status === 'published' ? (
+                <>
+                  <Shield className="w-4 h-4" />
+                  Unpublish Article
+                </>
+              ) : (
+                <>
+                  <Eye className="w-4 h-4" />
+                  Publish Article
+                </>
+              )}
             </>
           ) : (
             <>
@@ -473,7 +758,8 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
           )}
         </Button>
       </div>
-    </motion.div>
+      </motion.div>
+    </>
   );
 };
 

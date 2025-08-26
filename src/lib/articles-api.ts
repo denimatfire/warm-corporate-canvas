@@ -35,6 +35,7 @@ export interface UpdateArticleData {
   status?: 'draft' | 'published';
   author?: string;
   read_time?: number;
+  published_at?: string | null;
 }
 
 // Supabase client configuration
@@ -123,12 +124,21 @@ export const articlesApi = {
   // Update existing article
   async update(id: string, updates: UpdateArticleData): Promise<Article> {
     try {
+      const updateData: any = {
+        ...updates,
+        updated_at: new Date().toISOString()
+      };
+
+      // Handle published_at field properly
+      if (updates.status === 'published' && !updates.published_at) {
+        updateData.published_at = new Date().toISOString();
+      } else if (updates.status === 'draft') {
+        updateData.published_at = null;
+      }
+
       const { data, error } = await supabase
         .from('articles')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -336,10 +346,21 @@ function updateArticleInLocalStorage(id: string, updates: UpdateArticleData): Ar
   const index = articles.findIndex(article => article.id === id);
   if (index === -1) return null;
   
-  articles[index] = {
-    ...articles[index],
+  const updateData: any = {
     ...updates,
     updated_at: new Date().toISOString(),
+  };
+
+  // Handle published_at field properly
+  if (updates.status === 'published' && !updates.published_at) {
+    updateData.published_at = new Date().toISOString();
+  } else if (updates.status === 'draft') {
+    updateData.published_at = null;
+  }
+  
+  articles[index] = {
+    ...articles[index],
+    ...updateData,
   };
   
   localStorage.setItem('articles', JSON.stringify(articles));
