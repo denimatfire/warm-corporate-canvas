@@ -188,7 +188,7 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
                         <span className="truncate">{article.date}</span>
                         <span>•</span>
                         <BookOpen className="w-4 h-4 flex-shrink-0" />
-                        <span>{article.readTime}</span>
+                        <span>{article.read_time}</span>
                       </div>
                     </div>
                   </div>

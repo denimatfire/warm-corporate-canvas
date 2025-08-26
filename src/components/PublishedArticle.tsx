@@ -166,7 +166,7 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
       // Add metadata
       doc.setFontSize(12);
       doc.setTextColor(100, 100, 100);
-      doc.text(`By ${article.author} | ${new Date(article.publishedAt || article.updatedAt).toLocaleDateString()}`, 20, 45);
+              doc.text(`By ${article.author} | ${new Date(article.published_at || article.updated_at).toLocaleDateString()}`, 20, 45);
       
       if (article.tags.length > 0) {
         doc.text(`Tags: ${article.tags.join(', ')}`, 20, 55);
@@ -219,10 +219,10 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
         animate={{ opacity: 1, y: 0 }}
         className="pt-20 pb-8 space-y-6"
       >
-        {article.coverImage && (
+        {article.cover_image && (
           <div className="relative w-full h-64 md:h-96 rounded-xl overflow-hidden">
             <img
-              src={article.coverImage}
+              src={article.cover_image}
               alt={article.title}
               className="w-full h-full object-cover"
             />
@@ -249,13 +249,13 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
             
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              {formatDate(article.publishedAt || article.updatedAt)}
+                              {formatDate(article.published_at || article.updated_at)}
             </div>
             
-            {article.readTime && (
+            {article.read_time && (
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                {article.readTime} min read
+                {article.read_time} min read
               </div>
             )}
           </div>

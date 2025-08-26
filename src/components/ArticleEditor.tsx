@@ -14,7 +14,7 @@ import {
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Article, calculateReadTime, generateExcerpt } from '../data/articles';
-import { ArticlesApiService } from '../lib/articles-api-apps-script';
+import { articlesApi } from '../lib/articles-api';
 import { canPublishArticles, getCurrentUser } from '../data/auth';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -52,7 +52,7 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
 }) => {
   const [title, setTitle] = useState(article?.title || '');
   const [content, setContent] = useState(article?.content || '');
-  const [coverImage, setCoverImage] = useState(article?.coverImage || '');
+  const [coverImage, setCoverImage] = useState(article?.cover_image || '');
   const [tags, setTags] = useState<string[]>(article?.tags || []);
   const [tagInput, setTagInput] = useState('');
   const [status, setStatus] = useState<'draft' | 'published'>(article?.status || 'draft');
@@ -80,21 +80,21 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
 
   const handleAutoSave = () => {
     if (title || content) {
-      const draftArticle = {
-        title: title || 'Untitled Draft',
-        content: content || '',
-        coverImage,
-        tags,
-        status: 'draft' as const,
-        author: currentUser?.username || 'Unknown User',
-        excerpt: content ? generateExcerpt(content) : '',
-        readTime: content ? calculateReadTime(content) : 0,
-      };
+             const draftArticle = {
+         title: title || 'Untitled Draft',
+         content: content || '',
+         cover_image: coverImage,
+         tags,
+         status: 'draft' as const,
+         author: currentUser?.username || 'Unknown User',
+         excerpt: content ? generateExcerpt(content) : '',
+         read_time: content ? calculateReadTime(content) : 0,
+       };
 
       if (isEditing) {
-        ArticlesApiService.updateArticle(article!.id, draftArticle);
+        articlesApi.update(article!.id, draftArticle);
       } else {
-        ArticlesApiService.createArticle(draftArticle);
+        articlesApi.create(draftArticle);
       }
     }
   };
@@ -146,27 +146,25 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
     setIsSaving(true);
     
     try {
-      const articleData = {
-        title: title.trim(),
-        content: content.trim(),
-        coverImage,
-        tags,
-        status,
-        author: currentUser?.username || 'Unknown User',
-        excerpt: generateExcerpt(content),
-        readTime: calculateReadTime(content),
-        ...(status === 'published' && { publishedAt: new Date().toISOString() }),
-      };
+             const articleData = {
+         title: title.trim(),
+         content: content.trim(),
+         cover_image: coverImage,
+         tags,
+         status,
+         author: currentUser?.username || 'Unknown User',
+         excerpt: generateExcerpt(content),
+         read_time: calculateReadTime(content),
+         ...(status === 'published' && { published_at: new Date().toISOString() }),
+       };
 
       let savedArticle: Article;
 
       if (isEditing) {
-        const updated = await ArticlesApiService.updateArticle(article!.id, articleData);
-        if (!updated) throw new Error('Failed to update article');
+        const updated = await articlesApi.update(article!.id, articleData);
         savedArticle = updated;
       } else {
-        const created = await ArticlesApiService.createArticle(articleData);
-        if (!created) throw new Error('Failed to create article');
+        const created = await articlesApi.create(articleData);
         savedArticle = created;
       }
 

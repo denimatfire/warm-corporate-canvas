@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArticlesApiService, Article as ArticleType } from "@/lib/articles-api-apps-script";
+import { articlesApi, Article as ArticleType } from "@/lib/articles-api";
 import jsPDF from "jspdf";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -76,7 +76,7 @@ const Article = () => {
       
       if (id) {
         try {
-          const foundArticle = await ArticlesApiService.getArticleById(id);
+          const foundArticle = await articlesApi.getById(id);
           setArticle(foundArticle);
         } catch (error) {
           console.error('Error fetching article:', error);
@@ -396,11 +396,11 @@ const Article = () => {
             <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center space-x-4'} text-sm text-gray-500`}>
               <div className="flex items-center space-x-1">
                 <Calendar className="w-4 h-4" />
-                <span>{formatDate(article.publishedAt || article.createdAt)}</span>
+                <span>{formatDate(article.published_at || article.created_at)}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <Clock className="w-4 h-4" />
-                <span>{article.readTime} min read</span>
+                <span>{article.read_time} min read</span>
               </div>
             </div>
           </div>

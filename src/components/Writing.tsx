@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate, useLocation } from "react-router-dom";
 import PhotoViewer from "./PhotoViewer";
-import { ArticlesApiService, Article } from "@/lib/articles-api-apps-script";
+import { articlesApi, Article } from "@/lib/articles-api";
 
 const Writing = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,7 +22,7 @@ const Writing = () => {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const publishedArticles = await ArticlesApiService.getPublishedArticles();
+        const publishedArticles = await articlesApi.getPublished();
         setArticles(publishedArticles);
       } catch (error) {
         console.error('Error fetching articles:', error);
@@ -191,7 +191,7 @@ const Writing = () => {
                   </Badge>
                   <div className="text-xs text-muted-foreground flex items-center space-x-2">
                     <Calendar className="w-3 h-3" />
-                    <span>{formatDate(article.publishedAt || article.createdAt)}</span>
+                    <span>{formatDate(article.published_at || article.created_at)}</span>
                   </div>
                 </div>
                 <CardTitle className="text-xl group-hover:text-primary transition-colors">
@@ -200,11 +200,11 @@ const Writing = () => {
               </CardHeader>
               
               {/* Photo Preview */}
-              {article.coverImage && (
+              {article.cover_image && (
                 <div className="px-6 -mt-2 mb-4">
                   <div className="relative overflow-hidden rounded-lg border border-border">
                     <img
-                      src={article.coverImage}
+                      src={article.cover_image}
                       alt={`${article.title} preview`}
                       className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
@@ -229,7 +229,7 @@ const Writing = () => {
                 {/* Article Meta */}
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <div className="flex items-center space-x-4">
-                    <span>{article.readTime} min read</span>
+                    <span>{article.read_time} min read</span>
                     <div className="flex items-center space-x-1">
                       <MessageCircle className="w-4 h-4" />
                       <span>0</span>

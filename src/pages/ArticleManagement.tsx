@@ -20,7 +20,7 @@ import { Badge } from '../components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import ArticleEditor from '../components/ArticleEditor';
-import { ArticlesApiService, Article } from '../lib/articles-api-apps-script';
+import { articlesApi, Article } from '../lib/articles-api';
 import { 
   getCurrentUser, 
   canCreateArticles, 
@@ -54,7 +54,7 @@ const ArticleManagement: React.FC = () => {
 
   const loadArticles = async () => {
     try {
-      const allArticles = await ArticlesApiService.getAllArticles();
+      const allArticles = await articlesApi.getAll();
       setArticles(allArticles);
     } catch (error) {
       console.error('Error loading articles:', error);
@@ -68,7 +68,7 @@ const ArticleManagement: React.FC = () => {
 
   const loadStats = async () => {
     try {
-      const articleStats = await ArticlesApiService.getArticleStats();
+      const articleStats = await articlesApi.getStats();
       if (articleStats) {
         setStats(articleStats);
       }
@@ -126,7 +126,7 @@ const ArticleManagement: React.FC = () => {
 
     if (window.confirm('Are you sure you want to delete this article? This action cannot be undone.')) {
       try {
-        const success = await ArticlesApiService.deleteArticle(articleId);
+        const success = await articlesApi.delete(articleId);
         if (success) {
           toast({
             title: 'Article Deleted',
@@ -346,11 +346,11 @@ const ArticleManagement: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        {new Date(article.updatedAt).toLocaleDateString()}
+                        {new Date(article.updated_at).toLocaleDateString()}
                       </div>
                       <div className="flex items-center gap-1">
                         <FileText className="h-4 w-4" />
-                        {article.readTime} min read
+                        {article.read_time} min read
                       </div>
                     </div>
                     

@@ -265,9 +265,9 @@ const ArticleListExample: React.FC<ArticleListExampleProps> = ({
               <div className="flex items-start justify-between">
                 <div className="flex-1 space-y-3">
                   <div className="flex items-start gap-3">
-                    {article.coverImage && (
+                    {article.cover_image && (
                       <img
-                        src={article.coverImage}
+                        src={article.cover_image}
                         alt={article.title}
                         className="w-20 h-20 object-cover rounded-lg border"
                       />
@@ -293,13 +293,13 @@ const ArticleListExample: React.FC<ArticleListExampleProps> = ({
                         
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          {formatDate(article.updatedAt)}
+                          {formatDate(article.updated_at)}
                         </div>
                         
-                        {article.readTime && (
+                        {article.read_time && (
                           <div className="flex items-center gap-1">
                             <Clock className="w-4 h-4" />
-                            {article.readTime} min read
+                            {article.read_time} min read
                           </div>
                         )}
                       </div>
