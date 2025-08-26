@@ -20,14 +20,7 @@ import { Badge } from '../components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import ArticleEditor from '../components/ArticleEditor';
-import { 
-  getArticles, 
-  getArticleStats, 
-  deleteArticle, 
-  searchArticles,
-  getArticlesByStatus,
-  getArticlesByTag
-} from '../data/articles';
+import { ArticlesApiService, Article } from '../lib/articles-api-apps-script';
 import { 
   getCurrentUser, 
   canCreateArticles, 
@@ -36,7 +29,6 @@ import {
   canEditArticles
 } from '../data/auth';
 import { useToast } from '../hooks/use-toast';
-import { Article } from '../data/articles';
 
 const ArticleManagement: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -60,14 +52,29 @@ const ArticleManagement: React.FC = () => {
     filterArticles();
   }, [articles, searchQuery, statusFilter, tagFilter]);
 
-  const loadArticles = () => {
-    const allArticles = getArticles();
-    setArticles(allArticles);
+  const loadArticles = async () => {
+    try {
+      const allArticles = await ArticlesApiService.getAllArticles();
+      setArticles(allArticles);
+    } catch (error) {
+      console.error('Error loading articles:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load articles",
+        variant: "destructive",
+      });
+    }
   };
 
-  const loadStats = () => {
-    const articleStats = getArticleStats();
-    setStats(articleStats);
+  const loadStats = async () => {
+    try {
+      const articleStats = await ArticlesApiService.getArticleStats();
+      if (articleStats) {
+        setStats(articleStats);
+      }
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
   };
 
   const filterArticles = () => {
@@ -75,7 +82,11 @@ const ArticleManagement: React.FC = () => {
 
     // Apply search filter
     if (searchQuery.trim()) {
-      filtered = searchArticles(searchQuery);
+      filtered = filtered.filter(article =>
+        article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
     }
 
     // Apply status filter
@@ -114,18 +125,27 @@ const ArticleManagement: React.FC = () => {
     }
 
     if (window.confirm('Are you sure you want to delete this article? This action cannot be undone.')) {
-      const success = deleteArticle(articleId);
-      if (success) {
-        toast({
-          title: 'Article Deleted',
-          description: 'The article has been successfully deleted.',
-        });
-        loadArticles();
-        loadStats();
-      } else {
+      try {
+        const success = await ArticlesApiService.deleteArticle(articleId);
+        if (success) {
+          toast({
+            title: 'Article Deleted',
+            description: 'The article has been successfully deleted.',
+          });
+          loadArticles();
+          loadStats();
+        } else {
+          toast({
+            title: 'Error',
+            description: 'Failed to delete the article. Please try again.',
+            variant: 'destructive',
+          });
+        }
+      } catch (error) {
+        console.error('Error deleting article:', error);
         toast({
           title: 'Error',
-          description: 'Failed to delete the article. Please try again.',
+          description: 'An error occurred while deleting the article.',
           variant: 'destructive',
         });
       }

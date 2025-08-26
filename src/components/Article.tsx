@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate, useParams } from "react-router-dom";
-import { getArticleById, Article as ArticleType } from "@/data/articles";
+import { ArticlesApiService, Article as ArticleType } from "@/lib/articles-api-apps-script";
 import jsPDF from "jspdf";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -71,13 +71,23 @@ const Article = () => {
 
   // Find the current article based on ID
   useEffect(() => {
-    setIsLoading(true);
+    const fetchArticle = async () => {
+      setIsLoading(true);
+      
+      if (id) {
+        try {
+          const foundArticle = await ArticlesApiService.getArticleById(id);
+          setArticle(foundArticle);
+        } catch (error) {
+          console.error('Error fetching article:', error);
+          setArticle(null);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
     
-    if (id) {
-      const foundArticle = getArticleById(id);
-      setArticle(foundArticle || null);
-      setIsLoading(false);
-    }
+    fetchArticle();
   }, [id]);
 
   // Redirect if article not found (only after loading is complete)

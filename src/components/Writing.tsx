@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate, useLocation } from "react-router-dom";
 import PhotoViewer from "./PhotoViewer";
-import { getPublishedArticles, Article } from "@/data/articles";
+import { ArticlesApiService, Article } from "@/lib/articles-api-apps-script";
 
 const Writing = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,10 +18,19 @@ const Writing = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Load articles from the unified system
+  // Load articles from Google Apps Script API
   useEffect(() => {
-    const publishedArticles = getPublishedArticles();
-    setArticles(publishedArticles);
+    const fetchArticles = async () => {
+      try {
+        const publishedArticles = await ArticlesApiService.getPublishedArticles();
+        setArticles(publishedArticles);
+      } catch (error) {
+        console.error('Error fetching articles:', error);
+        setArticles([]);
+      }
+    };
+    
+    fetchArticles();
   }, []);
 
   // Load user preference from localStorage
@@ -43,11 +52,21 @@ const Writing = () => {
     // Clean up any previous state
   }, [location.pathname]);
 
-  const filteredArticles = articles.filter(article =>
-    article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
+
+  // Update filtered articles when search term or articles change
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredArticles(articles);
+    } else {
+      const filtered = articles.filter(article =>
+        article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+      setFilteredArticles(filtered);
+    }
+  }, [searchTerm, articles]);
 
   const handlePhotoClick = (photos: string[], index: number) => {
     setSelectedPhotoPhotos(photos);

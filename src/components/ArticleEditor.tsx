@@ -13,7 +13,8 @@ import {
 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { Article, addArticle, updateArticle, calculateReadTime, generateExcerpt } from '../data/articles';
+import { Article, calculateReadTime, generateExcerpt } from '../data/articles';
+import { ArticlesApiService } from '../lib/articles-api-apps-script';
 import { canPublishArticles, getCurrentUser } from '../data/auth';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -91,9 +92,9 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
       };
 
       if (isEditing) {
-        updateArticle(article!.id, draftArticle);
+        ArticlesApiService.updateArticle(article!.id, draftArticle);
       } else {
-        addArticle(draftArticle);
+        ArticlesApiService.createArticle(draftArticle);
       }
     }
   };
@@ -160,11 +161,13 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
       let savedArticle: Article;
 
       if (isEditing) {
-        const updated = updateArticle(article!.id, articleData);
+        const updated = await ArticlesApiService.updateArticle(article!.id, articleData);
         if (!updated) throw new Error('Failed to update article');
         savedArticle = updated;
       } else {
-        savedArticle = addArticle(articleData);
+        const created = await ArticlesApiService.createArticle(articleData);
+        if (!created) throw new Error('Failed to create article');
+        savedArticle = created;
       }
 
       toast({

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { 
   Plus, 
   Edit, 
@@ -16,7 +16,6 @@ import {
   Loader2
 } from 'lucide-react';
 import { Article } from '../lib/articles-api-new';
-import { canDeleteArticles, getCurrentUser } from '../data/auth';
 import { useArticles } from '../hooks/use-articles';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -34,82 +33,43 @@ import {
 } from './ui/alert-dialog';
 import { useToast } from '../hooks/use-toast';
 
-interface ArticleListProps {
+interface ArticleListExampleProps {
   onEditArticle: (article: Article) => void;
   onViewArticle: (article: Article) => void;
   onCreateNew: () => void;
 }
 
-const ArticleList: React.FC<ArticleListProps> = ({
+const ArticleListExample: React.FC<ArticleListExampleProps> = ({
   onEditArticle,
   onViewArticle,
   onCreateNew
 }) => {
-  const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published'>('all');
-  const [sortBy, setSortBy] = useState<'date' | 'title' | 'status'>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   
   const { toast } = useToast();
-  const currentUser = getCurrentUser();
-  const canDelete = canDeleteArticles();
   
   // Use the new articles hook
   const { 
     articles, 
+    publishedArticles,
     isLoading, 
     error, 
     deleteArticle, 
     refreshArticles 
   } = useArticles();
 
-  useEffect(() => {
-    filterAndSortArticles();
-  }, [articles, searchTerm, statusFilter, sortBy, sortOrder]);
-
-  const filterAndSortArticles = () => {
-    let filtered = articles.filter(article => {
-      const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      const matchesStatus = statusFilter === 'all' || article.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
-    });
-
-    // Sort articles
-    filtered.sort((a, b) => {
-      let comparison = 0;
-      
-      switch (sortBy) {
-        case 'date':
-          comparison = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-          break;
-        case 'title':
-          comparison = a.title.localeCompare(b.title);
-          break;
-        case 'status':
-          comparison = a.status.localeCompare(b.status);
-          break;
-      }
-      
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
-
-    setFilteredArticles(filtered);
-  };
+  // Filter articles based on search and status
+  const filteredArticles = articles.filter(article => {
+    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesStatus = statusFilter === 'all' || article.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   const handleDeleteArticle = async (articleId: string) => {
-    if (!canDelete) {
-      toast({
-        title: 'Permission Denied',
-        description: 'Only administrators can delete articles.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     try {
       const success = await deleteArticle(articleId);
       if (success) {
@@ -143,14 +103,6 @@ const ArticleList: React.FC<ArticleListProps> = ({
     });
   };
 
-  const getStatusIcon = (status: 'draft' | 'published') => {
-    return status === 'draft' ? (
-      <Clock className="w-4 h-4 text-muted-foreground" />
-    ) : (
-      <CheckCircle2 className="w-4 h-4 text-success" />
-    );
-  };
-
   const getStatusBadge = (status: 'draft' | 'published') => {
     return status === 'draft' ? (
       <Badge variant="secondary" className="flex items-center gap-1">
@@ -158,7 +110,7 @@ const ArticleList: React.FC<ArticleListProps> = ({
         Draft
       </Badge>
     ) : (
-      <Badge className="flex items-center gap-1 bg-success text-success-foreground">
+      <Badge className="flex items-center gap-1 bg-green-100 text-green-800">
         <CheckCircle2 className="w-3 h-3" />
         Published
       </Badge>
@@ -170,23 +122,10 @@ const ArticleList: React.FC<ArticleListProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Article Management</h1>
+          <h1 className="text-3xl font-bold">Article Management</h1>
           <p className="text-muted-foreground mt-2">
-            Manage your articles, drafts, and published content
+            Manage your articles with Google Sheets backend
           </p>
-          {currentUser && (
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-sm text-muted-foreground">
-                Logged in as: <strong>{currentUser.username}</strong>
-              </span>
-              {!canDelete && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Shield className="w-3 h-3" />
-                  <span>Limited permissions</span>
-                </div>
-              )}
-            </div>
-          )}
         </div>
         
         <div className="flex items-center gap-2">
@@ -197,10 +136,7 @@ const ArticleList: React.FC<ArticleListProps> = ({
             </div>
           )}
           
-          <Button
-            onClick={onCreateNew}
-            className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary-hover hover:from-primary-hover hover:to-primary"
-          >
+          <Button onClick={onCreateNew} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Create New Article
           </Button>
@@ -212,12 +148,12 @@ const ArticleList: React.FC<ArticleListProps> = ({
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg"
+          className="p-4 bg-red-50 border border-red-200 rounded-lg"
         >
           <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-destructive" />
-            <span className="text-destructive font-medium">Error loading articles:</span>
-            <span className="text-destructive">{error}</span>
+            <Shield className="w-4 h-4 text-red-600" />
+            <span className="text-red-800 font-medium">Error loading articles:</span>
+            <span className="text-red-800">{error}</span>
           </div>
           <Button
             variant="outline"
@@ -232,93 +168,60 @@ const ArticleList: React.FC<ArticleListProps> = ({
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="p-4 bg-card rounded-lg border shadow-sm"
-        >
-          <div className="text-2xl font-bold text-foreground">{articles.length}</div>
+        <div className="p-4 bg-card rounded-lg border shadow-sm">
+          <div className="text-2xl font-bold">{articles.length}</div>
           <div className="text-sm text-muted-foreground">Total Articles</div>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="p-4 bg-card rounded-lg border shadow-sm"
-        >
-          <div className="text-2xl font-bold text-foreground">
-            {articles.filter(a => a.status === 'published').length}
-          </div>
+        </div>
+        <div className="p-4 bg-card rounded-lg border shadow-sm">
+          <div className="text-2xl font-bold">{publishedArticles.length}</div>
           <div className="text-sm text-muted-foreground">Published</div>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="p-4 bg-card rounded-lg border shadow-sm"
-        >
-          <div className="text-2xl font-bold text-foreground">
+        </div>
+        <div className="p-4 bg-card rounded-lg border shadow-sm">
+          <div className="text-2xl font-bold">
             {articles.filter(a => a.status === 'draft').length}
           </div>
           <div className="text-sm text-muted-foreground">Drafts</div>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="p-4 bg-card rounded-lg border shadow-sm"
-        >
-          <div className="text-2xl font-bold text-foreground">
-            {articles.filter(a => a.tags.length > 0).length}
+        </div>
+        <div className="p-4 bg-card rounded-lg border shadow-sm">
+          <div className="text-2xl font-bold">
+            {new Set(articles.flatMap(a => a.tags)).size}
           </div>
-          <div className="text-sm text-muted-foreground">Tagged</div>
-        </motion.div>
+          <div className="text-sm text-muted-foreground">Unique Tags</div>
+        </div>
       </div>
 
-      {/* Filters and Search */}
+      {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Search articles by title or tags..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search articles..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
         
         <div className="flex gap-2">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as 'all' | 'draft' | 'published')}
-            className="px-3 py-2 border rounded-md bg-background text-foreground"
-          >
-            <option value="all">All Status</option>
-            <option value="draft">Drafts</option>
-            <option value="published">Published</option>
-          </select>
-          
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'date' | 'title' | 'status')}
-            className="px-3 py-2 border rounded-md bg-background text-foreground"
-          >
-            <option value="date">Sort by Date</option>
-            <option value="title">Sort by Title</option>
-            <option value="status">Sort by Status</option>
-          </select>
-          
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="px-3"
+            variant={statusFilter === 'all' ? 'default' : 'outline'}
+            onClick={() => setStatusFilter('all')}
           >
-            {sortOrder === 'asc' ? '↑' : '↓'}
+            All
+          </Button>
+          <Button
+            variant={statusFilter === 'published' ? 'default' : 'outline'}
+            onClick={() => setStatusFilter('published')}
+          >
+            Published
+          </Button>
+          <Button
+            variant={statusFilter === 'draft' ? 'default' : 'outline'}
+            onClick={() => setStatusFilter('draft')}
+          >
+            Drafts
           </Button>
         </div>
       </div>
@@ -351,13 +254,11 @@ const ArticleList: React.FC<ArticleListProps> = ({
             )}
           </div>
         ) : (
-          <AnimatePresence>
-            {filteredArticles.map((article, index) => (
+          filteredArticles.map((article, index) => (
             <motion.div
               key={article.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
               transition={{ delay: index * 0.1 }}
               className="p-6 bg-card rounded-lg border shadow-sm hover:shadow-md transition-shadow"
             >
@@ -374,9 +275,7 @@ const ArticleList: React.FC<ArticleListProps> = ({
                     
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-semibold text-foreground">
-                          {article.title}
-                        </h3>
+                        <h3 className="text-xl font-semibold">{article.title}</h3>
                         {getStatusBadge(article.status)}
                       </div>
                       
@@ -442,46 +341,43 @@ const ArticleList: React.FC<ArticleListProps> = ({
                     Edit
                   </Button>
                   
-                  {canDelete && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex items-center gap-2 text-destructive hover:text-destructive"
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Article</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{article.title}"? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteArticle(article.id)}
+                          className="bg-red-600 text-white hover:bg-red-700"
                         >
-                          <Trash2 className="w-4 h-4" />
                           Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Article</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{article.title}"? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteArticle(article.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </motion.div>
-          ))}
-        </AnimatePresence>
+          ))
         )}
       </div>
     </div>
   );
 };
 
-export default ArticleList;
+export default ArticleListExample;
