@@ -43,6 +43,7 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
   onCancel 
 }) => {
   const [title, setTitle] = useState(article?.title || '');
+  const [excerpt, setExcerpt] = useState(article?.excerpt || '');
   const [content, setContent] = useState(article?.content || '');
 
   // Simple content change handler
@@ -76,7 +77,10 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
     if (article) {
       console.log('Article prop changed, syncing content:', article);
       setTitle(article.title || '');
+      setExcerpt(article.excerpt || '');
       setContent(article.content || '');
+      // Initialize lastSavedContent to prevent false auto-save triggers
+      setLastSavedContent(article.content || '');
       // Only set cover image if we don't already have one or if the article has a different one
       if (!coverImage || article.cover_image !== coverImage) {
         setCoverImage(article.cover_image || '');
@@ -91,19 +95,19 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
   }, [article, coverImage]);
 
   useEffect(() => {
-    // Auto-save draft every 30 seconds, but only if there are actual changes
+    // Auto-save draft every 60 seconds, but only if there are actual changes
     const interval = setInterval(() => {
       if (title || content) {
         handleAutoSave();
       }
-    }, 30000);
+    }, 60000); // Increased from 30 seconds to 60 seconds
 
     return () => clearInterval(interval);
   }, []); // Remove dependencies to prevent auto-save on every content change
 
 
 
-  // Debounced auto-save when content changes (only after user stops typing for 5 seconds)
+  // Debounced auto-save when content changes (only after user stops typing for 10 seconds)
   useEffect(() => {
     if (!content || content === lastSavedContent) return;
 
@@ -113,12 +117,12 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
         handleAutoSave();
         setLastSavedContent(content);
       }
-    }, 5000); // Wait 5 seconds after user stops typing
+    }, 10000); // Wait 10 seconds after user stops typing
 
     return () => clearTimeout(timeoutId);
   }, [content, lastSavedContent]);
 
-  const handleAutoSave = () => {
+  const handleAutoSave = async () => {
     if (!title && !content) return; // Don't auto-save empty articles
     
     // Only auto-save if content has actually changed
@@ -127,7 +131,7 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
     // For editing existing articles, only auto-save if there are substantial changes
     if (isEditing && article) {
       const contentLengthDiff = Math.abs(content.length - (article.content?.length || 0));
-      if (contentLengthDiff < 10) {
+      if (contentLengthDiff < 20) { // Increased threshold to 20 characters
         console.log('🔄 Skipping auto-save - minimal changes detected');
         return;
       }
@@ -150,16 +154,19 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
     try {
       if (isEditing && article?.id) {
         console.log('🔄 Updating existing article:', article.id);
-        articlesApi.update(article.id, draftArticle);
+        await articlesApi.update(article.id, draftArticle); // Added await here
+        console.log('✅ Auto-save update completed');
       } else if (!isEditing) {
         console.log('🔄 Creating new draft article');
-        articlesApi.create(draftArticle);
+        await articlesApi.create(draftArticle); // Added await here
+        console.log('✅ Auto-save create completed');
       }
       
       setLastSavedContent(content);
       console.log('✅ Auto-save completed');
     } catch (error) {
       console.error('❌ Auto-save failed:', error);
+      // Don't update lastSavedContent on error so it can retry
     }
   };
 
@@ -294,7 +301,7 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
         tags,
         status,
         author: currentUser?.username || 'Unknown User',
-        excerpt: generateExcerpt(content),
+        excerpt: excerpt.trim() || generateExcerpt(content), // Use custom excerpt or fallback to generated
         read_time: calculateReadTime(content),
         ...(status === 'published' && { published_at: new Date().toISOString() }),
       };
@@ -363,7 +370,8 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
           description: 'The article has been permanently removed.',
         });
         
-        onCancel?.();
+        // Notify parent about deletion so it can refresh the list
+        onSave?.({ ...article, status: 'deleted' } as any);
       } catch (error) {
         console.error('Delete error:', error);
         toast({
@@ -530,6 +538,24 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
           placeholder="Enter your article title..."
           className="text-lg h-12"
         />
+      </div>
+
+      {/* Excerpt Input */}
+      <div className="space-y-2">
+        <Label htmlFor="excerpt" className="text-base font-medium">
+          Excerpt (Optional)
+        </Label>
+        <Textarea
+          id="excerpt"
+          value={excerpt}
+          onChange={(e) => setExcerpt(e.target.value)}
+          placeholder="Enter a short description for your article (e.g., 'A comprehensive guide to modern web development...')"
+          className="min-h-[80px] resize-none"
+          maxLength={300}
+        />
+        <div className="text-xs text-muted-foreground">
+          {excerpt.length}/300 characters • This will appear below your article title
+        </div>
       </div>
 
       {/* Cover Image */}
