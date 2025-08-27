@@ -1,14 +1,24 @@
-# Article Management System with Authentication
+# 📝 Article Management System - Warm Corporate Canvas
 
-A comprehensive, secure article management system for your portfolio website, built with React, TypeScript, and Tailwind CSS. Features role-based access control, secure authentication, and beautiful user interfaces.
+A comprehensive, secure article management system for your portfolio website, built with React, TypeScript, and Tailwind CSS. Features role-based access control, secure authentication, and beautiful user interfaces. Now powered by Supabase for robust backend functionality with automatic fallback support.
+
+## 🎯 **What's New**
+
+- **🔐 Supabase Backend**: Professional PostgreSQL database with real-time subscriptions
+- **🔄 Automatic Fallback**: Seamless fallback to localStorage when Supabase is unavailable
+- **📝 Dual Editors**: Enhanced Quill editor + TipTap editor for different use cases
+- **🖼️ Advanced Image Management**: Media library with professional editing tools
+- **⚡ Real-time Updates**: Live content synchronization across devices
+- **📱 Enhanced Mobile Experience**: Touch-friendly interactions and responsive design
 
 ## 🔐 **Security Features**
 
 ### **Authentication System**
-- **Secure Login**: Username/password authentication with role-based access
+- **Secure Login**: Supabase authentication with role-based access control
 - **User Roles**: Admin, Writer, and Viewer with different permission levels
 - **Protected Routes**: Article management only accessible to authenticated users
 - **Session Management**: Persistent login sessions with secure logout
+- **Row Level Security**: Database-level security policies
 
 ### **Permission Levels**
 - **Admin**: Full access (create, edit, publish, delete, manage users)
@@ -17,14 +27,22 @@ A comprehensive, secure article management system for your portfolio website, bu
 
 ## 🎯 **Core Features**
 
-### **Article Editor**
+### **Article Editor (Enhanced Quill)**
 - **Rich Text Editor**: Powered by React Quill with full formatting options
+- **Media Library**: Browse and manage uploaded images
+- **Image Editing**: Professional-grade crop, scale, and rotate tools
 - **Cover Image Upload**: Drag & drop or click to upload cover images
 - **Tag Management**: Add, remove, and organize article tags
 - **Draft & Publish**: Save articles as drafts or publish them immediately
 - **Auto-save**: Automatic draft saving every 30 seconds
 - **Validation**: Form validation with helpful error messages
 - **Permission Control**: Publishing restricted to admin users
+
+### **TipTap Editor (Alternative)**
+- **Modern Architecture**: Built on ProseMirror for better performance
+- **Extensible**: Plugin-based architecture for custom features
+- **Collaborative**: Real-time collaboration support
+- **Customizable**: Highly configurable toolbar and features
 
 ### **Article List (Admin View)**
 - **Comprehensive Overview**: View all articles with status indicators
@@ -33,14 +51,16 @@ A comprehensive, secure article management system for your portfolio website, bu
 - **Quick Actions**: Edit, delete, or view articles with one click
 - **Statistics Dashboard**: See total articles, published, drafts, and tagged counts
 - **User Context**: Shows current user and permission level
+- **Real-time Updates**: Live data synchronization
 
 ### **Published Article (User View)**
 - **Reading Experience**: Clean typography with proper spacing and hierarchy
 - **Reading Progress Bar**: Visual indicator of reading progress
 - **Share Functionality**: Share on LinkedIn, Twitter, WhatsApp, or copy link
-- **Comment System**: Add and view comments (stored locally)
+- **Comment System**: Add and view comments (stored in Supabase)
 - **Text-to-Speech**: Listen to articles with browser's speech synthesis
 - **PDF Download**: Export articles as PDF using jsPDF
+- **Responsive Images**: Optimized images for all device sizes
 
 ### **User Management**
 - **Role Assignment**: Assign different roles to users
@@ -56,27 +76,38 @@ A comprehensive, secure article management system for your portfolio website, bu
 - **Modern Design**: Clean, professional interface matching your portfolio theme
 - **Navigation Menu**: Integrated menu with Article Writer option
 - **User Feedback**: Toast notifications and loading states
+- **Dark Mode Support**: Theme-aware components
 
 ## 📁 **File Structure**
 
 ```
 src/
 ├── components/
-│   ├── ArticleEditor.tsx          # Rich text editor for creating/editing articles
-│   ├── ArticleList.tsx            # Admin view for managing articles
-│   ├── PublishedArticle.tsx       # User view for reading articles
-│   ├── Login.tsx                  # Login form component
-│   ├── ProtectedRoute.tsx         # Route protection wrapper
-│   └── ArticleWriterMenu.tsx      # Navigation menu with Article Writer option
+│   ├── ArticleEditor.tsx          # Enhanced Quill editor (716 lines)
+│   ├── TipTapEditor.tsx           # TipTap editor (472 lines)
+│   ├── ArticleList.tsx            # Admin view for managing articles (488 lines)
+│   ├── PublishedArticle.tsx       # User view for reading articles (494 lines)
+│   ├── Login.tsx                  # Login form component (268 lines)
+│   ├── ProtectedRoute.tsx         # Route protection wrapper (218 lines)
+│   ├── ArticleWriterMenu.tsx      # Navigation menu (276 lines)
+│   └── QuillDemo.tsx              # Quill editor demonstration (415 lines)
+├── lib/
+│   ├── articles-api.ts            # Supabase API integration (382 lines)
+│   ├── image-upload.ts            # Image handling utilities (260 lines)
+│   └── utils.ts                   # Helper functions (62 lines)
+├── hooks/
+│   ├── use-articles.ts            # Article management hooks (326 lines)
+│   └── use-toast.ts               # Toast notification hooks (192 lines)
 ├── data/
-│   ├── articles.ts                # Data types and storage utilities
-│   ├── auth.ts                    # Authentication system and user management
-│   └── sample-articles.ts         # Sample articles for testing
+│   ├── articles.ts                # Data types and storage utilities (456 lines)
+│   ├── auth.ts                    # Authentication system (280 lines)
+│   └── blogs.ts                   # Blog data management (447 lines)
 ├── pages/
-│   ├── ArticleManagement.tsx      # Main admin page (protected)
-│   ├── Blog.tsx                   # Public blog page
-│   ├── LoginPage.tsx              # Standalone login page
-│   └── Demo.tsx                   # Demo showcase page
+│   ├── ArticleManagement.tsx      # Main admin page (protected) (462 lines)
+│   ├── ArticleTest.tsx            # Article testing page (33 lines)
+│   ├── QuillTest.tsx              # Quill editor testing (54 lines)
+│   ├── TipTapDemo.tsx             # TipTap editor demo (53 lines)
+│   └── LoginPage.tsx              # Standalone login page (172 lines)
 └── index.css                      # Styles including prose and line-clamp utilities
 ```
 
@@ -86,52 +117,79 @@ src/
 
 The system requires these additional packages:
 ```bash
-npm install react-quill @types/react-quill jspdf framer-motion lucide-react
+npm install @supabase/supabase-js react-quill @types/react-quill jspdf framer-motion lucide-react
+npm install @tiptap/react @tiptap/starter-kit @tiptap/extension-image @tiptap/extension-link
 ```
 
-### **2. System Initialization**
+### **2. Environment Setup**
+
+Create a `.env.local` file with your Supabase credentials:
+```env
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+```
+
+### **3. Database Setup**
+
+Follow the [Supabase Setup Guide](SUPABASE_SETUP.md) to:
+- Create the articles table
+- Set up Row Level Security policies
+- Configure storage buckets for images
+- Enable real-time subscriptions
+
+### **4. System Initialization**
 
 The system automatically initializes with:
-- Default admin user (username: `admin`, password: `admin123`)
-- Sample articles for testing
-- User authentication system
+- Supabase backend integration
+- Automatic fallback to localStorage
+- Real-time data synchronization
+- Enhanced image management
 
-### **3. Routes Added**
+### **5. Routes Added**
 
 ```typescript
 // In your App.tsx
 <Route path="/admin/articles" element={<ArticleManagement />} />
-<Route path="/blog" element={<Blog />} />
+<Route path="/articles/test" element={<ArticleTest />} />
+<Route path="/quill-test" element={<QuillTest />} />
+<Route path="/tiptap-demo" element={<TipTapDemo />} />
 <Route path="/login" element={<LoginPage />} />
-<Route path="/demo" element={<Demo />} />
 ```
 
-## 🔑 **Default Credentials**
+## 🔑 **Authentication Setup**
 
-- **Username**: `admin`
+### **Supabase Authentication**
+1. Enable authentication in your Supabase dashboard
+2. Configure authentication providers (email, OAuth)
+3. Set up email templates and redirect URLs
+4. Create your first user account
+
+### **Default Credentials (Development)**
+- **Email**: `admin@example.com`
 - **Password**: `admin123`
 - **Role**: Admin (full access)
 
 ## 📱 **Usage Guide**
 
 ### **For Admins (Full Access)**
-1. **Navigate to `/admin/articles`** (requires login)
+1. **Navigate to `/admin/articles`** (requires Supabase login)
 2. **Create New Article**: Click "Create New Article" button
-3. **Edit Article**: Use the rich text editor with formatting tools
-4. **Add Cover Image**: Upload a cover image (required for published articles)
-5. **Add Tags**: Enter tags separated by Enter key
-6. **Save or Publish**: Choose to save as draft or publish immediately
-7. **Manage Users**: Add, edit, or delete user accounts
+3. **Choose Editor**: Select between Quill or TipTap editor
+4. **Edit Article**: Use the rich text editor with formatting tools
+5. **Add Cover Image**: Upload and edit cover images with advanced tools
+6. **Add Tags**: Enter tags separated by Enter key
+7. **Save or Publish**: Choose to save as draft or publish immediately
+8. **Manage Users**: Add, edit, or delete user accounts
 
 ### **For Writers (Limited Access)**
-1. **Navigate to `/admin/articles`** (requires login)
-2. **Create Articles**: Use the rich text editor
+1. **Navigate to `/admin/articles`** (requires Supabase login)
+2. **Create Articles**: Use either Quill or TipTap editor
 3. **Save Drafts**: Articles are automatically saved as drafts
 4. **Request Publishing**: Submit articles for admin approval
 5. **Edit Content**: Modify existing articles as needed
 
 ### **For Users (Public Access)**
-1. **Navigate to `/blog`** (no login required)
+1. **Navigate to `/writing`** (no login required)
 2. **Browse Articles**: View published articles in a grid layout
 3. **Search & Filter**: Use search bar and tag filters
 4. **Read Articles**: Click on any article to read
@@ -140,7 +198,7 @@ The system automatically initializes with:
 ## 🛡️ **Security Features**
 
 ### **Authentication**
-- Secure login with username/password
+- Supabase authentication with secure JWT tokens
 - Role-based access control
 - Protected routes for sensitive operations
 - Secure session management
@@ -155,130 +213,150 @@ The system automatically initializes with:
 - Input validation and sanitization
 - XSS protection for HTML content
 - Secure file upload restrictions
-- Local storage encryption (basic)
+- Row Level Security (RLS) policies
+- Automatic data encryption
 
 ## 🔧 **Customization**
 
 ### **Adding New Users**
 ```typescript
-import { addUser } from './data/auth';
+// Use Supabase Auth for user management
+import { supabase } from '../lib/articles-api';
 
-const newUser = addUser({
-  username: 'writer1',
+const { data, error } = await supabase.auth.signUp({
   email: 'writer@example.com',
-  role: 'writer',
-  isActive: true
-}, 'password123');
+  password: 'securepassword123'
+});
 ```
 
 ### **Modifying Permissions**
 ```typescript
-// In auth.ts, modify the permission functions
-export const canPublishArticles = (): boolean => {
-  const user = getCurrentUser();
-  return user?.role === 'admin' || user?.role === 'writer'; // Allow writers to publish
-};
+// Update RLS policies in Supabase dashboard
+CREATE POLICY "Writers can publish articles" ON articles
+  FOR UPDATE USING (
+    auth.role() = 'authenticated' AND 
+    (auth.uid()::text = author OR user_role = 'writer')
+  );
 ```
 
 ### **Styling**
 - Modify `src/index.css` for custom styles
 - Update Tailwind classes for different color schemes
 - Customize prose styles for article content
+- Theme-aware components with CSS variables
 
 ## 🌐 **Browser Support**
 
 - **Modern Browsers**: Chrome, Firefox, Safari, Edge (latest versions)
 - **Text-to-Speech**: Requires browser support for Speech Synthesis API
 - **File Upload**: Requires FileReader API support
-- **Local Storage**: Requires localStorage support
+- **Real-time**: Requires WebSocket support
+- **Image Editing**: Requires Canvas API support
 
 ## 📊 **Performance Considerations**
 
-- **Image Optimization**: Consider compressing cover images before storage
-- **Lazy Loading**: Implement lazy loading for article lists
-- **Pagination**: Add pagination for large numbers of articles
-- **Caching**: Implement caching strategies for better performance
+- **Image Optimization**: Automatic compression and optimization
+- **Lazy Loading**: Implemented for article lists and images
+- **Pagination**: Built-in pagination for large numbers of articles
+- **Caching**: Supabase caching with localStorage fallback
+- **Bundle Optimization**: Code splitting and tree shaking
 
 ## 🚨 **Security Notes**
 
 - **Input Validation**: All user inputs are validated
 - **XSS Protection**: HTML content is sanitized
-- **File Upload**: Only image files are accepted
-- **Local Storage**: Data is stored client-side (consider server-side for production)
-- **Password Security**: Basic encoding (implement proper hashing for production)
+- **File Upload**: Only image files are accepted with size limits
+- **Database Security**: Row Level Security (RLS) enabled
+- **Authentication**: JWT-based with secure token handling
 
 ## 🐛 **Troubleshooting**
 
 ### **Common Issues**
 
-1. **Login Not Working**
-   - Verify username: `admin`, password: `admin123`
-   - Check browser console for errors
-   - Ensure localStorage is enabled
+1. **Supabase Connection Errors**
+   - Verify environment variables in `.env.local`
+   - Check Supabase project status
+   - Ensure CORS is configured correctly
 
-2. **Rich Text Editor Not Loading**
-   - Ensure `react-quill` is installed
+2. **Authentication Issues**
+   - Verify Supabase Auth is enabled
+   - Check email templates and redirect URLs
+   - Ensure user account exists
+
+3. **Rich Text Editor Not Loading**
+   - Ensure all editor dependencies are installed
    - Check CSS imports are correct
+   - Verify editor component imports
 
-3. **Permission Denied Errors**
+4. **Permission Denied Errors**
    - Verify user role and permissions
-   - Check if user is properly authenticated
+   - Check RLS policies in Supabase
+   - Ensure user is properly authenticated
 
-4. **Articles Not Saving**
-   - Check browser console for errors
-   - Verify localStorage permissions
+5. **Real-time Not Working**
+   - Check if real-time is enabled in Supabase
+   - Verify subscription setup
+   - Check network connectivity
 
 ### **Debug Mode**
 
 Enable debug logging by adding this to your browser console:
 ```javascript
 localStorage.setItem('debug_articles', 'true');
-localStorage.setItem('debug_auth', 'true');
+localStorage.setItem('debug_supabase', 'true');
 ```
 
 ## 🔄 **Future Enhancements**
 
-- **Server Integration**: Connect to Firebase, Supabase, or custom backend
-- **User Registration**: Self-service user registration
-- **Article Scheduling**: Publish articles at specific dates/times
 - **Advanced Analytics**: Track article performance and user engagement
 - **Multi-language Support**: Internationalization for global audiences
 - **API Integration**: Connect to external content management systems
+- **Collaborative Editing**: Real-time collaborative article editing
+- **Advanced Search**: Full-text search with filters and sorting
+- **Content Scheduling**: Publish articles at specific dates/times
 
 ## 📝 **API Reference**
 
-### **Authentication Functions**
-```typescript
-// Login
-const result = await login({ username, password });
-
-// Check authentication
-const isAuth = isAuthenticated();
-
-// Get current user
-const user = getCurrentUser();
-
-// Logout
-logout();
-
-// Check permissions
-const canPublish = canPublishArticles();
-const canDelete = canDeleteArticles();
-```
-
-### **Article Functions**
+### **Supabase API Functions**
 ```typescript
 // Get all articles
-const articles = getArticles();
+const articles = await articlesApi.getAll();
 
 // Get published articles only
-const published = getPublishedArticles();
+const published = await articlesApi.getPublished();
 
-// Add new article
-const newArticle = addArticle(articleData);
+// Create new article
+const newArticle = await articlesApi.create(articleData);
 
 // Update article
-const updated = updateArticle(id, updates);
+const updated = await articlesApi.update(id, updates);
+
+// Delete article
+const deleted = await articlesApi.delete(id);
+
+// Search articles
+const results = await articlesApi.search(query);
+
+// Get statistics
+const stats = await articlesApi.getStats();
+
+// Subscribe to real-time changes
+const subscription = articlesApi.subscribeToChanges(callback);
+```
+
+### **Authentication Functions**
+```typescript
+// Login with Supabase
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: 'user@example.com',
+  password: 'password'
+});
+
+// Check authentication
+const { data: { user } } = await supabase.auth.getUser();
+
+// Logout
+await supabase.auth.signOut();
 ```
 
 ## 📄 **License**
@@ -289,13 +367,13 @@ This system is part of your portfolio project. Feel free to modify and extend as
 
 For questions or issues:
 1. Check the browser console for error messages
-2. Verify all dependencies are installed
-3. Check file paths and imports
-4. Test with sample data first
-5. Review the demo page at `/demo`
+2. Verify Supabase configuration and environment variables
+3. Check the [Supabase Setup Guide](SUPABASE_SETUP.md)
+4. Review the [Project Structure](PROJECT_STRUCTURE.md)
+5. Test with sample data first
 
 ---
 
 **Happy Writing! 📝✨**
 
-*Your secure, feature-rich Article Management System is ready to use!*
+*Your secure, feature-rich Article Management System with Supabase backend is ready to use!*

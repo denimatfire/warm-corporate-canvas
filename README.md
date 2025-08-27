@@ -1,73 +1,121 @@
-# Welcome to your Lovable project
+# 🌟 Warm Corporate Canvas - Modern Portfolio Website
 
-## Project info
+A sophisticated, responsive portfolio website built with React, TypeScript, and Tailwind CSS, featuring advanced article management, photo galleries, and professional presentation capabilities. Powered by Supabase for robust backend functionality with automatic fallback support.
 
-**URL**: https://lovable.dev/projects/bb07b55a-d66f-4ca0-9c5e-452bd8e3c960
+## ✨ **Key Features**
 
-## How can I edit this code?
+- 🎨 **Modern UI/UX** - Beautiful, responsive design with Tailwind CSS and Shadcn/UI
+- 📝 **Advanced Content Management** - Enhanced Quill and TipTap rich text editors
+- 🖼️ **Professional Photo Gallery** - Organized categories with lightbox functionality
+- 🔐 **Secure Authentication** - Supabase-powered user management
+- 📱 **Mobile-First Design** - Touch-friendly interactions and responsive layouts
+- 🚀 **Real-time Updates** - Live content synchronization with offline fallback
+- 🎭 **Smooth Animations** - Framer Motion-powered interactions
+- 📊 **Analytics Dashboard** - Content statistics and performance metrics
 
-There are several ways of editing your application.
+## 🛠️ **Tech Stack**
 
-**Use Lovable**
+- **Frontend**: React 18.3.1, TypeScript 5.8.3, Vite 5.4.19
+- **Styling**: Tailwind CSS 3.4.17, Shadcn/UI, Radix UI
+- **Backend**: Supabase (PostgreSQL + Real-time), LocalStorage fallback
+- **Editors**: Enhanced Quill (with image editing), TipTap
+- **State Management**: React Query, Custom Hooks
+- **Animations**: Framer Motion 12.23.12
+- **Deployment**: Netlify
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/bb07b55a-d66f-4ca0-9c5e-452bd8e3c960) and start prompting.
+## 🚀 **Quick Start**
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
+- Node.js 18+ and npm
+- Supabase account (for backend functionality)
 
-**Use your preferred IDE**
+### Installation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd warm-corporate-canvas
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+# Install dependencies
+npm install
 
-Follow these steps:
+# Set up environment variables
+cp env.example .env.local
+# Edit .env.local with your Supabase credentials
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
+
+# Build for production
+npm run build
 ```
 
-**Edit a file directly in GitHub**
+### Environment Setup
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Create a `.env.local` file with your Supabase credentials:
 
-**Use GitHub Codespaces**
+```env
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 📁 **Project Structure**
 
-## What technologies are used for this project?
+```
+src/
+├── components/          # React components
+│   ├── ui/             # Shadcn/UI components
+│   ├── ArticleEditor.tsx    # Enhanced Quill editor
+│   ├── TipTapEditor.tsx     # TipTap editor
+│   ├── Navigation.tsx       # Main navigation
+│   └── ...                 # Other components
+├── pages/              # Page components
+├── lib/                # Utilities and API
+├── hooks/              # Custom React hooks
+├── data/               # Data management
+└── assets/             # Static assets
+```
 
-This project is built with:
+## 🔧 **Available Scripts**
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run build:dev` - Build for development
+- `npm run lint` - Run ESLint
+- `npm run preview` - Preview production build
 
-## How can I deploy this project?
+## 📚 **Documentation**
 
-Simply open [Lovable](https://lovable.dev/projects/bb07b55a-d66f-4ca0-9c5e-452bd8e3c960) and click on Share -> Publish.
+- [Setup Guide](SETUP_GUIDE.md) - Development environment setup
+- [Project Structure](PROJECT_STRUCTURE.md) - Comprehensive architecture guide
+- [Supabase Setup](SUPABASE_SETUP.md) - Backend configuration
+- [Article Management](ARTICLE_MANAGEMENT_README.md) - Content system guide
+- [Quill Enhancements](QUILL_ENHANCEMENTS.md) - Editor features
+- [TipTap Editor](TIPTAP_EDITOR_README.md) - Alternative editor
 
-## Can I connect a custom domain to my Lovable project?
+## 🌐 **Deployment**
 
-Yes, you can!
+The project is configured for Netlify deployment. Simply connect your repository and the build will be handled automatically.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🤝 **Contributing**
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 **License**
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 🆘 **Support**
+
+For questions or issues:
+1. Check the documentation files
+2. Review the troubleshooting guides
+3. Open an issue on GitHub
+
+---
+
+**Built with ❤️ using modern web technologies**

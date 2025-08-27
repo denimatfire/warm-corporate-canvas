@@ -1,142 +1,309 @@
-# Google Sheets Backend Setup Guide
+# 🚀 Warm Corporate Canvas - Development Setup Guide
 
-This guide will help you set up a Google Sheets backend for your article management system, replacing the localStorage dependency that's causing issues in hosted environments.
+This comprehensive guide will help you set up the development environment for the Warm Corporate Canvas portfolio website, which uses Supabase as the primary backend with automatic fallback support.
 
-## Why This Solution?
+## 🎯 **What This Project Offers**
 
-- **Centralized Data**: All articles stored in one place (Google Sheets)
-- **No Local Dependencies**: Works on any device/browser
-- **Real-time Updates**: Changes sync across all users
-- **No Database Setup**: Uses Google's infrastructure
-- **Free Tier**: No hosting costs
+- **Modern Tech Stack**: React 18, TypeScript 5, Vite 5, Tailwind CSS
+- **Professional Backend**: Supabase (PostgreSQL + Real-time + Auth)
+- **Advanced Editors**: Enhanced Quill with image editing + TipTap editor
+- **Responsive Design**: Mobile-first approach with touch gestures
+- **Real-time Features**: Live updates with offline fallback support
+- **Security**: Row Level Security (RLS) and authentication
 
-## Step 1: Create Google Sheet
+## 📋 **Prerequisites**
 
-1. Go to [Google Sheets](https://sheets.google.com/)
-2. Create a new spreadsheet
-3. Name the first sheet "Articles"
-4. Add these headers in row 1:
+Before you begin, ensure you have:
+
+- **Node.js 18+** and npm (recommend using [nvm](https://github.com/nvm-sh/nvm))
+- **Git** for version control
+- **Supabase account** (free tier available at [supabase.com](https://supabase.com))
+- **Modern browser** (Chrome, Firefox, Safari, Edge)
+
+## 🚀 **Step 1: Clone and Setup**
+
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd warm-corporate-canvas
+
+# Install dependencies
+npm install
+
+# Verify installation
+npm run dev
+```
+
+## 🔐 **Step 2: Supabase Setup**
+
+### 2.1 Create Supabase Project
+
+1. Go to [supabase.com](https://supabase.com) and sign up/login
+2. Click "New Project"
+3. Choose your organization
+4. Enter project details:
+   - **Name**: `warm-corporate-canvas` (or your preferred name)
+   - **Database Password**: Generate a strong password
+   - **Region**: Choose closest to your users
+5. Click "Create new project"
+6. Wait for setup to complete (2-3 minutes)
+
+### 2.2 Get Project Credentials
+
+1. In your Supabase dashboard, go to **Settings** → **API**
+2. Copy these values:
+   - **Project URL** (e.g., `https://abc123.supabase.co`)
+   - **Anon public key** (starts with `eyJ...`)
+
+### 2.3 Environment Configuration
+
+1. Copy the example environment file:
+   ```bash
+   cp env.example .env.local
    ```
-   A: ID | B: Title | C: Content | D: Excerpt | E: Cover Image | F: Tags | G: Status | H: Author | I: Read Time | J: Published At | K: Created At | L: Updated At
+
+2. Edit `.env.local` with your Supabase credentials:
+   ```env
+   VITE_SUPABASE_URL=https://your-project-id.supabase.co
+   VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
    ```
 
-## Step 2: Get Spreadsheet ID
+## 🗄️ **Step 3: Database Schema Setup**
 
-1. Look at your Google Sheets URL:
-   ```
-   https://docs.google.com/spreadsheets/d/SPREADSHEET_ID_HERE/edit
-   ```
-2. Copy the `SPREADSHEET_ID_HERE` part
+### 3.1 Create Articles Table
 
-## Step 3: Set Up Google Apps Script
+1. In Supabase dashboard, go to **SQL Editor**
+2. Create a new query and run this SQL:
 
-1. Go to [Google Apps Script](https://script.google.com/)
-2. Create a new project
-3. Name it "Article Management Backend"
-4. Replace the default code with the contents of `google-apps-script-backend.js`
-5. Update the `SPREADSHEET_ID` constant with your actual spreadsheet ID
-6. Save the project
+```sql
+-- Create articles table
+CREATE TABLE articles (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  excerpt TEXT,
+  cover_image TEXT,
+  cover_image_path TEXT,
+  tags TEXT[] DEFAULT '{}',
+  status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
+  author TEXT NOT NULL,
+  read_time INTEGER DEFAULT 1,
+  published_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
-## Step 4: Deploy as Web App
+-- Enable Row Level Security
+ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
 
-1. Click "Deploy" → "New deployment"
-2. Choose "Web app" as the type
-3. Set "Execute as" to "Me"
-4. Set "Who has access" to "Anyone"
-5. Click "Deploy"
-6. Copy the Web App URL (you'll need this for the next step)
+-- Create policies (adjust based on your needs)
+CREATE POLICY "Public read access" ON articles
+  FOR SELECT USING (status = 'published');
 
-## Step 5: Update React App Configuration
+CREATE POLICY "Authenticated users can create" ON articles
+  FOR INSERT WITH (auth.role() = 'authenticated');
 
-1. Open `src/lib/articles-api.ts`
-2. Update the `ARTICLES_API_URL` constant with your Web App URL:
-   ```typescript
-   const ARTICLES_API_URL = "https://script.google.com/macros/s/YOUR_ACTUAL_SCRIPT_ID/exec";
-   ```
+CREATE POLICY "Users can update own articles" ON articles
+  FOR UPDATE USING (auth.uid()::text = author);
 
-## Step 6: Test the Setup
+CREATE POLICY "Users can delete own articles" ON articles
+  FOR DELETE USING (auth.uid()::text = author);
 
-1. Run your React app
-2. Check the browser console for any API errors
-3. Try creating, reading, updating, and deleting articles
-4. Verify data appears in your Google Sheet
+-- Create indexes for better performance
+CREATE INDEX idx_articles_status ON articles(status);
+CREATE INDEX idx_articles_created_at ON articles(created_at);
+CREATE INDEX idx_articles_tags ON articles USING GIN(tags);
 
-## Step 7: Migrate Existing Data
+-- Enable real-time
+ALTER PUBLICATION supabase_realtime ADD TABLE articles;
+```
 
-If you have existing articles in localStorage, you can migrate them:
+### 3.2 Create Storage Bucket (Optional)
 
-1. Open browser console in your app
-2. Run this command to export current articles:
-   ```javascript
-   console.log(JSON.stringify(JSON.parse(localStorage.getItem('articles') || '[]')))
-   ```
-3. Copy the output and manually add it to your Google Sheet
-4. Or create a migration script in the Apps Script
+If you want to use Supabase Storage for images:
 
-## Troubleshooting
+```sql
+-- Create storage bucket for article images
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('article-images', 'article-images', true);
 
-### CORS Errors
-- Ensure your Apps Script has CORS headers (already included in the code)
-- Check that the Web App URL is correct
+-- Create storage policy
+CREATE POLICY "Public read access" ON storage.objects
+  FOR SELECT USING (bucket_id = 'article-images');
 
-### Permission Errors
-- Make sure the Web App is deployed with "Anyone" access
-- Verify you're executing as the correct user
+CREATE POLICY "Authenticated users can upload" ON storage.objects
+  FOR INSERT WITH (bucket_id = 'article-images' AND auth.role() = 'authenticated');
+```
 
-### Data Not Loading
-- Check the Apps Script logs for errors
-- Verify the spreadsheet ID is correct
-- Ensure the sheet name matches exactly
+## 🔧 **Step 4: Test Your Setup**
 
-### Articles Not Saving
-- Check the Apps Script execution logs
-- Verify the sheet has write permissions
-- Check that all required columns exist
+### 4.1 Start Development Server
 
-## API Endpoints
+```bash
+npm run dev
+```
 
-Your backend now supports these operations:
+### 4.2 Verify Supabase Connection
 
-- `GET ?action=getAll` - Get all articles
-- `GET ?action=getPublished` - Get published articles only
-- `GET ?action=getById&id=ARTICLE_ID` - Get specific article
-- `GET ?action=search&query=SEARCH_TERM` - Search articles
-- `GET ?action=getByTag&tag=TAG_NAME` - Get articles by tag
-- `GET ?action=getStats` - Get article statistics
-- `POST` with `action=create` - Create new article
-- `POST` with `action=update` - Update existing article
-- `POST` with `action=delete` - Delete article
+1. Open your browser to `http://localhost:5173`
+2. Open browser console (F12)
+3. Look for any Supabase connection errors
+4. Navigate to the Writing or Article Management section
+5. Try creating a test article
 
-## Benefits After Setup
+### 4.3 Check API Endpoints
 
-✅ **No more "Not responding" errors**  
-✅ **Articles load on all devices**  
-✅ **Centralized data management**  
-✅ **Real-time collaboration**  
-✅ **No local storage dependencies**  
-✅ **Professional backend infrastructure**  
+The following API functions should work:
+- ✅ `articlesApi.getAll()` - Fetch all articles
+- ✅ `articlesApi.create()` - Create new article
+- ✅ `articlesApi.update()` - Update article
+- ✅ `articlesApi.delete()` - Delete article
+- ✅ Real-time subscriptions
 
-## Security Considerations
+## 🎨 **Step 5: Customization**
 
-- The current setup allows public access to your articles
-- For private articles, implement authentication in the Apps Script
-- Consider rate limiting for production use
-- Monitor Apps Script execution quotas
+### 5.1 Update Site Information
 
-## Next Steps
+Edit these files to customize your portfolio:
 
-1. **Implement the setup** following this guide
-2. **Test thoroughly** with your existing app
-3. **Migrate existing data** from localStorage
-4. **Update your components** to use the new hooks
-5. **Deploy to production** and verify it works
+- **`src/components/Hero.tsx`** - Main landing section
+- **`src/components/About.tsx`** - Professional overview
+- **`src/components/Contact.tsx`** - Contact information
+- **`src/components/Photos.tsx`** - Photo gallery
 
-## Support
+### 5.2 Configure Authentication
+
+1. In Supabase dashboard, go to **Authentication** → **Settings**
+2. Configure your authentication providers
+3. Set up email templates
+4. Configure redirect URLs
+
+### 5.3 Customize Styling
+
+- **`tailwind.config.ts`** - Tailwind CSS configuration
+- **`src/index.css`** - Global styles
+- **`src/components/ui/`** - Shadcn/UI components
+
+## 🚀 **Step 6: Development Workflow**
+
+### 6.1 Available Scripts
+
+```bash
+# Development
+npm run dev          # Start dev server with hot reload
+npm run build:dev    # Build for development
+
+# Production
+npm run build        # Build for production
+npm run preview      # Preview production build
+
+# Code Quality
+npm run lint         # Run ESLint
+```
+
+### 6.2 File Structure
+
+```
+src/
+├── components/          # React components
+│   ├── ui/             # Shadcn/UI components
+│   ├── ArticleEditor.tsx    # Enhanced Quill editor
+│   ├── TipTapEditor.tsx     # TipTap editor
+│   └── ...                 # Other components
+├── pages/              # Page components
+├── lib/                # Utilities and API
+│   ├── articles-api.ts     # Supabase API integration
+│   ├── image-upload.ts     # Image handling
+│   └── utils.ts            # Helper functions
+├── hooks/              # Custom React hooks
+├── data/               # Data management
+└── assets/             # Static assets
+```
+
+## 🔍 **Troubleshooting**
+
+### Common Issues
+
+#### Supabase Connection Errors
+```bash
+# Check environment variables
+echo $VITE_SUPABASE_URL
+echo $VITE_SUPABASE_ANON_KEY
+
+# Verify in .env.local file
+cat .env.local
+```
+
+#### Build Errors
+```bash
+# Clear dependencies and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# Clear Vite cache
+rm -rf dist
+npm run build
+```
+
+#### Database Permission Errors
+1. Check RLS policies in Supabase
+2. Verify user authentication status
+3. Check table permissions
+
+#### Real-time Not Working
+1. Ensure real-time is enabled in Supabase
+2. Check network connectivity
+3. Verify subscription setup
+
+### Performance Issues
+
+1. **Database**: Add appropriate indexes
+2. **Images**: Optimize and compress images
+3. **Bundle**: Use `npm run build:dev` for development
+4. **Caching**: Implement proper caching strategies
+
+## 📚 **Next Steps**
+
+After successful setup:
+
+1. **Read the Documentation**:
+   - [Project Structure](PROJECT_STRUCTURE.md)
+   - [Article Management](ARTICLE_MANAGEMENT_README.md)
+   - [Quill Enhancements](QUILL_ENHANCEMENTS.md)
+
+2. **Explore Features**:
+   - Try the enhanced Quill editor
+   - Test the TipTap editor
+   - Explore the photo gallery
+   - Test authentication
+
+3. **Customize**:
+   - Update content and branding
+   - Modify color schemes
+   - Add your own components
+
+4. **Deploy**:
+   - Connect to Netlify
+   - Set up environment variables
+   - Configure custom domain
+
+## 🆘 **Getting Help**
 
 If you encounter issues:
-1. Check the Apps Script execution logs
-2. Verify all configuration values
-3. Test the API endpoints directly
-4. Check browser console for error messages
 
-The new system will eliminate your current issues and provide a robust foundation for article management!
+1. **Check the logs**: Browser console and terminal
+2. **Review documentation**: All .md files in the project
+3. **Supabase dashboard**: Check logs and metrics
+4. **Community**: Supabase Discord, GitHub Issues
+
+## 🎉 **Congratulations!**
+
+You've successfully set up the Warm Corporate Canvas development environment! The project now has:
+
+- ✅ Modern React + TypeScript setup
+- ✅ Supabase backend with real-time capabilities
+- ✅ Enhanced rich text editors
+- ✅ Responsive design system
+- ✅ Professional development workflow
+
+Happy coding! 🚀
