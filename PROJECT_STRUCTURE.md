@@ -1,7 +1,7 @@
 # 🏗️ Warm Corporate Canvas - Project Structure & Architecture
 
 ## 📋 **Project Overview**
-A modern, responsive portfolio website built with React, TypeScript, and Tailwind CSS, featuring article management, photo galleries, and professional presentation capabilities. Now powered by Supabase for robust backend functionality with automatic fallback support.
+A modern, responsive portfolio website built with React, TypeScript, and Tailwind CSS, featuring article management, photo galleries, and professional presentation capabilities. Now powered by Supabase for robust backend functionality with automatic fallback support, and enhanced with advanced Quill editor capabilities.
 
 ---
 
@@ -14,18 +14,25 @@ warm-corporate-canvas/
 ├── 📄 vite.config.ts            # Vite build configuration
 ├── 🎨 tailwind.config.ts        # Tailwind CSS + custom gradients
 ├── 📝 tsconfig.json             # TypeScript configuration
+├── 📝 tsconfig.app.json         # App-specific TypeScript config
+├── 📝 tsconfig.node.json        # Node-specific TypeScript config
 ├── 📚 README.md                 # Project documentation
 ├── 🚀 SETUP_GUIDE.md            # Development setup instructions
 ├── 🔄 BACKEND_COMPARISON.md     # Backend approach analysis
 ├── 📊 ARTICLE_MANAGEMENT_README.md  # Article system documentation
 ├── 🔐 SUPABASE_SETUP.md         # Supabase backend setup guide
 ├── 📚 ARTICLES_BACKEND_README.md    # Articles backend system docs
+├── ✨ QUILL_ENHANCEMENTS.md     # Enhanced Quill editor documentation
 ├── ⚙️ eslint.config.js          # Code linting rules
 ├── 🎯 postcss.config.js         # PostCSS configuration
 ├── 📦 bun.lockb                 # Bun package lock
 ├── 📦 package-lock.json         # NPM package lock
 ├── 🎨 components.json           # Shadcn/UI configuration
-└── 🗂️ dist/                     # Production build output
+├── 🌐 netlify.toml              # Netlify deployment configuration
+├── 🗂️ .git/                     # Git repository
+├── 🗂️ .gitignore                # Git ignore rules
+├── 🗂️ dist/                     # Production build output
+└── 🗂️ node_modules/             # Dependencies
 ```
 
 ---
@@ -102,7 +109,8 @@ components/
 │   ├── 🔔 toaster.tsx           # Toast container
 │   ├── 🔘 toggle-group.tsx      # Button groups
 │   ├── 🔘 toggle.tsx            # Toggle buttons
-│   └── 💡 tooltip.tsx           # Hover tooltips
+│   ├── 💡 tooltip.tsx           # Hover tooltips
+│   └── 🔔 use-toast.ts          # Toast hook utilities
 ```
 
 #### **🌟 Hero & Introduction**
@@ -113,12 +121,6 @@ components/
 │   ├── Personal introduction
 │   ├── Call-to-action buttons
 │   └── Responsive grid layout
-│
-└── ⏰ Timeline.tsx               # Career milestones
-    ├── Interactive timeline
-    ├── Icon-based milestones
-    ├── Smooth animations
-    └── Professional journey
 ```
 
 #### **ℹ️ About Section**
@@ -152,11 +154,17 @@ components/
 │
 ├── 📄 Article_medium.tsx         # Compact article view
 ├── 📄 PublishedArticle.tsx       # Published article display
-├── ✏️ ArticleEditor.tsx          # Rich text editor
+├── ✏️ ArticleEditor.tsx          # Enhanced rich text editor
+│   ├── Advanced Quill integration
+│   ├── Media library management
+│   ├── Image editing capabilities
+│   ├── Auto-save functionality
+│   └── Content validation
 ├── 📋 ArticleList.tsx            # Article listing with filters
 ├── 📋 ArticleListExample.tsx     # Example article list implementation
 ├── 📝 ArticleWriterMenu.tsx      # Writing tools menu
 ├── 📚 BlogModal.tsx              # Blog post modal
+├── 🧪 QuillDemo.tsx              # Quill editor demonstration
 └── 🔧 GoogleSheetsTest.tsx       # Google Sheets integration test
 ```
 
@@ -218,6 +226,7 @@ pages/
 ├── 🔐 LoginPage.tsx              # Authentication page
 ├── ❌ NotFound.tsx               # 404 error page
 ├── 🧪 ArticleTest.tsx            # Article testing page
+├── 🧪 QuillTest.tsx              # Quill editor testing page
 └── 📊 GoogleSheetsTestPage.tsx   # Google Sheets integration test
 ```
 
@@ -343,8 +352,9 @@ data/
 
 ### **📝 Content Management**
 - Full CRUD operations for articles
-- Rich text editing with React Quill
-- Image management
+- Enhanced Quill rich text editing with advanced image features
+- Media library management
+- Image editing capabilities (crop, scale, rotate)
 - Publishing workflow
 - Supabase backend with automatic fallback
 
@@ -378,32 +388,38 @@ data/
 ## 🛠️ **Tech Stack**
 
 ### **Frontend Framework**
-- **React 18** - Modern React with concurrent features
-- **TypeScript** - Type-safe development
-- **Vite** - Fast build tool and dev server
+- **React 18.3.1** - Modern React with concurrent features
+- **TypeScript 5.8.3** - Type-safe development
+- **Vite 5.4.19** - Fast build tool and dev server
 
 ### **Styling & UI**
-- **Tailwind CSS** - Utility-first CSS framework
+- **Tailwind CSS 3.4.17** - Utility-first CSS framework
 - **Shadcn/UI** - High-quality component library
 - **Radix UI** - Accessible component primitives
-- **Framer Motion** - Animation library
+- **Framer Motion 12.23.12** - Animation library
 
 ### **State Management**
-- **React Query** - Server state management
+- **React Query (TanStack) 5.83.0** - Server state management
 - **Custom Hooks** - Local state management
 - **Context API** - Global state sharing
 
 ### **Backend & APIs**
-- **Supabase** - Backend-as-a-Service (Primary)
+- **Supabase 2.56.0** - Backend-as-a-Service (Primary)
 - **Google Apps Script** - Legacy API endpoints
-- **EmailJS** - Email service integration
+- **EmailJS 4.4.1** - Email service integration
 - **LocalStorage** - Offline fallback support
 
+### **Rich Text Editing**
+- **React Quill 2.0.0** - Enhanced rich text editor
+- **Advanced Image Features** - Media library, editing tools
+- **Canvas API** - HTML5 Canvas for image manipulation
+- **Local Storage** - Persistent media management
+
 ### **Development Tools**
-- **ESLint** - Code linting
-- **PostCSS** - CSS processing
-- **Autoprefixer** - CSS compatibility
-- **TypeScript ESLint** - TypeScript-specific linting
+- **ESLint 9.32.0** - Code linting
+- **PostCSS 8.5.6** - CSS processing
+- **Autoprefixer 10.4.21** - CSS compatibility
+- **TypeScript ESLint 8.38.0** - TypeScript-specific linting
 
 ---
 
@@ -413,7 +429,6 @@ data/
 ```
 assets/
 ├── 👤 profile-photo.jpg          # Main profile image
-└── 📱 profile-photo.jpg          # Profile photo asset
 
 public/
 ├── 🖼️ favicon.ico               # Website icon
@@ -473,13 +488,14 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 - **Total Components**: 50+ React components
 - **UI Components**: 40+ Shadcn/UI components
-- **Custom Hooks**: 5+ specialized hooks
+- **Custom Hooks**: 3+ specialized hooks
 - **API Endpoints**: 15+ backend functions
-- **Pages**: 8 main application pages
+- **Pages**: 9 main application pages
 - **File Types**: TypeScript, CSS, Markdown, JSON
 - **Dependencies**: 70+ npm packages
 - **Build Size**: Optimized for production
 - **Backend**: Supabase + LocalStorage fallback
+- **Editor**: Enhanced Quill with advanced image features
 
 ---
 
@@ -524,6 +540,10 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 - **BACKEND_COMPARISON.md** - Backend approach analysis
 - **ARTICLE_MANAGEMENT_README.md** - Article management system
 
+### **Feature Documentation**
+- **QUILL_ENHANCEMENTS.md** - Enhanced Quill editor features
+- **Enhanced Image Editing** - Media library and manipulation tools
+
 ---
 
 ## 🔄 **Migration & Updates**
@@ -534,12 +554,32 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 3. **Updated Dependencies** - Latest React, TypeScript, and UI libraries
 4. **Improved Error Handling** - Better offline support and user experience
 5. **Security Enhancements** - Row Level Security and authentication
+6. **Quill Editor Enhancements** - Advanced image editing and media management
+7. **Performance Optimizations** - Better build tools and development experience
 
 ### **Backward Compatibility**
 - Google Sheets integration maintained for legacy support
 - LocalStorage fallback ensures offline functionality
 - Gradual migration path for existing data
+- Enhanced Quill editor maintains compatibility with existing content
 
 ---
 
-*This document serves as the comprehensive reference for the Warm Corporate Canvas project structure, architecture, and implementation details. Last updated to reflect Supabase integration and latest project enhancements.*
+## 🆕 **New Features & Enhancements**
+
+### **Enhanced Quill Editor**
+- **Media Library**: Browse and manage uploaded images
+- **Image Editing**: Professional-grade crop, scale, and rotate tools
+- **Auto-save**: Automatic draft saving every 30 seconds
+- **Accessibility**: Alt text support and semantic HTML
+- **Performance**: Optimized rendering and memory management
+
+### **Updated Dependencies**
+- **React 18.3.1**: Latest React features and performance improvements
+- **TypeScript 5.8.3**: Enhanced type safety and developer experience
+- **Vite 5.4.19**: Faster build times and development server
+- **Enhanced UI Components**: Latest Shadcn/UI and Radix UI components
+
+---
+
+*This document serves as the comprehensive reference for the Warm Corporate Canvas project structure, architecture, and implementation details. Last updated to reflect Supabase integration, enhanced Quill editor capabilities, and latest project enhancements.*

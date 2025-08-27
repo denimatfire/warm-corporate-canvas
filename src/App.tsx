@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import WritingPage from "./pages/Writing";
 import PhotosPage from "./pages/Photos";
-import Article from "./components/Article";
 import Article_medium from "./components/Article_medium";
 import ArticleManagement from "./pages/ArticleManagement";
 import LoginPage from "./pages/LoginPage";
@@ -30,8 +29,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/writing" element={<WritingPage />} />
           <Route path="/photos" element={<PhotosPage />} />
-          <Route path="/article/:id" element={<Article />} />
-          <Route path="/article-medium/:id" element={<Article_medium />} />
+          <Route path="/article/:id" element={<Article_medium />} />
           <Route path="/admin/articles" element={
             <ProtectedRoute requiredRole="admin" showLogin={true}>
               <ArticleManagement />

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Calendar, MessageCircle, ArrowRight, BookOpen, Bookmark } from "lucide-react";
+import { Search, Calendar, MessageCircle, ArrowRight, BookOpen } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,6 @@ const Writing = () => {
   const [photoViewerOpen, setPhotoViewerOpen] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [selectedPhotoPhotos, setSelectedPhotoPhotos] = useState<string[]>([]);
-  const [useMediumView, setUseMediumView] = useState(false);
   const [articles, setArticles] = useState<Article[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,20 +33,6 @@ const Writing = () => {
     
     fetchArticles();
   }, []);
-
-  // Load user preference from localStorage
-  useEffect(() => {
-    const savedPreference = localStorage.getItem('articleViewStyle');
-    if (savedPreference) {
-      setUseMediumView(savedPreference === 'medium');
-    }
-  }, []);
-
-  // Save user preference to localStorage
-  const handleViewToggle = (useMedium: boolean) => {
-    setUseMediumView(useMedium);
-    localStorage.setItem('articleViewStyle', useMedium ? 'medium' : 'regular');
-  };
 
   // Reset state when component mounts or location changes
   useEffect(() => {
@@ -77,23 +62,15 @@ const Writing = () => {
   };
 
   const handleArticleClick = (article: Article) => {
-    // Navigate to the appropriate article view based on toggle state
-    if (useMediumView) {
-      navigate(`/article-medium/${article.id}`);
-    } else {
-      navigate(`/article/${article.id}`);
-    }
+    // Always navigate to medium view (now the default route)
+    navigate(`/article/${article.id}`);
   };
 
   const handleReadMoreClick = (e: React.MouseEvent, article: Article) => {
     e.stopPropagation();
     
-    // Navigate to the appropriate article view based on toggle state
-    if (useMediumView) {
-      navigate(`/article-medium/${article.id}`);
-    } else {
-      navigate(`/article/${article.id}`);
-    }
+    // Always navigate to medium view (now the default route)
+    navigate(`/article/${article.id}`);
   };
 
   // Format date for display
@@ -122,31 +99,8 @@ const Writing = () => {
             Thoughts on technology, leadership, and personal growth.
           </p>
 
-          {/* View Toggle and Search Bar */}
+          {/* Search Bar */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-            {/* View Toggle */}
-            <div className="flex items-center space-x-2 bg-card/50 backdrop-blur-sm rounded-lg p-1 border border-border">
-              <Button
-                variant={!useMediumView ? "default" : "ghost"}
-                size="sm"
-                onClick={() => handleViewToggle(false)}
-                className={`flex items-center space-x-2 ${!useMediumView ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Regular</span>
-              </Button>
-              <Button
-                variant={useMediumView ? "default" : "ghost"}
-                size="sm"
-                onClick={() => handleViewToggle(true)}
-                className={`flex items-center space-x-2 ${useMediumView ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              >
-                <Bookmark className="w-4 h-4" />
-                <span>Medium</span>
-              </Button>
-            </div>
-
-            {/* Search Bar */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
@@ -162,17 +116,10 @@ const Writing = () => {
           {/* View Style Indicator */}
           <div className="text-center mb-8">
             <p className="text-sm text-muted-foreground">
-              {useMediumView ? (
-                <span className="flex items-center justify-center space-x-2">
-                  <Bookmark className="w-4 h-4" />
-                  <span>Medium-style reading experience</span>
-                </span>
-              ) : (
-                <span className="flex items-center justify-center space-x-2">
-                  <BookOpen className="w-4 h-4" />
-                  <span>Standard reading experience</span>
-                </span>
-              )}
+              <span className="flex items-center justify-center space-x-2">
+                <BookOpen className="w-4 h-4" />
+                <span>Medium-style reading experience</span>
+              </span>
             </p>
           </div>
         </div>

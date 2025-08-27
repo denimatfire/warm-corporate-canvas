@@ -329,16 +329,6 @@ const Article_medium = () => {
                 <BookOpen className="w-4 h-4 mr-2" />
                 Writing
               </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(`/article/${id}`)}
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-              >
-                <BookOpen className="w-4 h-4 mr-2" />
-                Regular View
-              </Button>
             </div>
             
             {/* Action Buttons */}
