@@ -20,7 +20,7 @@ import {
 import TipTapEditor from './TipTapEditor';
 import { Article as LocalArticle, calculateReadTime, generateExcerpt } from '../data/articles';
 import { articlesApi, Article as ApiArticle } from '../lib/articles-api';
-import { canPublishArticles, getCurrentUser } from '../data/auth';
+import { canPublishArticles, getCurrentUser, refreshCurrentUser } from '../data/auth';
 import { uploadImage, updateImage, deleteImage, ImageUploadResult } from '../lib/image-upload';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -71,6 +71,11 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
   const canPublish = canPublishArticles();
 
   const isEditing = !!article;
+
+  // Refresh current user to ensure username is updated
+  useEffect(() => {
+    refreshCurrentUser();
+  }, []);
 
   // Sync content when article prop changes (for editing existing articles)
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FileText, 
@@ -14,7 +14,8 @@ import {
   isAuthenticated, 
   getCurrentUser, 
   logout, 
-  canAccessArticleManagement 
+  canAccessArticleManagement,
+  refreshCurrentUser
 } from '../data/auth';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -26,6 +27,11 @@ const ArticleWriterMenu: React.FC = () => {
   const currentUser = getCurrentUser();
   const isAuth = isAuthenticated();
   const canAccess = canAccessArticleManagement();
+
+  // Refresh current user to ensure username is updated
+  useEffect(() => {
+    refreshCurrentUser();
+  }, []);
 
   const handleLogout = () => {
     logout();

@@ -27,7 +27,8 @@ import {
   canCreateArticles, 
   canDeleteArticles, 
   canPublishArticles,
-  canEditArticles
+  canEditArticles,
+  refreshCurrentUser
 } from '../data/auth';
 import { useToast } from '../hooks/use-toast';
 
@@ -42,6 +43,7 @@ const ArticleManagement: React.FC = () => {
   const [stats, setStats] = useState({ total: 0, published: 0, drafts: 0, totalTags: 0 });
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [displayUsername, setDisplayUsername] = useState<string>('');
   
   const { toast } = useToast();
   const currentUser = getCurrentUser();
@@ -50,6 +52,8 @@ const ArticleManagement: React.FC = () => {
     const initializeData = async () => {
       setIsLoading(true);
       try {
+        // Refresh current user to ensure username is updated
+        await refreshCurrentUser();
         await Promise.all([loadArticles(), loadStats()]);
       } finally {
         setIsLoading(false);
@@ -58,6 +62,13 @@ const ArticleManagement: React.FC = () => {
     
     initializeData();
   }, []);
+
+  // Update display username when currentUser changes
+  useEffect(() => {
+    if (currentUser?.username) {
+      setDisplayUsername(currentUser.username === 'Admin' ? 'Dhruba' : currentUser.username);
+    }
+  }, [currentUser?.username]);
 
   useEffect(() => {
     filterArticles();
@@ -301,8 +312,21 @@ const ArticleManagement: React.FC = () => {
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Welcome back,</p>
-                <p className="font-medium">{currentUser?.username}</p>
+                <p className="font-medium">{displayUsername || 'Dhruba'}</p>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  await refreshCurrentUser();
+                  if (currentUser?.username) {
+                    setDisplayUsername(currentUser.username === 'Admin' ? 'Dhruba' : currentUser.username);
+                  }
+                }}
+                className="ml-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </div>

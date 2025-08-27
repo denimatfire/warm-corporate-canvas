@@ -455,14 +455,14 @@ const Article_medium = () => {
             </div>
           </div>
           
-          {/* Tags */}
-          <div className="flex flex-wrap justify-center gap-2">
-            {article.tags.map((tag) => (
-              <Badge key={tag} variant="outline" className="text-sm border-gray-300 text-gray-700 bg-gray-50 px-3 py-1 rounded-full">
-                {tag}
-              </Badge>
-            ))}
-          </div>
+          {/* Excerpt */}
+          {article.excerpt && (
+            <div className="text-center max-w-3xl mx-auto">
+              <p className="text-lg text-gray-600 leading-relaxed font-light">
+                {article.excerpt}
+              </p>
+            </div>
+          )}
         </motion.div>
 
         
