@@ -12,6 +12,7 @@ import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import TipTapDemo from "./pages/TipTapDemo";
+import SimpleTipTapDemo from "./pages/SimpleTipTapDemo";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/photos" element={<PhotosPage />} />
           <Route path="/article/:id" element={<Article_medium />} />
           <Route path="/tiptap-demo" element={<TipTapDemo />} />
+          <Route path="/simple-tiptap" element={<SimpleTipTapDemo />} />
           <Route path="/admin/articles" element={
             <ProtectedRoute requiredRole="writer" showLogin={true}>
               <ArticleManagement />

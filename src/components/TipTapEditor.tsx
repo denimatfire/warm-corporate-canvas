@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, NodeViewWrapper, NodeViewProps, ReactNodeViewRenderer } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Image from '@tiptap/extension-image';
@@ -35,12 +35,181 @@ import {
   Minus,
   Highlighter,
   Undo,
-  Redo
+  Redo,
+  Move,
+  Maximize2
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { useToast } from './ui/use-toast';
+
+// Custom Image Component with Resize Functionality
+const ResizableImage: React.FC<NodeViewProps> = ({ node, updateAttributes }) => {
+  const [isResizing, setIsResizing] = useState(false);
+  const [isSelected, setIsSelected] = useState(false);
+  const [startSize, setStartSize] = useState({ width: 0, height: 0 });
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const imageRef = useRef<HTMLImageElement>(null);
+  const resizeRef = useRef<HTMLDivElement>(null);
+
+  // Extract attributes with fallbacks
+  const src = node.attrs.src || '';
+  const alt = node.attrs.alt || '';
+  const width = node.attrs.width || 400;
+  const height = node.attrs.height || 300;
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (imageRef.current && !imageRef.current.contains(event.target as Node)) {
+        setIsSelected(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleImageClick = () => {
+    setIsSelected(true);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent, handle: 'nw' | 'ne' | 'sw' | 'se') => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!imageRef.current) return;
+
+    setIsResizing(true);
+    setStartSize({ width: imageRef.current.offsetWidth, height: imageRef.current.offsetHeight });
+    setStartPos({ x: e.clientX, y: e.clientY });
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      const deltaX = e.clientX - startPos.x;
+      const deltaY = e.clientY - startPos.y;
+
+      let newWidth = startSize.width;
+      let newHeight = startSize.height;
+
+      // Resize based on handle position
+      if (handle === 'se') {
+        newWidth = Math.max(100, startSize.width + deltaX);
+        newHeight = Math.max(100, startSize.height + deltaY);
+      } else if (handle === 'sw') {
+        newWidth = Math.max(100, startSize.width - deltaX);
+        newHeight = Math.max(100, startSize.height + deltaY);
+      } else if (handle === 'ne') {
+        newWidth = Math.max(100, startSize.width + deltaX);
+        newHeight = Math.max(100, startSize.height - deltaY);
+      } else if (handle === 'nw') {
+        newWidth = Math.max(100, startSize.width - deltaX);
+        newHeight = Math.max(100, startSize.height - deltaY);
+      }
+
+      // Maintain aspect ratio if Shift is held
+      if (e.shiftKey) {
+        const aspectRatio = startSize.width / startSize.height;
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+          newHeight = newWidth / aspectRatio;
+        } else {
+          newWidth = newHeight * aspectRatio;
+        }
+      }
+
+      updateAttributes({ width: newWidth, height: newHeight });
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const resetSize = () => {
+    if (imageRef.current) {
+      const img = new window.Image();
+      img.onload = () => {
+        updateAttributes({ width: img.naturalWidth, height: img.naturalHeight });
+      };
+      img.src = src;
+    }
+  };
+  
+  return (
+    <NodeViewWrapper className="inline-block relative group">
+      <div className="relative inline-block">
+        <img
+          ref={imageRef}
+          src={src}
+          alt={alt}
+          width={width}
+          height={height}
+          className={`max-w-full h-auto rounded-lg cursor-pointer transition-all ${
+            isSelected ? 'ring-2 ring-blue-500 ring-opacity-75' : ''
+          }`}
+          onClick={handleImageClick}
+          draggable={false}
+        />
+        
+        {/* Resize Handles */}
+        {isSelected && (
+          <>
+            {/* Corner Resize Handles */}
+            <div
+              ref={resizeRef}
+              className="absolute -top-2 -left-2 w-4 h-4 bg-blue-500 border-2 border-white rounded-full cursor-nw-resize z-50 shadow-lg"
+              onMouseDown={(e) => handleMouseDown(e, 'nw')}
+            />
+            <div
+              className="absolute -top-2 -right-2 w-4 h-4 bg-blue-500 border-2 border-white rounded-full cursor-ne-resize z-50 shadow-lg"
+              onMouseDown={(e) => handleMouseDown(e, 'ne')}
+            />
+            <div
+              className="absolute -bottom-2 -left-2 w-4 h-4 bg-blue-500 border-2 border-white rounded-full cursor-sw-resize z-50 shadow-lg"
+              onMouseDown={(e) => handleMouseDown(e, 'sw')}
+            />
+            <div
+              className="absolute -bottom-2 -right-2 w-4 h-4 bg-blue-500 border-2 border-white rounded-full cursor-se-resize z-50 shadow-lg"
+              onMouseDown={(e) => handleMouseDown(e, 'se')}
+            />
+            
+            {/* Size Display */}
+            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+              {width} × {height}
+            </div>
+            
+            {/* Reset Size Button */}
+            <button
+              onClick={resetSize}
+              className="absolute -top-8 right-0 bg-gray-800 text-white p-1 rounded hover:bg-gray-700 transition-colors"
+              title="Reset to original size"
+            >
+              <Maximize2 className="w-3 h-3" />
+            </button>
+          </>
+        )}
+      </div>
+    </NodeViewWrapper>
+  );
+};
+
+// Custom Image Extension
+const ResizableImageExtension = Image.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(ResizableImage);
+  },
+}).configure({
+  HTMLAttributes: {
+    class: 'max-w-full h-auto rounded-lg',
+  },
+});
 
 interface TipTapEditorProps {
   value: string;
@@ -60,6 +229,13 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [imageAlt, setImageAlt] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [activeTab, setActiveTab] = useState<'upload' | 'url'>('upload');
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const editor = useEditor({
     extensions: [
@@ -78,11 +254,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       Placeholder.configure({
         placeholder,
       }),
-      Image.configure({
-        HTMLAttributes: {
-          class: 'max-w-full h-auto rounded-lg',
-        },
-      }),
+      ResizableImageExtension,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
@@ -169,6 +341,63 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       setImageUrl('');
       setImageAlt('');
       setIsImageDialogOpen(false);
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) return;
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 100);
+
+      // For now, we'll create a local blob URL
+      // In a real app, you'd upload to your server/cloud storage here
+      const imageUrl = URL.createObjectURL(selectedFile);
+      
+      // Simulate upload delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      // Insert the image into the editor
+      editor.chain().focus().setImage({ 
+        src: imageUrl, 
+        alt: imageAlt || selectedFile.name 
+      }).run();
+
+      // Reset form
+      setSelectedFile(null);
+      setImageAlt('');
+      setIsImageDialogOpen(false);
+      
+      toast({
+        title: "Image uploaded successfully!",
+        description: "Your image has been added to the editor.",
+      });
+
+    } catch (error) {
+      console.error('Upload failed:', error);
+      toast({
+        title: "Upload failed",
+        description: "There was an error uploading your image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -424,43 +653,192 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
 
       {/* Image Dialog */}
       <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Add Image</DialogTitle>
             <p className="text-sm text-muted-foreground">
-              Enter the URL and alt text for the image you want to add to your content.
+              Upload an image file or enter an image URL. Click on images in the editor to resize them using the blue handles.
             </p>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="image-url">Image URL</Label>
-              <Input
-                id="image-url"
-                type="url"
-                placeholder="https://example.com/image.jpg"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addImage()}
-              />
-            </div>
-            <div>
-              <Label htmlFor="image-alt">Alt Text</Label>
-              <Input
-                id="image-alt"
-                placeholder="Description of the image"
-                value={imageAlt}
-                onChange={(e) => setImageAlt(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addImage()}
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsImageDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={addImage} disabled={!imageUrl}>
-                Add Image
-              </Button>
-            </div>
+          
+          {/* Tabs for Upload vs URL */}
+          <div className="flex space-x-1 border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('upload')}
+              className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+                activeTab === 'upload'
+                  ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-700'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Upload File
+            </button>
+            <button
+              onClick={() => setActiveTab('url')}
+              className={`px-3 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+                activeTab === 'url'
+                  ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-700'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Image URL
+            </button>
+          </div>
+
+          <div className="space-y-4 pt-4">
+            {activeTab === 'upload' ? (
+              /* File Upload Tab */
+              <div className="space-y-4">
+                {/* Drag & Drop Area */}
+                <div
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                    dragActive
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragActive(true);
+                  }}
+                  onDragLeave={() => setDragActive(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragActive(false);
+                    const files = Array.from(e.dataTransfer.files);
+                    if (files.length > 0 && files[0].type.startsWith('image/')) {
+                      setSelectedFile(files[0]);
+                    }
+                  }}
+                >
+                  {selectedFile ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center">
+                        <img
+                          src={URL.createObjectURL(selectedFile)}
+                          alt="Preview"
+                          className="max-h-32 max-w-full rounded-lg"
+                        />
+                      </div>
+                      <p className="text-sm text-gray-600">{selectedFile.name}</p>
+                      <button
+                        onClick={() => setSelectedFile(null)}
+                        className="text-sm text-red-600 hover:text-red-800"
+                      >
+                        Remove file
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
+                      <p className="mt-2 text-sm text-gray-600">
+                        Drag and drop an image here, or{' '}
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          browse files
+                        </button>
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Supports: JPG, PNG, GIF, WebP (max 5MB)
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Hidden File Input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file && file.size <= 5 * 1024 * 1024) { // 5MB limit
+                      setSelectedFile(file);
+                    } else if (file) {
+                      toast({
+                        title: "File too large",
+                        description: "Please select an image smaller than 5MB.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="hidden"
+                />
+
+                {/* Alt Text Input */}
+                <div>
+                  <Label htmlFor="image-alt-upload">Alt Text</Label>
+                  <Input
+                    id="image-alt-upload"
+                    placeholder="Description of the image"
+                    value={imageAlt}
+                    onChange={(e) => setImageAlt(e.target.value)}
+                  />
+                </div>
+
+                {/* Upload Button */}
+                <Button
+                  onClick={handleFileUpload}
+                  disabled={!selectedFile || isUploading}
+                  className="w-full"
+                >
+                  {isUploading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Uploading... {uploadProgress}%</span>
+                    </div>
+                  ) : (
+                    'Upload & Insert Image'
+                  )}
+                </Button>
+
+                {/* Upload Progress */}
+                {isUploading && (
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* URL Tab */
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="image-url">Image URL</Label>
+                  <Input
+                    id="image-url"
+                    type="url"
+                    placeholder="https://example.com/image.jpg"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addImage()}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="image-alt-url">Alt Text</Label>
+                  <Input
+                    id="image-alt-url"
+                    placeholder="Description of the image"
+                    value={imageAlt}
+                    onChange={(e) => setImageAlt(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addImage()}
+                  />
+                </div>
+                <Button onClick={addImage} disabled={!imageUrl} className="w-full">
+                  Add Image from URL
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <Button variant="outline" onClick={() => setIsImageDialogOpen(false)}>
+              Cancel
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

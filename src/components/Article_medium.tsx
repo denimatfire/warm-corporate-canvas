@@ -455,14 +455,7 @@ const Article_medium = () => {
             </div>
           </div>
           
-          {/* Excerpt */}
-          {article.excerpt && (
-            <div className="text-center max-w-3xl mx-auto">
-              <p className="text-lg text-gray-600 leading-relaxed font-light">
-                {article.excerpt}
-              </p>
-            </div>
-          )}
+
         </motion.div>
 
         

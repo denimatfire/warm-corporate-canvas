@@ -1,52 +1,75 @@
 import React, { useState } from 'react';
 import TipTapEditor from '../components/TipTapEditor';
 
-const TipTapDemo = () => {
-  const [content, setContent] = useState('<h1>Welcome to TipTap Editor!</h1><p>This is a <strong>modern</strong> rich text editor that looks and feels like Medium.</p><h2>Features:</h2><ul><li>Rich text formatting</li><li>Headings and lists</li><li>Images and links</li><li>Tables and code blocks</li><li>Bubble and floating menus</li></ul>');
+export default function TipTapDemo() {
+  const [content, setContent] = useState(`
+    <p>Try resizing this image 👇</p>
+    <img src="https://placekitten.com/300/200" width="300" height="200" alt="Demo kitten" />
+    <p>Click on the image above to see the resize handles appear. Drag the blue corners to resize!</p>
+    <p>You can also:</p>
+    <ul>
+      <li>Hold Shift while resizing to maintain aspect ratio</li>
+      <li>Use the reset button to restore original size</li>
+      <li>Add more images using the image button in the toolbar</li>
+    </ul>
+  `);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            TipTap Editor Demo
-          </h1>
-          <p className="text-gray-600 text-lg">
-            Experience the new Medium-like editor with advanced features and a clean interface.
-          </p>
-        </div>
+    <div className="container mx-auto p-6 max-w-4xl">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">TipTap Editor Demo</h1>
+        <p className="text-gray-600">
+          A modern rich text editor with resizable images, built with TipTap and React.
+        </p>
+      </div>
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <TipTapEditor
-            value={content}
-            onChange={setContent}
-            placeholder="Start writing your story..."
-          />
-        </div>
+      <div className="bg-white rounded-lg shadow-lg">
+        <TipTapEditor
+          value={content}
+          onChange={setContent}
+          placeholder="Start writing your story..."
+          className="w-full"
+        />
+      </div>
 
-        <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            HTML Output Preview
-          </h2>
-          <div className="bg-gray-100 p-4 rounded-lg">
-            <pre className="text-sm text-gray-800 whitespace-pre-wrap overflow-x-auto">
-              {content}
-            </pre>
+      <div className="mt-8 bg-gray-50 rounded-lg p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Features</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h3 className="font-medium text-gray-900 mb-2">Rich Text Editing</h3>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li>• Bold, italic, underline, strikethrough</li>
+              <li>• Headings (H1, H2, H3)</li>
+              <li>• Bullet and numbered lists</li>
+              <li>• Text alignment (left, center, right)</li>
+              <li>• Code blocks and blockquotes</li>
+              <li>• Tables with resizable columns</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-medium text-gray-900 mb-2">Image Management</h3>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li>• Drag & drop image uploads</li>
+              <li>• Image URL insertion</li>
+              <li>• Resizable images with handles</li>
+              <li>• Aspect ratio preservation (Shift+drag)</li>
+              <li>• Original size reset</li>
+              <li>• Alt text support</li>
+            </ul>
           </div>
         </div>
+      </div>
 
-        <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Rendered Preview
-          </h2>
-          <div 
-            className="prose prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
-        </div>
+      <div className="mt-8 bg-blue-50 rounded-lg p-6">
+        <h2 className="text-xl font-semibold text-blue-900 mb-4">How to Use Resizable Images</h2>
+        <ol className="text-sm text-blue-800 space-y-2">
+          <li>1. <strong>Insert an image:</strong> Use the image button in the toolbar or drag & drop a file</li>
+          <li>2. <strong>Select the image:</strong> Click on any image in the editor</li>
+          <li>3. <strong>Resize:</strong> Drag the blue corner handles to resize</li>
+          <li>4. <strong>Maintain aspect ratio:</strong> Hold Shift while dragging</li>
+          <li>5. <strong>Reset size:</strong> Click the reset button (↗) to restore original dimensions</li>
+        </ol>
       </div>
     </div>
   );
-};
-
-export default TipTapDemo;
+}
