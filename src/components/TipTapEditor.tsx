@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, NodeViewWrapper, NodeViewProps, ReactNodeViewRenderer } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Image from '@tiptap/extension-image';
@@ -35,13 +35,181 @@ import {
   Minus,
   Highlighter,
   Undo,
-  Redo
+  Redo,
+  Move,
+  Maximize2
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { useToast } from './ui/use-toast';
+
+// Custom Image Component with Resize Functionality
+const ResizableImage: React.FC<NodeViewProps> = ({ node, updateAttributes }) => {
+  const [isResizing, setIsResizing] = useState(false);
+  const [isSelected, setIsSelected] = useState(false);
+  const [startSize, setStartSize] = useState({ width: 0, height: 0 });
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const imageRef = useRef<HTMLImageElement>(null);
+  const resizeRef = useRef<HTMLDivElement>(null);
+
+  // Extract attributes with fallbacks
+  const src = node.attrs.src || '';
+  const alt = node.attrs.alt || '';
+  const width = node.attrs.width || 400;
+  const height = node.attrs.height || 300;
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (imageRef.current && !imageRef.current.contains(event.target as Node)) {
+        setIsSelected(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleImageClick = () => {
+    setIsSelected(true);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent, handle: 'nw' | 'ne' | 'sw' | 'se') => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!imageRef.current) return;
+
+    setIsResizing(true);
+    setStartSize({ width: imageRef.current.offsetWidth, height: imageRef.current.offsetHeight });
+    setStartPos({ x: e.clientX, y: e.clientY });
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      const deltaX = e.clientX - startPos.x;
+      const deltaY = e.clientY - startPos.y;
+
+      let newWidth = startSize.width;
+      let newHeight = startSize.height;
+
+      // Resize based on handle position
+      if (handle === 'se') {
+        newWidth = Math.max(100, startSize.width + deltaX);
+        newHeight = Math.max(100, startSize.height + deltaY);
+      } else if (handle === 'sw') {
+        newWidth = Math.max(100, startSize.width - deltaX);
+        newHeight = Math.max(100, startSize.height + deltaY);
+      } else if (handle === 'ne') {
+        newWidth = Math.max(100, startSize.width + deltaX);
+        newHeight = Math.max(100, startSize.height - deltaY);
+      } else if (handle === 'nw') {
+        newWidth = Math.max(100, startSize.width - deltaX);
+        newHeight = Math.max(100, startSize.height - deltaY);
+      }
+
+      // Maintain aspect ratio if Shift is held
+      if (e.shiftKey) {
+        const aspectRatio = startSize.width / startSize.height;
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+          newHeight = newWidth / aspectRatio;
+        } else {
+          newWidth = newHeight * aspectRatio;
+        }
+      }
+
+      updateAttributes({ width: newWidth, height: newHeight });
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const resetSize = () => {
+    if (imageRef.current) {
+      const img = new window.Image();
+      img.onload = () => {
+        updateAttributes({ width: img.naturalWidth, height: img.naturalHeight });
+      };
+      img.src = src;
+    }
+  };
+  
+  return (
+    <NodeViewWrapper className="inline-block relative group">
+      <div className="relative inline-block">
+        <img
+          ref={imageRef}
+          src={src}
+          alt={alt}
+          width={width}
+          height={height}
+          className={`max-w-full h-auto rounded-lg cursor-pointer transition-all ${
+            isSelected ? 'ring-2 ring-blue-500 ring-opacity-75' : ''
+          }`}
+          onClick={handleImageClick}
+          draggable={false}
+        />
+        
+        {/* Resize Handles */}
+        {isSelected && (
+          <>
+            {/* Corner Resize Handles */}
+            <div
+              ref={resizeRef}
+              className="absolute -top-2 -left-2 w-4 h-4 bg-blue-500 border-2 border-white rounded-full cursor-nw-resize z-50 shadow-lg"
+              onMouseDown={(e) => handleMouseDown(e, 'nw')}
+            />
+            <div
+              className="absolute -top-2 -right-2 w-4 h-4 bg-blue-500 border-2 border-white rounded-full cursor-ne-resize z-50 shadow-lg"
+              onMouseDown={(e) => handleMouseDown(e, 'ne')}
+            />
+            <div
+              className="absolute -bottom-2 -left-2 w-4 h-4 bg-blue-500 border-2 border-white rounded-full cursor-sw-resize z-50 shadow-lg"
+              onMouseDown={(e) => handleMouseDown(e, 'sw')}
+            />
+            <div
+              className="absolute -bottom-2 -right-2 w-4 h-4 bg-blue-500 border-2 border-white rounded-full cursor-se-resize z-50 shadow-lg"
+              onMouseDown={(e) => handleMouseDown(e, 'se')}
+            />
+            
+            {/* Size Display */}
+            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+              {width} × {height}
+            </div>
+            
+            {/* Reset Size Button */}
+            <button
+              onClick={resetSize}
+              className="absolute -top-8 right-0 bg-gray-800 text-white p-1 rounded hover:bg-gray-700 transition-colors"
+              title="Reset to original size"
+            >
+              <Maximize2 className="w-3 h-3" />
+            </button>
+          </>
+        )}
+      </div>
+    </NodeViewWrapper>
+  );
+};
+
+// Custom Image Extension
+const ResizableImageExtension = Image.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(ResizableImage);
+  },
+}).configure({
+  HTMLAttributes: {
+    class: 'max-w-full h-auto rounded-lg',
+  },
+});
 
 interface TipTapEditorProps {
   value: string;
@@ -86,11 +254,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       Placeholder.configure({
         placeholder,
       }),
-      Image.configure({
-        HTMLAttributes: {
-          class: 'max-w-full h-auto rounded-lg',
-        },
-      }),
+      ResizableImageExtension,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
@@ -493,7 +657,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
           <DialogHeader>
             <DialogTitle>Add Image</DialogTitle>
             <p className="text-sm text-muted-foreground">
-              Upload an image file or enter an image URL.
+              Upload an image file or enter an image URL. Click on images in the editor to resize them using the blue handles.
             </p>
           </DialogHeader>
           
