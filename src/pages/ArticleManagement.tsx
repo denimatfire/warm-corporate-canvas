@@ -12,7 +12,8 @@ import {
   Trash2,
   Calendar,
   Tag,
-  User
+  User,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -26,7 +27,8 @@ import {
   canCreateArticles, 
   canDeleteArticles, 
   canPublishArticles,
-  canEditArticles
+  canEditArticles,
+  refreshCurrentUser
 } from '../data/auth';
 import { useToast } from '../hooks/use-toast';
 
@@ -39,14 +41,34 @@ const ArticleManagement: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published'>('all');
   const [tagFilter, setTagFilter] = useState<string>('all');
   const [stats, setStats] = useState({ total: 0, published: 0, drafts: 0, totalTags: 0 });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [displayUsername, setDisplayUsername] = useState<string>('');
   
   const { toast } = useToast();
   const currentUser = getCurrentUser();
 
   useEffect(() => {
-    loadArticles();
-    loadStats();
+    const initializeData = async () => {
+      setIsLoading(true);
+      try {
+        // Refresh current user to ensure username is updated
+        await refreshCurrentUser();
+        await Promise.all([loadArticles(), loadStats()]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    initializeData();
   }, []);
+
+  // Update display username when currentUser changes
+  useEffect(() => {
+    if (currentUser?.username) {
+      setDisplayUsername(currentUser.username === 'Admin' ? 'Dhruba' : currentUser.username);
+    }
+  }, [currentUser?.username]);
 
   useEffect(() => {
     filterArticles();
@@ -74,6 +96,26 @@ const ArticleManagement: React.FC = () => {
       }
     } catch (error) {
       console.error('Error loading stats:', error);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([loadArticles(), loadStats()]);
+      toast({
+        title: 'Refreshed',
+        description: 'Article list and statistics have been updated.',
+      });
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      toast({
+        title: 'Refresh Failed',
+        description: 'Failed to refresh the data. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -128,12 +170,16 @@ const ArticleManagement: React.FC = () => {
       try {
         const success = await articlesApi.delete(articleId);
         if (success) {
+          // Update local state immediately for better UX
+          setArticles(prevArticles => prevArticles.filter(a => a.id !== articleId));
+          
+          // Reload stats to reflect the change
+          await loadStats();
+          
           toast({
             title: 'Article Deleted',
             description: 'The article has been successfully deleted.',
           });
-          loadArticles();
-          loadStats();
         } else {
           toast({
             title: 'Error',
@@ -152,16 +198,35 @@ const ArticleManagement: React.FC = () => {
     }
   };
 
-  const handleSaveArticle = (article: Article) => {
-    setShowEditor(false);
-    setEditingArticle(null);
-    loadArticles();
-    loadStats();
-    
-    toast({
-      title: 'Article Saved',
-      description: `Article "${article.title}" has been ${article.status === 'published' ? 'published' : 'saved as draft'}.`,
-    });
+  const handleSaveArticle = async (article: Article) => {
+    try {
+      // Close the editor first
+      setShowEditor(false);
+      setEditingArticle(null);
+      
+      // Check if this was a deletion (using a custom property)
+      if ((article as any).status === 'deleted') {
+        // Remove the article from local state immediately
+        setArticles(prevArticles => prevArticles.filter(a => a.id !== article.id));
+        await loadStats(); // Reload stats to reflect the deletion
+        return; // Don't show save message for deletions
+      }
+      
+      // Reload articles and stats to reflect changes
+      await Promise.all([loadArticles(), loadStats()]);
+      
+      toast({
+        title: 'Article Saved',
+        description: `Article "${article.title}" has been ${article.status === 'published' ? 'published' : 'saved as draft'}.`,
+      });
+    } catch (error) {
+      console.error('Error refreshing articles after save:', error);
+      // Even if refresh fails, show success message since the article was saved
+      toast({
+        title: 'Article Saved',
+        description: `Article "${article.title}" has been ${article.status === 'published' ? 'published' : 'saved as draft'}.`,
+      });
+    }
   };
 
   const handleCancelEdit = () => {
@@ -188,13 +253,22 @@ const ArticleManagement: React.FC = () => {
 
       await articlesApi.update(article.id, updates);
       
+      // Update the local state immediately for better UX
+      setArticles(prevArticles => 
+        prevArticles.map(a => 
+          a.id === article.id 
+            ? { ...a, ...updates, updated_at: new Date().toISOString() }
+            : a
+        )
+      );
+      
+      // Reload stats to reflect the change
+      await loadStats();
+      
       toast({
         title: `Article ${newStatus === 'published' ? 'Published' : 'Unpublished'}`,
         description: `"${article.title}" has been ${newStatus === 'published' ? 'published' : 'unpublished'}.`,
       });
-      
-      loadArticles();
-      loadStats();
     } catch (error) {
       console.error('Error toggling publish status:', error);
       toast({
@@ -238,8 +312,21 @@ const ArticleManagement: React.FC = () => {
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Welcome back,</p>
-                <p className="font-medium">{currentUser?.username}</p>
+                <p className="font-medium">{displayUsername || 'Dhruba'}</p>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  await refreshCurrentUser();
+                  if (currentUser?.username) {
+                    setDisplayUsername(currentUser.username === 'Admin' ? 'Dhruba' : currentUser.username);
+                  }
+                }}
+                className="ml-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </div>
@@ -326,6 +413,16 @@ const ArticleManagement: React.FC = () => {
             </SelectContent>
           </Select>
           
+          <Button 
+            variant="outline" 
+            onClick={handleRefresh} 
+            disabled={isRefreshing}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
+          
           {canCreateArticles() && (
             <Button onClick={handleCreateArticle} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
@@ -336,7 +433,15 @@ const ArticleManagement: React.FC = () => {
 
         {/* Articles List */}
         <div className="space-y-4">
-          {filteredArticles.length === 0 ? (
+          {isLoading ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <h3 className="text-lg font-medium text-foreground mb-2">Loading articles...</h3>
+                <p className="text-muted-foreground">Please wait while we fetch your articles.</p>
+              </CardContent>
+            </Card>
+          ) : filteredArticles.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

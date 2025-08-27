@@ -1,7 +1,7 @@
 # 🏗️ Warm Corporate Canvas - Project Structure & Architecture
 
 ## 📋 **Project Overview**
-A modern, responsive portfolio website built with React, TypeScript, and Tailwind CSS, featuring article management, photo galleries, and professional presentation capabilities. Now powered by Supabase for robust backend functionality with automatic fallback support, and enhanced with advanced Quill editor capabilities.
+A modern, responsive portfolio website built with React, TypeScript, and Tailwind CSS, featuring article management, photo galleries, and professional presentation capabilities. Now powered by Supabase for robust backend functionality with automatic fallback support, and enhanced with both Quill and TipTap rich text editors.
 
 ---
 
@@ -10,7 +10,7 @@ A modern, responsive portfolio website built with React, TypeScript, and Tailwin
 ### **🌳 Root Directory**
 ```
 warm-corporate-canvas/
-├── 📄 package.json              # Dependencies & scripts
+├── 📄 package.json              # Dependencies & scripts (105 lines)
 ├── 📄 vite.config.ts            # Vite build configuration
 ├── 🎨 tailwind.config.ts        # Tailwind CSS + custom gradients
 ├── 📝 tsconfig.json             # TypeScript configuration
@@ -23,16 +23,20 @@ warm-corporate-canvas/
 ├── 🔐 SUPABASE_SETUP.md         # Supabase backend setup guide
 ├── 📚 ARTICLES_BACKEND_README.md    # Articles backend system docs
 ├── ✨ QUILL_ENHANCEMENTS.md     # Enhanced Quill editor documentation
+├── 🔤 TIPTAP_EDITOR_README.md   # TipTap editor documentation
 ├── ⚙️ eslint.config.js          # Code linting rules
 ├── 🎯 postcss.config.js         # PostCSS configuration
-├── 📦 bun.lockb                 # Bun package lock
-├── 📦 package-lock.json         # NPM package lock
+├── 📦 bun.lockb                 # Bun package lock (193KB)
+├── 📦 package-lock.json         # NPM package lock (293KB)
 ├── 🎨 components.json           # Shadcn/UI configuration
 ├── 🌐 netlify.toml              # Netlify deployment configuration
 ├── 🗂️ .git/                     # Git repository
 ├── 🗂️ .gitignore                # Git ignore rules
 ├── 🗂️ dist/                     # Production build output
-└── 🗂️ node_modules/             # Dependencies
+├── 🗂️ node_modules/             # Dependencies
+├── 📄 env.example               # Environment variables template
+├── 📄 ADD_COVER_IMAGE_PATH_COLUMN.sql  # Database migration script
+└── 📄 tatus                     # Git status file
 ```
 
 ---
@@ -42,11 +46,11 @@ warm-corporate-canvas/
 ### **🎯 Entry Points**
 ```
 src/
-├── 🚀 main.tsx                  # React app bootstrap
-├── 🎭 App.tsx                   # Main routing & app structure
-├── 🎨 index.css                 # Global styles
-├── 🎨 App.css                   # App-specific styles
-└── 📝 vite-env.d.ts             # Vite type definitions
+├── 🚀 main.tsx                  # React app bootstrap (7 lines)
+├── 🎭 App.tsx                   # Main routing & app structure (51 lines)
+├── 🎨 index.css                 # Global styles (325 lines)
+├── 🎨 App.css                   # App-specific styles (43 lines)
+└── 📝 vite-env.d.ts             # Vite type definitions (2 lines)
 ```
 
 ### **🧩 Core Components (`src/components/`)**
@@ -54,14 +58,14 @@ src/
 #### **🔧 Navigation & Layout**
 ```
 components/
-├── 🧭 Navigation.tsx            # Main navigation component
+├── 🧭 Navigation.tsx            # Main navigation component (265 lines)
 │   ├── Mobile menu with animations
 │   ├── Time-based greetings
 │   ├── Date display
 │   ├── Smooth scroll handling
 │   └── Touch gesture support
 │
-├── 🎨 ui/                       # Shadcn/UI component library
+├── 🎨 ui/                       # Shadcn/UI component library (40+ components)
 │   ├── 🎯 accordion.tsx         # Collapsible content
 │   ├── 🚨 alert-dialog.tsx      # Confirmation dialogs
 │   ├── 🚨 alert.tsx             # Alert notifications
@@ -116,7 +120,7 @@ components/
 #### **🌟 Hero & Introduction**
 ```
 components/
-├── 🎯 Hero.tsx                  # Main landing section
+├── 🎯 Hero.tsx                  # Main landing section (205 lines)
 │   ├── Profile photo display
 │   ├── Personal introduction
 │   ├── Call-to-action buttons
@@ -126,7 +130,7 @@ components/
 #### **ℹ️ About Section**
 ```
 components/
-├── ℹ️ About.tsx                  # Professional overview
+├── ℹ️ About.tsx                  # Professional overview (106 lines)
 │   ├── Skill highlights (5 key areas)
 │   ├── Statistics display
 │   ├── Glass card animations
@@ -136,56 +140,48 @@ components/
 #### **✍️ Writing & Articles**
 ```
 components/
-├── ✍️ Writing.tsx                # Article showcase
+├── ✍️ Writing.tsx                # Article showcase (222 lines)
 │   ├── Search functionality
 │   ├── View toggle (regular/medium)
 │   ├── Article filtering by tags
 │   ├── Photo viewer integration
 │   └── Supabase API integration
 │
-├── 📄 Article.tsx                # Full article view
-│   ├── Reading progress tracking
-│   ├── Text-to-speech functionality
-│   ├── Social sharing
-│   ├── PDF export
-│   ├── Comments system
-│   ├── Like functionality
-│   └── Mobile-responsive design
-│
-├── 📄 Article_medium.tsx         # Compact article view
-├── 📄 PublishedArticle.tsx       # Published article display
-├── ✏️ ArticleEditor.tsx          # Enhanced rich text editor
+├── 📄 Article_medium.tsx         # Compact article view (666 lines)
+├── 📄 PublishedArticle.tsx       # Published article display (494 lines)
+├── ✏️ ArticleEditor.tsx          # Enhanced rich text editor (716 lines)
 │   ├── Advanced Quill integration
 │   ├── Media library management
 │   ├── Image editing capabilities
 │   ├── Auto-save functionality
 │   └── Content validation
-├── 📋 ArticleList.tsx            # Article listing with filters
-├── 📋 ArticleListExample.tsx     # Example article list implementation
-├── 📝 ArticleWriterMenu.tsx      # Writing tools menu
-├── 📚 BlogModal.tsx              # Blog post modal
-├── 🧪 QuillDemo.tsx              # Quill editor demonstration
-└── 🔧 GoogleSheetsTest.tsx       # Google Sheets integration test
+├── 📋 ArticleList.tsx            # Article listing with filters (488 lines)
+├── 📋 ArticleListExample.tsx     # Example article list implementation (384 lines)
+├── 📝 ArticleWriterMenu.tsx      # Writing tools menu (276 lines)
+├── 📚 BlogModal.tsx              # Blog post modal (482 lines)
+├── 🧪 QuillDemo.tsx              # Quill editor demonstration (415 lines)
+├── 🔤 TipTapEditor.tsx           # TipTap editor implementation (472 lines)
+└── 🔧 GoogleSheetsTest.tsx       # Google Sheets integration test (205 lines)
 ```
 
 #### **📸 Photo Gallery**
 ```
 components/
-├── 📸 Photos.tsx                 # Image showcase
+├── 📸 Photos.tsx                 # Image showcase (273 lines)
 │   ├── Category-based organization
 │   ├── Lightbox functionality
 │   ├── Navigation controls
 │   ├── Responsive grid layout
 │   └── Personal milestone photos
 │
-├── 🖼️ PhotoViewer.tsx            # Enhanced image viewing
-└── 📱 InstagramPhotos.tsx        # Social media integration
+├── 🖼️ PhotoViewer.tsx            # Enhanced image viewing (109 lines)
+└── 📱 InstagramPhotos.tsx        # Social media integration (184 lines)
 ```
 
 #### **📧 Contact & Communication**
 ```
 components/
-├── 📧 Contact.tsx                # Contact form
+├── 📧 Contact.tsx                # Contact form (209 lines)
 │   ├── EmailJS integration
 │   ├── Google Sheets logging
 │   ├── Social media links
@@ -196,14 +192,14 @@ components/
 #### **🎮 Interactive Elements**
 ```
 components/
-├── 🐍 SnakeGame.tsx              # Classic snake game
-└── 🔐 ProtectedRoute.tsx         # Role-based access control
+├── 🐍 SnakeGame.tsx              # Classic snake game (225 lines)
+└── 🔐 ProtectedRoute.tsx         # Role-based access control (218 lines)
 ```
 
 #### **🔐 Authentication**
 ```
 components/
-├── 🔐 Login.tsx                  # User authentication component
+├── 🔐 Login.tsx                  # User authentication component (268 lines)
 │   ├── Supabase authentication
 │   ├── Form validation
 │   ├── Error handling
@@ -213,26 +209,26 @@ components/
 ### **📄 Pages (`src/pages/`)**
 ```
 pages/
-├── 🏠 Index.tsx                  # Main portfolio page
-├── 🎨 Portfolio.tsx              # Portfolio layout orchestrator
-├── ✍️ Writing.tsx                # Writing page
-├── 📸 Photos.tsx                 # Photos page
-├── 🛠️ ArticleManagement.tsx      # Admin article management
+├── 🏠 Index.tsx                  # Main portfolio page (8 lines)
+├── 🎨 Portfolio.tsx              # Portfolio layout orchestrator (22 lines)
+├── ✍️ Writing.tsx                # Writing page (15 lines)
+├── 📸 Photos.tsx                 # Photos page (15 lines)
+├── 🛠️ ArticleManagement.tsx      # Admin article management (462 lines)
 │   ├── CRUD operations
 │   ├── Search and filtering
 │   ├── Statistics dashboard
 │   ├── Role-based access control
 │   └── Supabase integration
-├── 🔐 LoginPage.tsx              # Authentication page
-├── ❌ NotFound.tsx               # 404 error page
-├── 🧪 ArticleTest.tsx            # Article testing page
-├── 🧪 QuillTest.tsx              # Quill editor testing page
-└── 📊 GoogleSheetsTestPage.tsx   # Google Sheets integration test
+├── 🔐 LoginPage.tsx              # Authentication page (172 lines)
+├── ❌ NotFound.tsx               # 404 error page (56 lines)
+├── 🧪 ArticleTest.tsx            # Article testing page (33 lines)
+├── 🧪 QuillTest.tsx              # Quill editor testing page (54 lines)
+└── 📊 GoogleSheetsTestPage.tsx   # Google Sheets integration test (13 lines)
 ```
 
 ### **🔧 Utilities & Hooks (`src/lib/` & `src/hooks/`)**
 
-#### **📚 Articles API (`src/lib/articles-api.ts`)**
+#### **📚 Articles API (`src/lib/articles-api.ts`)** (382 lines)
 ```typescript
 // Core API functions with Supabase integration:
 export const articlesApi = {
@@ -261,6 +257,7 @@ interface Article {
   content: string
   excerpt: string
   cover_image: string
+  cover_image_path?: string  // New field for image paths
   tags: string[]
   status: 'draft' | 'published'
   author: string
@@ -278,7 +275,7 @@ interface ArticleStats {
 }
 ```
 
-#### **📊 Articles Hook (`src/hooks/use-articles.ts`)**
+#### **📊 Articles Hook (`src/hooks/use-articles.ts`)** (326 lines)
 ```typescript
 // Enhanced state management hooks:
 export function useArticles() {
@@ -301,31 +298,41 @@ export function useArticleSearch() {
 }
 ```
 
-#### **📧 Email Configuration (`src/lib/email-config.ts`)**
+#### **📧 Email Configuration (`src/lib/email-config.ts`)** (69 lines)
 ```typescript
 // Email functions:
 export async function sendNotificationEmail(formData: ContactFormData)
 export async function sendWelcomeEmail(formData: ContactFormData)
 ```
 
-#### **📊 Google Sheets (`src/lib/sheets.ts`)**
+#### **📊 Google Sheets (`src/lib/sheets.ts`)** (51 lines)
 ```typescript
 // Sheets integration:
 export async function logContactToSheet(formData: ContactFormData)
 ```
 
-#### **🛠️ Utilities (`src/lib/utils.ts`)**
+#### **🖼️ Image Upload (`src/lib/image-upload.ts`)** (260 lines)
+```typescript
+// Image handling functions:
+export async function uploadImage(file: File): Promise<string>
+export async function processImage(imageUrl: string): Promise<string>
+export function compressImage(file: File): Promise<File>
+```
+
+#### **🛠️ Utilities (`src/lib/utils.ts`)** (62 lines)
 ```typescript
 // Utility functions:
 export function cn(...inputs: ClassValue[])  // Class name merging
+export function formatDate(date: string): string  // Date formatting
+export function generateExcerpt(content: string, maxLength: number): string  // Content excerpt
 ```
 
 ### **🔐 Authentication & Data (`src/data/`)**
 ```
 data/
-├── 🔐 auth.ts                    # User authentication logic
-├── 📄 articles.ts                # Articles data initialization
-└── 📚 blogs.ts                   # Blog data management
+├── 🔐 auth.ts                    # User authentication logic (280 lines)
+├── 📄 articles.ts                # Articles data initialization (456 lines)
+└── 📚 blogs.ts                   # Blog data management (447 lines)
 ```
 
 ---
@@ -353,6 +360,7 @@ data/
 ### **📝 Content Management**
 - Full CRUD operations for articles
 - Enhanced Quill rich text editing with advanced image features
+- TipTap editor as alternative rich text editor
 - Media library management
 - Image editing capabilities (crop, scale, rotate)
 - Publishing workflow
@@ -411,6 +419,7 @@ data/
 
 ### **Rich Text Editing**
 - **React Quill 2.0.0** - Enhanced rich text editor
+- **TipTap 3.3.0** - Alternative rich text editor
 - **Advanced Image Features** - Media library, editing tools
 - **Canvas API** - HTML5 Canvas for image manipulation
 - **Local Storage** - Persistent media management
@@ -491,11 +500,12 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 - **Custom Hooks**: 3+ specialized hooks
 - **API Endpoints**: 15+ backend functions
 - **Pages**: 9 main application pages
-- **File Types**: TypeScript, CSS, Markdown, JSON
+- **File Types**: TypeScript, CSS, Markdown, JSON, SQL
 - **Dependencies**: 70+ npm packages
 - **Build Size**: Optimized for production
 - **Backend**: Supabase + LocalStorage fallback
-- **Editor**: Enhanced Quill with advanced image features
+- **Editors**: Enhanced Quill + TipTap with advanced image features
+- **Total Lines of Code**: 10,000+ lines
 
 ---
 
@@ -542,6 +552,7 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 ### **Feature Documentation**
 - **QUILL_ENHANCEMENTS.md** - Enhanced Quill editor features
+- **TIPTAP_EDITOR_README.md** - TipTap editor documentation
 - **Enhanced Image Editing** - Media library and manipulation tools
 
 ---
@@ -555,13 +566,15 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 4. **Improved Error Handling** - Better offline support and user experience
 5. **Security Enhancements** - Row Level Security and authentication
 6. **Quill Editor Enhancements** - Advanced image editing and media management
-7. **Performance Optimizations** - Better build tools and development experience
+7. **TipTap Editor Addition** - Alternative rich text editor option
+8. **Performance Optimizations** - Better build tools and development experience
 
 ### **Backward Compatibility**
 - Google Sheets integration maintained for legacy support
 - LocalStorage fallback ensures offline functionality
 - Gradual migration path for existing data
 - Enhanced Quill editor maintains compatibility with existing content
+- TipTap editor provides alternative editing experience
 
 ---
 
@@ -574,6 +587,12 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 - **Accessibility**: Alt text support and semantic HTML
 - **Performance**: Optimized rendering and memory management
 
+### **TipTap Editor**
+- **Modern Architecture**: Built on ProseMirror
+- **Extensible**: Plugin-based architecture
+- **Collaborative**: Real-time collaboration support
+- **Customizable**: Highly configurable toolbar and features
+
 ### **Updated Dependencies**
 - **React 18.3.1**: Latest React features and performance improvements
 - **TypeScript 5.8.3**: Enhanced type safety and developer experience
@@ -582,4 +601,4 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 ---
 
-*This document serves as the comprehensive reference for the Warm Corporate Canvas project structure, architecture, and implementation details. Last updated to reflect Supabase integration, enhanced Quill editor capabilities, and latest project enhancements.*
+*This document serves as the comprehensive reference for the Warm Corporate Canvas project structure, architecture, and implementation details. Last updated to reflect Supabase integration, enhanced Quill editor capabilities, TipTap editor addition, and latest project enhancements.*

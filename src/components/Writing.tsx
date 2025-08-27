@@ -49,7 +49,7 @@ const Writing = () => {
       const filtered = articles.filter(article =>
         article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+        (article.author && article.author.toLowerCase().includes(searchTerm.toLowerCase()))
       );
       setFilteredArticles(filtered);
     }
@@ -105,7 +105,7 @@ const Writing = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Search articles by title, content, or tags..."
+                placeholder="Search articles by title, excerpt, or author..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-12 pr-4 py-3 bg-card border-border focus:border-primary w-80"
@@ -145,14 +145,14 @@ const Writing = () => {
                 </CardTitle>
               </CardHeader>
               
-              {/* Photo Preview */}
+              {/* Cover Image */}
               {article.cover_image && (
                 <div className="px-6 -mt-2 mb-4">
                   <div className="relative overflow-hidden rounded-lg border border-border">
                     <img
                       src={article.cover_image}
-                      alt={`${article.title} preview`}
-                      className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+                      alt={`${article.title} cover`}
+                      className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=600&fit=crop';
@@ -163,14 +163,19 @@ const Writing = () => {
               )}
               
               <CardContent>
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {article.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
+                {/* Excerpt */}
+                {article.excerpt && (
+                  <div className="mb-4">
+                    <p className="text-sm text-muted-foreground leading-relaxed overflow-hidden" style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      textOverflow: 'ellipsis'
+                    }}>
+                      {article.excerpt}
+                    </p>
+                  </div>
+                )}
 
                 {/* Article Meta */}
                 <div className="flex items-center justify-between text-sm text-muted-foreground">

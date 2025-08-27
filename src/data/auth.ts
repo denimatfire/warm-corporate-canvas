@@ -29,7 +29,7 @@ const initializeFromSession = async () => {
       // Convert Supabase user to our User format
       currentUser = {
         id: session.user.id,
-        username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'user',
+        username: session.user.user_metadata?.username === 'Admin' ? 'Dhruba' : (session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'Dhruba'),
         email: session.user.email || '',
         role: session.user.user_metadata?.role || 'writer',
         isActive: true,
@@ -75,7 +75,7 @@ export const login = async (credentials: LoginCredentials): Promise<{ success: b
       // Convert Supabase user to our User format
       currentUser = {
         id: data.user.id,
-        username: data.user.user_metadata?.username || data.user.email?.split('@')[0] || 'user',
+        username: data.user.user_metadata?.username === 'Admin' ? 'Dhruba' : (data.user.user_metadata?.username || data.user.email?.split('@')[0] || 'Dhruba'),
         email: data.user.email || '',
         role: data.user.user_metadata?.role || 'writer',
         isActive: true,
@@ -119,7 +119,7 @@ export const isAuthenticated = async (): Promise<boolean> => {
       if (!currentUser || currentUser.id !== user.id) {
         currentUser = {
           id: user.id,
-          username: user.user_metadata?.username || user.email?.split('@')[0] || 'user',
+          username: user.user_metadata?.username === 'Admin' ? 'Dhruba' : (user.user_metadata?.username || user.email?.split('@')[0] || 'Dhruba'),
           email: user.email || '',
           role: user.user_metadata?.role || 'writer',
           isActive: true,
@@ -141,6 +141,27 @@ export const isAuthenticated = async (): Promise<boolean> => {
 // Get current user
 export const getCurrentUser = (): User | null => {
   return currentUser;
+};
+
+// Force refresh current user from Supabase
+export const refreshCurrentUser = async (): Promise<void> => {
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (user && !error) {
+      currentUser = {
+        id: user.id,
+        username: user.user_metadata?.username === 'Admin' ? 'Dhruba' : (user.user_metadata?.username || user.email?.split('@')[0] || 'Dhruba'),
+        email: user.email || '',
+        role: user.user_metadata?.role || 'writer',
+        isActive: true,
+        createdAt: user.created_at,
+        lastLogin: user.last_sign_in_at
+      };
+      console.log('✅ Current user refreshed:', currentUser);
+    }
+  } catch (error) {
+    console.error('Failed to refresh current user:', error);
+  }
 };
 
 // Get Supabase user for storage operations
@@ -174,7 +195,7 @@ export const addUser = async (userData: { email: string; password: string; usern
     if (data.user) {
       const newUser: User = {
         id: data.user.id,
-        username: data.user.user_metadata?.username || userData.email.split('@')[0],
+        username: data.user.user_metadata?.username === 'Admin' ? 'Dhruba' : (data.user.user_metadata?.username || userData.email.split('@')[0] || 'Dhruba'),
         email: data.user.email || '',
         role: data.user.user_metadata?.role || 'writer',
         isActive: true,

@@ -260,11 +260,11 @@ const BlogModal = ({ article, isOpen, onClose }: BlogModalProps) => {
                       <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
                         {article.category}
                       </Badge>
-                      {article.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs border-blue-300 text-blue-700 bg-blue-50">
-                          {tag}
-                        </Badge>
-                      ))}
+                      {article.excerpt && (
+                        <div className="text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded-full px-3 py-1">
+                          <span className="font-medium">Excerpt:</span> {article.excerpt.length > 100 ? article.excerpt.substring(0, 100) + '...' : article.excerpt}
+                        </div>
+                      )}
                     </div>
                     <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-blue-900 mb-4 leading-tight`}>{article.title}</h1>
                     <p className={`${isMobile ? 'text-base' : 'text-lg'} text-muted-foreground mb-4 max-w-2xl mx-auto leading-relaxed`}>
