@@ -214,11 +214,70 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
         <Progress value={readingProgress} className="h-1" />
       </div>
 
+      {/* Sticky Header with Share */}
+      <div className="fixed top-1 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="max-w-4xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-muted-foreground font-medium">Article</span>
+            </div>
+            
+            {/* Share Section */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-muted-foreground mr-2">Share:</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleShare('linkedin')}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted p-2"
+                aria-label="Share on LinkedIn"
+              >
+                <Linkedin className="w-4 h-4" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleShare('twitter')}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted p-2"
+                aria-label="Share on Twitter"
+              >
+                <Twitter className="w-4 h-4" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleShare('whatsapp')}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted p-2"
+                aria-label="Share on WhatsApp"
+              >
+                <MessageCircle className="w-4 h-4" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleShare('copy')}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted p-2"
+                aria-label="Copy link"
+              >
+                {copiedLink ? (
+                  <Check className="w-4 h-4 text-green-500" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Article Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="pt-20 pb-8 space-y-6"
+        className="pt-24 pb-8 space-y-6"
       >
         {article.cover_image && (
           <div className="relative w-full h-64 md:h-96 rounded-xl overflow-hidden">
@@ -275,6 +334,8 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
           )}
         </div>
 
+
+
         {/* Action Buttons */}
         <div className="flex flex-wrap items-center gap-3 pt-4 border-t">
           <Button
@@ -288,15 +349,6 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
               <Play className="w-4 h-4" />
             )}
             {isPlaying ? 'Pause' : 'Listen'}
-          </Button>
-
-          <Button
-            variant="outline"
-            onClick={() => setIsSharing(!isSharing)}
-            className="flex items-center gap-2"
-          >
-            <Share2 className="w-4 h-4" />
-            Share
           </Button>
 
           <Button

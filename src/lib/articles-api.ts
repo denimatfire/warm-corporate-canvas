@@ -6,6 +6,7 @@ export interface Article {
   content: string;
   excerpt: string;
   cover_image: string;
+  cover_image_path?: string;
   tags: string[];
   status: 'draft' | 'published';
   author: string;
@@ -20,6 +21,7 @@ export interface CreateArticleData {
   content: string;
   excerpt: string;
   cover_image: string;
+  cover_image_path?: string;
   tags: string[];
   status: 'draft' | 'published';
   author: string;
@@ -31,6 +33,7 @@ export interface UpdateArticleData {
   content?: string;
   excerpt?: string;
   cover_image?: string;
+  cover_image_path?: string;
   tags?: string[];
   status?: 'draft' | 'published';
   author?: string;

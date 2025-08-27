@@ -37,26 +37,57 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     checkAuth();
   }, []);
 
-  const checkAuth = () => {
-    const authenticated = isAuthenticated();
-    const currentUser = getCurrentUser();
-    
-    // Check if user has the required role
-    const hasRequiredRole = currentUser && (
-      requiredRole === 'admin' ? currentUser.role === 'admin' :
-      requiredRole === 'writer' ? ['admin', 'writer'].includes(currentUser.role) :
-      requiredRole === 'viewer' ? ['admin', 'writer', 'viewer'].includes(currentUser.role) :
-      true
-    );
-    
-    const hasAccess = authenticated && hasRequiredRole;
-    
-    setIsAuth(authenticated);
-    setCanAccess(hasAccess);
-    setCurrentUser(currentUser);
-    
-    if (!authenticated && showLogin) {
-      setShowLoginForm(true);
+  const checkAuth = async () => {
+    try {
+      const authenticated = await isAuthenticated();
+      const currentUser = getCurrentUser();
+      
+      console.log('🔍 Auth check:', { authenticated, currentUser });
+      
+      // Check if user has the required role
+      console.log('🔍 Role check details:', {
+        currentUser: !!currentUser,
+        userRole: currentUser?.role,
+        requiredRole,
+        adminCheck: requiredRole === 'admin' ? currentUser?.role === 'admin' : 'N/A',
+        writerCheck: requiredRole === 'writer' ? ['admin', 'writer'].includes(currentUser?.role || '') : 'N/A',
+        viewerCheck: requiredRole === 'viewer' ? ['admin', 'writer', 'viewer'].includes(currentUser?.role || '') : 'N/A'
+      });
+      
+      const hasRequiredRole = currentUser && (
+        requiredRole === 'admin' ? currentUser.role === 'admin' :
+        requiredRole === 'writer' ? ['admin', 'writer'].includes(currentUser.role) :
+        requiredRole === 'viewer' ? ['admin', 'writer', 'viewer'].includes(currentUser.role) :
+        true
+      );
+      
+      console.log('🔍 Role check result:', { hasRequiredRole });
+      
+      const hasAccess = authenticated && hasRequiredRole;
+      
+      console.log('🔍 Final access check:', { 
+        authenticated,
+        hasRequiredRole, 
+        hasAccess, 
+        requiredRole, 
+        userRole: currentUser?.role
+      });
+      
+      setIsAuth(authenticated);
+      setCanAccess(hasAccess);
+      setCurrentUser(currentUser);
+      
+      if (!authenticated && showLogin) {
+        setShowLoginForm(true);
+      }
+    } catch (error) {
+      console.error('❌ Auth check failed:', error);
+      setIsAuth(false);
+      setCanAccess(false);
+      setCurrentUser(null);
+      if (showLogin) {
+        setShowLoginForm(true);
+      }
     }
   };
 

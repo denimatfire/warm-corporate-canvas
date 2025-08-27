@@ -134,10 +134,7 @@ const Writing = () => {
               onClick={() => handleArticleClick(article)}
             >
               <CardHeader>
-                <div className="flex items-center justify-between mb-4">
-                  <Badge variant="secondary" className="text-xs">
-                    {article.status === 'published' ? 'Published' : 'Draft'}
-                  </Badge>
+                <div className="flex items-center justify-end mb-4">
                   <div className="text-xs text-muted-foreground flex items-center space-x-2">
                     <Calendar className="w-3 h-3" />
                     <span>{formatDate(article.published_at || article.created_at)}</span>

@@ -24,7 +24,7 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess, onCancel }) => {
   const [credentials, setCredentials] = useState<LoginCredentials>({
-    username: '',
+    email: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -37,8 +37,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onCancel }) => {
   const validateForm = (): boolean => {
     const newErrors: string[] = [];
     
-    if (!credentials.username.trim()) {
-      newErrors.push('Username is required');
+    if (!credentials.email.trim()) {
+      newErrors.push('Email is required');
     }
     
     if (!credentials.password.trim()) {
@@ -63,7 +63,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onCancel }) => {
       if (result.success && result.user) {
         toast({
           title: 'Login successful!',
-          description: `Welcome back, ${result.user.username}!`,
+          description: `Welcome back, ${result.user.email}!`,
         });
         onLoginSuccess();
       } else {
@@ -128,19 +128,19 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onCancel }) => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username Field */}
+            {/* Email Field */}
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-sm font-medium">
-                Username
+              <Label htmlFor="email" className="text-sm font-medium">
+                Email
               </Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  id="username"
-                  type="text"
-                  value={credentials.username}
-                  onChange={(e) => handleInputChange('username', e.target.value)}
-                  placeholder="Enter your username"
+                  id="email"
+                  type="email"
+                  value={credentials.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  placeholder="Enter your email"
                   className="pl-10"
                   disabled={isLoading}
                 />

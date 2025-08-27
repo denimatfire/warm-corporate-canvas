@@ -10,7 +10,7 @@ import { login } from '../data/auth';
 import { useToast } from '../hooks/use-toast';
 
 const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,12 +25,12 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const result = await login({ username, password });
+      const result = await login({ email, password });
       
       if (result.success && result.user) {
         toast({
           title: 'Login Successful',
-          description: `Welcome back, ${result.user.username}!`,
+          description: `Welcome back, ${result.user.email}!`,
         });
         
         // Redirect to article management
@@ -78,17 +78,17 @@ const LoginPage: React.FC = () => {
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-sm font-medium">
-                  Username
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter your username"
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
                     className="pl-10"
                     required
                     disabled={isLoading}
@@ -132,7 +132,7 @@ const LoginPage: React.FC = () => {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || !username.trim() || !password.trim()}
+                disabled={isLoading || !email.trim() || !password.trim()}
               >
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
@@ -141,8 +141,8 @@ const LoginPage: React.FC = () => {
             <div className="mt-6 p-4 bg-muted/50 rounded-lg">
               <h4 className="text-sm font-medium text-foreground mb-2">Demo Credentials</h4>
               <div className="text-xs text-muted-foreground space-y-1">
-                <p><strong>Username:</strong> admin</p>
-                <p><strong>Password:</strong> admin123</p>
+                <p><strong>Email:</strong> test@example.com</p>
+                <p><strong>Password:</strong> test123456</p>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
                 Use these credentials to access the admin dashboard and create articles.

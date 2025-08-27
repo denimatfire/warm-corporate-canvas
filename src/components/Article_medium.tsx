@@ -331,42 +331,90 @@ const Article_medium = () => {
               </Button>
             </div>
             
-            {/* Action Buttons */}
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleSpeech}
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
-                aria-label={isPlaying ? "Pause audio" : "Play audio"}
-              >
-                {isPlaying ? (
-                  <Pause className="w-4 h-4" />
-                ) : (
-                  <Play className="w-4 h-4" />
-                )}
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setBookmarked(!bookmarked)}
-                className={`p-2 ${bookmarked ? 'text-blue-600' : 'text-gray-600'} hover:bg-gray-100`}
-                aria-label="Bookmark article"
-              >
-                <Bookmark className={`w-4 h-4 ${bookmarked ? 'fill-current' : ''}`} />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={downloadPDF}
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
-                aria-label="Download article as PDF"
-              >
-                <Download className="w-4 h-4" />
-              </Button>
-            </div>
+                         {/* Share Section */}
+             <div className="flex items-center space-x-2">
+               <span className="text-sm text-gray-500 mr-2">Share:</span>
+               <Button
+                 variant="ghost"
+                 size="sm"
+                 onClick={() => shareArticle("linkedin")}
+                 className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
+                 aria-label="Share on LinkedIn"
+               >
+                 <Linkedin className="w-4 h-4" />
+               </Button>
+               
+               <Button
+                 variant="ghost"
+                 size="sm"
+                 onClick={() => shareArticle("twitter")}
+                 className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
+                 aria-label="Share on Twitter"
+               >
+                 <Twitter className="w-4 h-4" />
+               </Button>
+               
+               <Button
+                 variant="ghost"
+                 size="sm"
+                 onClick={() => shareArticle("whatsapp")}
+                 className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
+                 aria-label="Share on WhatsApp"
+               >
+                 <MessageCircle className="w-4 h-4" />
+               </Button>
+               
+               <Button
+                 variant="ghost"
+                 size="sm"
+                 onClick={() => shareArticle("copy")}
+                 className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
+                 aria-label="Copy link"
+               >
+                 {isCopied ? (
+                   <Check className="w-4 h-4 text-green-500" />
+                 ) : (
+                   <Copy className="w-4 h-4" />
+                 )}
+               </Button>
+             </div>
+
+             {/* Action Buttons */}
+             <div className="flex items-center space-x-2">
+               <Button
+                 variant="ghost"
+                 size="sm"
+                 onClick={toggleSpeech}
+                 className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
+                 aria-label={isPlaying ? "Pause audio" : "Play audio"}
+               >
+                 {isPlaying ? (
+                   <Pause className="w-4 h-4" />
+                 ) : (
+                   <Play className="w-4 h-4" />
+                 )}
+               </Button>
+               
+               <Button
+                 variant="ghost"
+                 size="sm"
+                 onClick={() => setBookmarked(!bookmarked)}
+                 className={`p-2 ${bookmarked ? 'text-blue-600' : 'text-gray-600'} hover:bg-gray-100`}
+                 aria-label="Bookmark article"
+               >
+                 <Bookmark className={`w-4 h-4 ${bookmarked ? 'fill-current' : ''}`} />
+               </Button>
+               
+               <Button
+                 variant="ghost"
+                 size="sm"
+                 onClick={downloadPDF}
+                 className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
+                 aria-label="Download article as PDF"
+               >
+                 <Download className="w-4 h-4" />
+               </Button>
+             </div>
           </div>
         </div>
       </header>
@@ -379,12 +427,7 @@ const Article_medium = () => {
           transition={{ duration: 0.6 }}
           className="px-6 py-12 text-center"
         >
-          {/* Category Badge */}
-          <div className="mb-6">
-            <Badge variant="secondary" className="text-sm bg-gray-100 text-gray-700 border-gray-200 px-3 py-1 rounded-full">
-              {article.status === 'published' ? 'Published' : 'Draft'}
-            </Badge>
-          </div>
+
           
           {/* Title - Medium's signature large, bold typography */}
           <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight max-w-4xl mx-auto font-serif">
@@ -422,63 +465,7 @@ const Article_medium = () => {
           </div>
         </motion.div>
 
-        {/* Medium-style Share Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="px-6 mb-12"
-        >
-          <div className="flex items-center justify-center space-x-6 py-4 border-t border-gray-100">
-            <span className="text-sm text-gray-500">Share this article:</span>
-            
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => shareArticle("linkedin")}
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
-                aria-label="Share on LinkedIn"
-              >
-                <Linkedin className="w-4 h-4" />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => shareArticle("twitter")}
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
-                aria-label="Share on Twitter"
-              >
-                <Twitter className="w-4 h-4" />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => shareArticle("whatsapp")}
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
-                aria-label="Share on WhatsApp"
-              >
-                <MessageCircle className="w-4 h-4" />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => shareArticle("copy")}
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2"
-                aria-label="Copy link"
-              >
-                {isCopied ? (
-                  <Check className="w-4 h-4 text-green-500" />
-                ) : (
-                  <Copy className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
-          </div>
-        </motion.div>
+        
 
         {/* Medium-style Article Content */}
         <motion.div

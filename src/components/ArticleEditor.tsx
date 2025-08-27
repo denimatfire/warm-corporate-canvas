@@ -17,107 +17,11 @@ import {
   Maximize2,
   Minimize2
 } from 'lucide-react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-
-// Enhanced CSS for Word content display
-const quillStyles = `
-  .quill-wrapper .ql-editor {
-    min-height: 400px;
-    font-size: 16px;
-    line-height: 1.6;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
-  
-  /* List styling */
-  .quill-wrapper .ql-editor ul,
-  .quill-wrapper .ql-editor ol {
-    padding-left: 20px;
-    margin: 10px 0;
-  }
-  
-  .quill-wrapper .ql-editor li {
-    margin: 5px 0;
-    line-height: 1.6;
-  }
-  
-  .quill-wrapper .ql-editor ul li {
-    list-style-type: disc;
-  }
-  
-  .quill-wrapper .ql-editor ol li {
-    list-style-type: decimal;
-  }
-  
-  /* Heading styles */
-  .quill-wrapper .ql-editor h1,
-  .quill-wrapper .ql-editor h2,
-  .quill-wrapper .ql-editor h3 {
-    margin: 20px 0 10px 0;
-    font-weight: 600;
-    line-height: 1.3;
-  }
-  
-  .quill-wrapper .ql-editor h1 {
-    font-size: 24px;
-  }
-  
-  .quill-wrapper .ql-editor h2 {
-    font-size: 20px;
-  }
-  
-  .quill-wrapper .ql-editor h3 {
-    font-size: 18px;
-  }
-  
-  /* Paragraph spacing */
-  .quill-wrapper .ql-editor p {
-    margin: 10px 0;
-    line-height: 1.6;
-  }
-  
-  /* Blockquote styling */
-  .quill-wrapper .ql-editor blockquote {
-    border-left: 4px solid #ddd;
-    margin: 20px 0;
-    padding: 10px 20px;
-    background-color: #f9f9f9;
-    font-style: italic;
-  }
-  
-  /* Code block styling */
-  .quill-wrapper .ql-editor pre {
-    background-color: #f4f4f4;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 15px;
-    margin: 15px 0;
-    overflow-x: auto;
-    font-family: 'Courier New', monospace;
-  }
-  
-  /* Toolbar styling */
-  .quill-wrapper .ql-toolbar {
-    border-top: 1px solid #ccc;
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #ccc;
-    background-color: #f8f9fa;
-  }
-  
-  .quill-wrapper .ql-container {
-    border-bottom: 1px solid #ccc;
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #ccc;
-  }
-  
-  /* Word content cleanup */
-  .quill-wrapper .ql-editor .word-content {
-    font-family: inherit;
-  }
-`;
-import { Article, calculateReadTime, generateExcerpt } from '../data/articles';
-import { articlesApi } from '../lib/articles-api';
+import TipTapEditor from './TipTapEditor';
+import { Article as LocalArticle, calculateReadTime, generateExcerpt } from '../data/articles';
+import { articlesApi, Article as ApiArticle } from '../lib/articles-api';
 import { canPublishArticles, getCurrentUser } from '../data/auth';
+import { uploadImage, updateImage, deleteImage, ImageUploadResult } from '../lib/image-upload';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -126,8 +30,8 @@ import { Textarea } from './ui/textarea';
 import { useToast } from '../hooks/use-toast';
 
 interface ArticleEditorProps {
-  article?: Article;
-  onSave?: (article: Article) => void;
+  article?: ApiArticle;
+  onSave?: (article: ApiArticle) => void;
   onCancel?: () => void;
 }
 
@@ -151,14 +55,16 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
     // Let Quill handle paste naturally
   };
   const [coverImage, setCoverImage] = useState(article?.cover_image || '');
+  const [coverImagePath, setCoverImagePath] = useState<string | null>(article?.cover_image_path || null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [tags, setTags] = useState<string[]>(article?.tags || []);
   const [tagInput, setTagInput] = useState('');
   const [status, setStatus] = useState<'draft' | 'published'>(article?.status || 'draft');
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [lastSavedContent, setLastSavedContent] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const quillRef = useRef<ReactQuill>(null);
   const { toast } = useToast();
   const currentUser = getCurrentUser();
   const canPublish = canPublishArticles();
@@ -171,14 +77,21 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
       console.log('Article prop changed, syncing content:', article);
       setTitle(article.title || '');
       setContent(article.content || '');
-      setCoverImage(article.cover_image || '');
+      // Only set cover image if we don't already have one or if the article has a different one
+      if (!coverImage || article.cover_image !== coverImage) {
+        setCoverImage(article.cover_image || '');
+      }
+      // Sync image path from article
+      if (article.cover_image_path !== coverImagePath) {
+        setCoverImagePath(article.cover_image_path || null);
+      }
       setTags(article.tags || []);
       setStatus(article.status || 'draft');
     }
-  }, [article]);
+  }, [article, coverImage]);
 
   useEffect(() => {
-    // Auto-save draft every 30 seconds
+    // Auto-save draft every 30 seconds, but only if there are actual changes
     const interval = setInterval(() => {
       if (title || content) {
         handleAutoSave();
@@ -186,37 +99,121 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [title, content]);
+  }, []); // Remove dependencies to prevent auto-save on every content change
+
+
+
+  // Debounced auto-save when content changes (only after user stops typing for 5 seconds)
+  useEffect(() => {
+    if (!content || content === lastSavedContent) return;
+
+    const timeoutId = setTimeout(() => {
+      if (content !== lastSavedContent) {
+        console.log('⏰ Debounced auto-save triggered');
+        handleAutoSave();
+        setLastSavedContent(content);
+      }
+    }, 5000); // Wait 5 seconds after user stops typing
+
+    return () => clearTimeout(timeoutId);
+  }, [content, lastSavedContent]);
 
   const handleAutoSave = () => {
-    if (title || content) {
-             const draftArticle = {
-         title: title || 'Untitled Draft',
-         content: content || '',
-         cover_image: coverImage,
-         tags,
-         status: 'draft' as const,
-         author: currentUser?.username || 'Unknown User',
-         excerpt: content ? generateExcerpt(content) : '',
-         read_time: content ? calculateReadTime(content) : 0,
-       };
+    if (!title && !content) return; // Don't auto-save empty articles
+    
+    // Only auto-save if content has actually changed
+    if (content === lastSavedContent) return;
 
-      if (isEditing) {
-        articlesApi.update(article!.id, draftArticle);
-      } else {
+    // For editing existing articles, only auto-save if there are substantial changes
+    if (isEditing && article) {
+      const contentLengthDiff = Math.abs(content.length - (article.content?.length || 0));
+      if (contentLengthDiff < 10) {
+        console.log('🔄 Skipping auto-save - minimal changes detected');
+        return;
+      }
+    }
+
+    console.log('🔄 Auto-saving draft...', { isEditing, hasChanges: content !== lastSavedContent });
+
+    const draftArticle = {
+      title: title || 'Untitled Draft',
+      content: content || '',
+      cover_image: coverImage,
+      cover_image_path: coverImagePath,
+      tags,
+      status: 'draft' as const,
+      author: currentUser?.username || 'Unknown User',
+      excerpt: content ? generateExcerpt(content) : '',
+      read_time: content ? calculateReadTime(content) : 0,
+    };
+
+    try {
+      if (isEditing && article?.id) {
+        console.log('🔄 Updating existing article:', article.id);
+        articlesApi.update(article.id, draftArticle);
+      } else if (!isEditing) {
+        console.log('🔄 Creating new draft article');
         articlesApi.create(draftArticle);
       }
+      
+      setLastSavedContent(content);
+      console.log('✅ Auto-save completed');
+    } catch (error) {
+      console.error('❌ Auto-save failed:', error);
     }
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setCoverImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    
+    try {
+      let uploadResult: ImageUploadResult;
+
+      if (isEditing && coverImagePath) {
+        // Update existing image
+        uploadResult = await updateImage(coverImagePath, file);
+      } else {
+        // Upload new image
+        uploadResult = await uploadImage(file);
+      }
+
+      // Update state with new image URL and path
+      console.log('🖼️ Image upload result:', uploadResult);
+      console.log('🖼️ Setting coverImage to:', uploadResult.url);
+      console.log('🖼️ Setting coverImagePath to:', uploadResult.path);
+      
+      // Force state update
+      setCoverImage(uploadResult.url);
+      setCoverImagePath(uploadResult.path);
+      
+      // Verify state was updated
+      setTimeout(() => {
+        console.log('🔄 State verification after 100ms:');
+        console.log('🔄 coverImage state:', coverImage);
+        console.log('🔄 coverImagePath state:', coverImagePath);
+      }, 100);
+
+      toast({
+        title: 'Image uploaded successfully!',
+        description: `Image uploaded: ${(uploadResult.size / 1024 / 1024).toFixed(2)}MB`,
+      });
+
+      // Clear the file input
+      if (event.target) {
+        event.target.value = '';
+      }
+    } catch (error) {
+      console.error('Image upload error:', error);
+      toast({
+        title: 'Image upload failed',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -229,6 +226,39 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
 
   const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleRemoveImage = async () => {
+    try {
+      if (coverImagePath) {
+        console.log('🗑️ Attempting to delete image from path:', coverImagePath);
+        
+        // Delete from storage
+        await deleteImage(coverImagePath);
+        console.log('✅ Image deleted from storage successfully');
+      }
+      
+      // Clear state regardless of storage deletion result
+      setCoverImage('');
+      setCoverImagePath(null);
+
+      toast({
+        title: 'Image removed',
+        description: 'Cover image has been removed successfully.',
+      });
+    } catch (error) {
+      console.error('❌ Image removal error:', error);
+      
+      // Even if storage deletion fails, clear the local state
+      setCoverImage('');
+      setCoverImagePath(null);
+      
+      toast({
+        title: 'Image removed locally',
+        description: 'Image was removed from the editor, but there was an issue with storage cleanup.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const validateForm = (): boolean => {
@@ -256,19 +286,24 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
     setIsSaving(true);
     
     try {
-             const articleData = {
-         title: title.trim(),
-         content: content.trim(),
-         cover_image: coverImage,
-         tags,
-         status,
-         author: currentUser?.username || 'Unknown User',
-         excerpt: generateExcerpt(content),
-         read_time: calculateReadTime(content),
-         ...(status === 'published' && { published_at: new Date().toISOString() }),
-       };
+                   const articleData = {
+        title: title.trim(),
+        content: content.trim(),
+        cover_image: coverImage,
+        cover_image_path: coverImagePath,
+        tags,
+        status,
+        author: currentUser?.username || 'Unknown User',
+        excerpt: generateExcerpt(content),
+        read_time: calculateReadTime(content),
+        ...(status === 'published' && { published_at: new Date().toISOString() }),
+      };
 
-      let savedArticle: Article;
+      console.log('💾 Saving article with data:', articleData);
+      console.log('💾 cover_image:', articleData.cover_image);
+      console.log('💾 cover_image_path:', articleData.cover_image_path);
+
+      let savedArticle: ApiArticle;
 
       if (isEditing) {
         const updated = await articlesApi.update(article!.id, articleData);
@@ -310,6 +345,36 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
     setTimeout(() => handleSave(), 100);
   };
 
+  const handleDelete = async () => {
+    if (!isEditing || !article) return;
+    
+    if (confirm('Are you sure you want to delete this article? This action cannot be undone.')) {
+      try {
+        // Delete cover image if it exists
+        if (coverImagePath) {
+          await deleteImage(coverImagePath);
+        }
+        
+        // Delete article from database
+        await articlesApi.delete(article.id);
+        
+        toast({
+          title: 'Article deleted successfully',
+          description: 'The article has been permanently removed.',
+        });
+        
+        onCancel?.();
+      } catch (error) {
+        console.error('Delete error:', error);
+        toast({
+          title: 'Delete failed',
+          description: 'There was an error deleting the article. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    }
+  };
+
   const handleUnpublish = () => {
     if (!canPublish) {
       toast({
@@ -324,25 +389,11 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
     setTimeout(() => handleSave(), 100);
   };
 
-  // Simple Quill configuration to fix constructor error
-  const quillModules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      ['link', 'image'],
-      ['clean']
-    ]
-  };
 
-  const quillFormats = [
-    'header', 'bold', 'italic', 'underline',
-    'list', 'bullet', 'link', 'image'
-  ];
 
   return (
     <>
-      <style>{quillStyles}</style>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -360,6 +411,18 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
         </div>
         
         <div className="flex items-center gap-3">
+          {isEditing && (
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isSaving}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Article
+            </Button>
+          )}
+          
           <Button
             variant="outline"
             onClick={onCancel}
@@ -478,10 +541,20 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
           <Button
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingImage}
             className="flex items-center gap-2"
           >
-            <Upload className="w-4 h-4" />
-            Upload Image
+            {isUploadingImage ? (
+              <>
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4" />
+                Upload Image
+              </>
+            )}
           </Button>
           <input
             ref={fileInputRef}
@@ -490,8 +563,13 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
             onChange={handleImageUpload}
             className="hidden"
           />
-          {coverImage && (
+          {coverImage ? (
             <div className="relative">
+              <div className="text-xs text-muted-foreground mb-1">
+                Debug: coverImage = "{coverImage}"
+                <br />
+                coverImagePath = "{coverImagePath || 'null'}"
+              </div>
               <img
                 src={coverImage}
                 alt="Cover preview"
@@ -500,13 +578,25 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setCoverImage('')}
+                onClick={handleRemoveImage}
+                disabled={isUploadingImage}
                 className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 <X className="w-3 h-3" />
               </Button>
             </div>
+          ) : (
+            <div className="text-xs text-muted-foreground mb-2">
+              Debug: No cover image (coverImage = "{coverImage}")
+              <br />
+              coverImagePath = "{coverImagePath || 'null'}"
+            </div>
           )}
+          <div className="text-xs text-muted-foreground mt-2">
+            <p>• Supported formats: JPEG, PNG, WebP</p>
+            <p>• Maximum size: 5MB</p>
+            <p>• Images are automatically optimized for web</p>
+          </div>
         </div>
       </div>
 
@@ -557,54 +647,12 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
       {/* Content Editor */}
       <div className="space-y-2">
         <Label className="text-base font-medium">Content *</Label>
-        <div className="border rounded-lg overflow-hidden">
-          <ReactQuill
-            ref={quillRef}
-            value={content}
-            onChange={handleContentChange}
-            modules={quillModules}
-            formats={quillFormats}
-            theme="snow"
-            placeholder="Start writing your article..."
-            style={{ minHeight: '400px' }}
-          />
-          {/* Enhanced debug info for Word content */}
-          <div className="p-2 bg-gray-100 text-xs text-gray-600 border-t">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <strong>Content Analysis:</strong><br/>
-                Length: {content.length} | 
-                Lists: {(content.includes('<ul>') || content.includes('<ol>')).toString()}<br/>
-                Headings: {(content.includes('<h1>') || content.includes('<h2>') || content.includes('<h3>')).toString()}<br/>
-                Word Content: {content.includes('mso-') || content.includes('o:p') ? 'Yes' : 'No'}
-              </div>
-              <div>
-                <strong>Test Tools:</strong><br/>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const testContent = content + '<ul><li>Test bullet point</li></ul>';
-                    handleContentChange(testContent);
-                  }}
-                  className="mr-2"
-                >
-                  Test List
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const testContent = content + '<h2>Test Heading</h2><p>Test paragraph</p>';
-                    handleContentChange(testContent);
-                  }}
-                >
-                  Test Heading
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TipTapEditor
+          value={content}
+          onChange={handleContentChange}
+          placeholder="Start writing your article..."
+          className="min-h-[400px]"
+        />
       </div>
 
       {/* Action Buttons */}
