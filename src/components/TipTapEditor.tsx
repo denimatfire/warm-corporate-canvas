@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useEditor, EditorContent, NodeViewWrapper, NodeViewProps, ReactNodeViewRenderer } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
-import Image from '@tiptap/extension-image';
+// Image extension is now handled by ResizableImage
 import Link from '@tiptap/extension-link';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
@@ -52,194 +52,9 @@ import {
   isSupabaseImageUrl, 
   batchDeleteImages 
 } from '../lib/image-upload';
+import ResizableImage from './ResizableImageExtension';
 
-// Custom Image Component with Resize Functionality
-const ResizableImage: React.FC<NodeViewProps> = ({ node, updateAttributes }) => {
-  const [isResizing, setIsResizing] = useState(false);
-  const [isSelected, setIsSelected] = useState(false);
-  const imageRef = useRef<HTMLImageElement>(null);
-  const resizeRef = useRef<HTMLDivElement>(null);
-
-  // Extract attributes with fallbacks
-  const src = node.attrs.src || '';
-  const alt = node.attrs.alt || '';
-  const width = node.attrs.width || 400;
-  const height = node.attrs.height || 300;
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (imageRef.current && !imageRef.current.contains(event.target as Node)) {
-        setIsSelected(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleImageClick = () => {
-    setIsSelected(true);
-  };
-
-  const handleMouseDown = (e: React.MouseEvent, handle: 'nw' | 'ne' | 'sw' | 'se') => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!imageRef.current) return;
-
-    setIsResizing(true);
-    
-    // Store initial dimensions and position in refs to avoid state issues
-    const startWidth = imageRef.current.offsetWidth;
-    const startHeight = imageRef.current.offsetHeight;
-    const startX = e.clientX;
-    const startY = e.clientY;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizing) return;
-
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
-
-      let newWidth = startWidth;
-      let newHeight = startHeight;
-
-      // Resize based on handle position
-      if (handle === 'se') {
-        newWidth = Math.max(100, startWidth + deltaX);
-        newHeight = Math.max(100, startHeight + deltaY);
-      } else if (handle === 'sw') {
-        newWidth = Math.max(100, startWidth - deltaX);
-        newHeight = Math.max(100, startHeight + deltaY);
-      } else if (handle === 'ne') {
-        newWidth = Math.max(100, startWidth + deltaX);
-        newHeight = Math.max(100, startHeight - deltaY);
-      } else if (handle === 'nw') {
-        newWidth = Math.max(100, startWidth - deltaX);
-        newHeight = Math.max(100, startHeight - deltaY);
-      }
-
-      // Maintain aspect ratio if Shift is held
-      if (e.shiftKey) {
-        const aspectRatio = startWidth / startHeight;
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-          newHeight = newWidth / aspectRatio;
-        } else {
-          newWidth = newHeight * aspectRatio;
-        }
-      }
-
-      // Update image dimensions in real-time
-      if (imageRef.current) {
-        imageRef.current.style.width = `${newWidth}px`;
-        imageRef.current.style.height = `${newHeight}px`;
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsResizing(false);
-      
-      // Final update to the editor attributes
-      if (imageRef.current) {
-        const finalWidth = imageRef.current.offsetWidth;
-        const finalHeight = imageRef.current.offsetHeight;
-        updateAttributes({ width: finalWidth, height: finalHeight });
-        console.log('✅ Final image size:', { width: finalWidth, height: finalHeight });
-      }
-      
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
-
-  const resetSize = () => {
-    if (imageRef.current) {
-      const img = new window.Image();
-      img.onload = () => {
-        updateAttributes({ width: img.naturalWidth, height: img.naturalHeight });
-      };
-      img.src = src;
-    }
-  };
-  
-  return (
-    <NodeViewWrapper className="block relative group my-4">
-      <div className="flex justify-center">
-        <div className="relative inline-block">
-          <img
-            ref={imageRef}
-            src={src}
-            alt={alt}
-            width={width}
-            height={height}
-            className={`rounded-lg cursor-pointer transition-all ${
-              isSelected ? 'ring-2 ring-blue-500 ring-opacity-75' : ''
-            }`}
-            style={{ 
-              maxWidth: '100%', 
-              height: 'auto',
-              display: 'block'
-            }}
-            onClick={handleImageClick}
-            draggable={false}
-          />
-        
-        {/* Resize Handles */}
-        {isSelected && (
-          <>
-            {/* Corner Resize Handles */}
-            <div
-              ref={resizeRef}
-              className="absolute -top-2 -left-2 w-4 h-4 bg-blue-500 border-2 border-white rounded-full cursor-nw-resize z-50 shadow-lg"
-              onMouseDown={(e) => handleMouseDown(e, 'nw')}
-            />
-            <div
-              className="absolute -top-2 -right-2 w-4 h-4 bg-blue-500 border-2 border-white rounded-full cursor-ne-resize z-50 shadow-lg"
-              onMouseDown={(e) => handleMouseDown(e, 'ne')}
-            />
-            <div
-              className="absolute -bottom-2 -left-2 w-4 h-4 bg-blue-500 border-2 border-white rounded-full cursor-sw-resize z-50 shadow-lg"
-              onMouseDown={(e) => handleMouseDown(e, 'sw')}
-            />
-            <div
-              className="absolute -bottom-2 -right-2 w-4 h-4 bg-blue-500 border-2 border-white rounded-full cursor-se-resize z-50 shadow-lg"
-              onMouseDown={(e) => handleMouseDown(e, 'se')}
-            />
-            
-            {/* Size Display */}
-            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-              {width} × {height}
-            </div>
-            
-            {/* Reset Size Button */}
-            <button
-              onClick={resetSize}
-              className="absolute -top-8 right-0 bg-gray-800 text-white p-1 rounded hover:bg-gray-700 transition-colors"
-              title="Reset to original size"
-            >
-              <Maximize2 className="w-3 h-3" />
-            </button>
-          </>
-        )}
-        </div>
-      </div>
-    </NodeViewWrapper>
-  );
-};
-
-// Custom Image Extension
-const ResizableImageExtension = Image.extend({
-  addNodeView() {
-    return ReactNodeViewRenderer(ResizableImage);
-  },
-}).configure({
-  HTMLAttributes: {
-    class: 'rounded-lg',
-  },
-});
+// Using imported ResizableImage extension instead of local component
 
 interface TipTapEditorProps {
   value: string;
@@ -285,7 +100,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       Placeholder.configure({
         placeholder,
       }),
-      ResizableImageExtension,
+      ResizableImage,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
