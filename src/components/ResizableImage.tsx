@@ -1,223 +1,155 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { NodeViewWrapper, NodeViewProps } from '@tiptap/react';
-import { ResizeObserver } from '@juggle/resize-observer';
 
-interface ResizableImageProps extends NodeViewProps {
-  node: {
-    attrs: {
-      src: string;
-      alt?: string;
-      width?: number;
-      height?: number;
-      title?: string;
-      dataPath?: string;
-    };
-  };
-}
-
-const ResizableImage: React.FC<ResizableImageProps> = ({ node, updateAttributes }) => {
+const ResizableImage: React.FC<NodeViewProps> = ({ node, updateAttributes }) => {
   const imageRef = useRef<HTMLImageElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isResizing, setIsResizing] = useState(false);
-  const [resizeDirection, setResizeDirection] = useState<string>('');
-  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-  const [startSize, setStartSize] = useState({ width: 0, height: 0 });
-  const [aspectRatio, setAspectRatio] = useState(1);
+  const [currentSize, setCurrentSize] = useState({ width: 0, height: 0 });
+  const [showControls, setShowControls] = useState(false);
 
-  const { src, alt, width, height, title } = node.attrs;
+  // Extract attributes from the node
+  const src = node.attrs.src || '';
+  const alt = node.attrs.alt || '';
+  const width = node.attrs.width || 400;
+  const height = node.attrs.height || 300;
+  const title = node.attrs.title || '';
 
-  // Calculate aspect ratio when image loads
+  // Initialize current size from node attributes
   useEffect(() => {
+    setCurrentSize({ width, height });
+  }, [width, height]);
+
+  // Handle width change
+  const handleWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newWidth = parseInt(e.target.value) || 100;
+    const newHeight = Math.round((newWidth / currentSize.width) * currentSize.height);
+    
+    setCurrentSize({ width: newWidth, height: newHeight });
+  };
+
+  // Handle height change
+  const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newHeight = parseInt(e.target.value) || 100;
+    const newWidth = Math.round((newHeight / currentSize.height) * currentSize.width);
+    
+    setCurrentSize({ width: newWidth, height: newHeight });
+  };
+
+  // Apply size changes
+  const applySizeChanges = () => {
+    console.log('🖼️ Applying new size:', currentSize);
+    updateAttributes({ 
+      width: currentSize.width, 
+      height: currentSize.height 
+    });
+    setShowControls(false);
+  };
+
+  // Reset to original size
+  const resetSize = () => {
     if (imageRef.current) {
-      const img = imageRef.current;
-      
-      const handleLoad = () => {
-        try {
-          const ratio = img.naturalWidth / img.naturalHeight;
-          setAspectRatio(ratio);
-          
-          // Set initial dimensions if not already set
-          if (!width || !height) {
-            const maxWidth = 600;
-            const newWidth = Math.min(img.naturalWidth, maxWidth);
-            const newHeight = newWidth / ratio;
-            updateAttributes({ width: newWidth, height: newHeight });
-          }
-        } catch (error) {
-          console.warn('Error handling image load:', error);
-        }
+      const img = new window.Image();
+      img.onload = () => {
+        const newWidth = Math.min(img.naturalWidth, 600);
+        const newHeight = (newWidth / img.naturalWidth) * img.naturalHeight;
+        setCurrentSize({ width: newWidth, height: newHeight });
+        updateAttributes({ width: newWidth, height: newHeight });
       };
-      
-      img.onload = handleLoad;
-      
-      // Cleanup
-      return () => {
-        img.onload = null;
-      };
-    }
-  }, [src, width, height, updateAttributes]);
-
-  // Handle resize start
-  const handleResizeStart = (e: React.MouseEvent, direction: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    setIsResizing(true);
-    setResizeDirection(direction);
-    setStartPos({ x: e.clientX, y: e.clientY });
-    setStartSize({ width: width || 0, height: height || 0 });
-    
-    document.addEventListener('mousemove', handleResizeMove);
-    document.addEventListener('mouseup', handleResizeEnd);
-  };
-
-  // Handle resize movement
-  const handleResizeMove = (e: MouseEvent) => {
-    if (!isResizing) return;
-
-    try {
-      const deltaX = e.clientX - startPos.x;
-      const deltaY = e.clientY - startPos.y;
-
-      let newWidth = startSize.width;
-      let newHeight = startSize.height;
-
-      switch (resizeDirection) {
-        case 'nw':
-          newWidth = startSize.width - deltaX;
-          newHeight = startSize.height - deltaY;
-          break;
-        case 'ne':
-          newWidth = startSize.width + deltaX;
-          newHeight = startSize.height - deltaY;
-          break;
-        case 'sw':
-          newWidth = startSize.width - deltaX;
-          newHeight = startSize.height + deltaY;
-          break;
-        case 'se':
-          newWidth = startSize.width + deltaX;
-          newHeight = startSize.height + deltaY;
-          break;
-        case 'n':
-          newHeight = startSize.height - deltaY;
-          newWidth = newHeight * aspectRatio;
-          break;
-        case 's':
-          newHeight = startSize.height + deltaY;
-          newWidth = newHeight * aspectRatio;
-          break;
-        case 'w':
-          newWidth = startSize.width - deltaX;
-          newHeight = newWidth / aspectRatio;
-          break;
-        case 'e':
-          newWidth = startSize.width + deltaX;
-          newHeight = newWidth / aspectRatio;
-          break;
-      }
-
-      // Apply minimum size constraints
-      newWidth = Math.max(100, newWidth);
-      newHeight = Math.max(100, newHeight);
-
-      // Maintain aspect ratio for corner resizing
-      if (['nw', 'ne', 'sw', 'se'].includes(resizeDirection)) {
-        newHeight = newWidth / aspectRatio;
-      }
-
-      // Ensure dimensions are valid numbers
-      if (isFinite(newWidth) && isFinite(newHeight)) {
-        updateAttributes({ width: Math.round(newWidth), height: Math.round(newHeight) });
-      }
-    } catch (error) {
-      console.warn('Error during resize:', error);
-      handleResizeEnd();
+      img.src = src;
     }
   };
 
-  // Handle resize end
-  const handleResizeEnd = () => {
-    try {
-      setIsResizing(false);
-      setResizeDirection('');
-      
-      document.removeEventListener('mousemove', handleResizeMove);
-      document.removeEventListener('mouseup', handleResizeEnd);
-    } catch (error) {
-      console.warn('Error ending resize:', error);
-    }
+  // Toggle controls visibility
+  const toggleControls = () => {
+    setShowControls(!showControls);
   };
-
-  // Cleanup event listeners
-  useEffect(() => {
-    return () => {
-      document.removeEventListener('mousemove', handleResizeMove);
-      document.removeEventListener('mouseup', handleResizeEnd);
-    };
-  }, []);
-
-  const currentWidth = width || 400;
-  const currentHeight = height || 300;
 
   return (
     <NodeViewWrapper>
-      <div
-        ref={containerRef}
-        className="relative inline-block group"
-        style={{ width: currentWidth, height: currentHeight }}
-      >
-        <img
-          ref={imageRef}
-          src={src}
-          alt={alt || ''}
-          title={title || ''}
-          className="w-full h-full object-cover select-none"
-          draggable={false}
-        />
-        
-        {/* Resize handles - only show on hover/focus */}
-        <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-400 group-focus-within:border-blue-400 transition-colors">
-          {/* Corner handles */}
-          <div
-            className="absolute w-3 h-3 bg-blue-500 rounded-full cursor-nw-resize -top-1.5 -left-1.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
-            onMouseDown={(e) => handleResizeStart(e, 'nw')}
-          />
-          <div
-            className="absolute w-3 h-3 bg-blue-500 rounded-full cursor-ne-resize -top-1.5 -right-1.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
-            onMouseDown={(e) => handleResizeStart(e, 'ne')}
-          />
-          <div
-            className="absolute w-3 h-3 bg-blue-500 rounded-full cursor-sw-resize -bottom-1.5 -left-1.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
-            onMouseDown={(e) => handleResizeStart(e, 'sw')}
-          />
-          <div
-            className="absolute w-3 h-3 bg-blue-500 rounded-full cursor-se-resize -bottom-1.5 -right-1.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
-            onMouseDown={(e) => handleResizeStart(e, 'se')}
+      <div className="relative inline-block group my-4">
+        <div
+          className="relative inline-block"
+          style={{ 
+            width: currentSize.width, 
+            height: currentSize.height
+          }}
+        >
+          <img
+            ref={imageRef}
+            src={src}
+            alt={alt}
+            title={title}
+            className="w-full h-full object-contain select-none rounded border-2 border-transparent hover:border-blue-300 transition-colors"
+            draggable={false}
+            style={{ 
+              width: currentSize.width, 
+              height: currentSize.height 
+            }}
+            onClick={toggleControls}
           />
           
-          {/* Edge handles */}
-          <div
-            className="absolute w-3 h-3 bg-blue-500 rounded-full cursor-n-resize -top-1.5 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
-            onMouseDown={(e) => handleResizeStart(e, 'n')}
-          />
-          <div
-            className="absolute w-3 h-3 bg-blue-500 rounded-full cursor-s-resize -bottom-1.5 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
-            onMouseDown={(e) => handleResizeStart(e, 's')}
-          />
-          <div
-            className="absolute w-3 h-3 bg-blue-500 rounded-full cursor-w-resize -left-1.5 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
-            onMouseDown={(e) => handleResizeStart(e, 'w')}
-          />
-          <div
-            className="absolute w-3 h-3 bg-blue-500 rounded-full cursor-e-resize -right-1.5 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
-            onMouseDown={(e) => handleResizeStart(e, 'e')}
-          />
-        </div>
-        
-        {/* Size indicator */}
-        <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-          {currentWidth} × {currentHeight}
+          {/* Click indicator */}
+          <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+            Click to resize
+          </div>
+          
+          {/* Size controls */}
+          {showControls && (
+            <div className="absolute top-0 left-0 bg-white border border-gray-300 rounded-lg shadow-lg p-3 z-20 min-w-[200px]">
+              <div className="text-sm font-medium mb-2 text-gray-700">Resize Image</div>
+              
+              <div className="space-y-2">
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Width (px)</label>
+                  <input
+                    type="number"
+                    value={currentSize.width}
+                    onChange={handleWidthChange}
+                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="50"
+                    max="2000"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Height (px)</label>
+                  <input
+                    type="number"
+                    value={currentSize.height}
+                    onChange={handleHeightChange}
+                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="50"
+                    max="2000"
+                  />
+                </div>
+                
+                <div className="text-xs text-gray-500">
+                  Current: {currentSize.width} × {currentSize.height}
+                </div>
+              </div>
+              
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={applySizeChanges}
+                  className="flex-1 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
+                >
+                  Apply
+                </button>
+                <button
+                  onClick={resetSize}
+                  className="px-3 py-1 bg-gray-500 text-white text-xs rounded hover:bg-gray-600 transition-colors"
+                  title="Reset to original size"
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={toggleControls}
+                  className="px-3 py-1 bg-gray-300 text-gray-700 text-xs rounded hover:bg-gray-400 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </NodeViewWrapper>
