@@ -1,5 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 
+// For parsing HTML content to extract image paths
+declare global {
+  interface Window {
+    DOMParser: typeof DOMParser;
+  }
+}
+
 export interface Article {
   id: string;
   title: string;
@@ -159,6 +166,43 @@ export const articlesApi = {
   // Delete article
   async delete(id: string): Promise<boolean> {
     try {
+      // First, get the article to extract image paths before deletion
+      const { data: article, error: fetchError } = await supabase
+        .from('articles')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!article) throw new Error('Article not found');
+
+      // Extract all image paths from the article content and cover image
+      const imagePathsToDelete: string[] = [];
+
+      // Add cover image path if it exists
+      if (article.cover_image_path) {
+        imagePathsToDelete.push(article.cover_image_path);
+      }
+
+      // Extract content images from the article content
+      const contentImages = this.extractImagePathsFromContent(article.content);
+      imagePathsToDelete.push(...contentImages);
+
+      // Remove duplicates
+      const uniqueImagePaths = [...new Set(imagePathsToDelete)].filter(Boolean);
+
+      // Delete all associated images from Supabase Storage
+      if (uniqueImagePaths.length > 0) {
+        try {
+          await this.deleteImagesFromStorage(uniqueImagePaths);
+          console.log(`🗑️ Deleted ${uniqueImagePaths.length} images for article ${id}`);
+        } catch (imageError) {
+          console.warn(`⚠️ Failed to delete some images for article ${id}:`, imageError);
+          // Continue with article deletion even if image deletion fails
+        }
+      }
+
+      // Now delete the article from the database
       const { error } = await supabase
         .from('articles')
         .delete()
@@ -168,6 +212,73 @@ export const articlesApi = {
       return true;
     } catch (error) {
       console.error(`Failed to delete article ${id}:`, error);
+      throw error;
+    }
+  },
+
+  // Helper function to extract image paths from article content
+  private extractImagePathsFromContent(content: string): string[] {
+    const imagePaths: string[] = [];
+    
+    try {
+      // Parse HTML content to find image tags
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(content, 'text/html');
+      const imgElements = doc.querySelectorAll('img[src]');
+      
+      imgElements.forEach((img) => {
+        const src = img.getAttribute('src');
+        if (src && this.isSupabaseImageUrl(src)) {
+          const path = this.extractImagePathFromUrl(src);
+          if (path) {
+            imagePaths.push(path);
+          }
+        }
+      });
+    } catch (error) {
+      console.warn('Failed to parse article content for image extraction:', error);
+    }
+    
+    return imagePaths;
+  },
+
+  // Helper function to check if URL is a Supabase image
+  private isSupabaseImageUrl(url: string): boolean {
+    return url.includes('supabase.co') && url.includes('Article_images');
+  },
+
+  // Helper function to extract image path from Supabase URL
+  private extractImagePathFromUrl(url: string): string | null {
+    try {
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/');
+      const storageIndex = pathParts.findIndex(part => part === 'storage');
+      if (storageIndex !== -1 && pathParts[storageIndex + 4] === 'Article_images') {
+        return pathParts.slice(storageIndex + 5).join('/');
+      }
+      return null;
+    } catch (error) {
+      console.error('Error extracting image path from URL:', error);
+      return null;
+    }
+  },
+
+  // Helper function to delete images from Supabase Storage
+  private async deleteImagesFromStorage(imagePaths: string[]): Promise<void> {
+    try {
+      // Use the batchDeleteImages function from image-upload.ts
+      const { batchDeleteImages } = await import('./image-upload');
+      const result = await batchDeleteImages(imagePaths);
+      
+      if (result.failed.length > 0) {
+        console.warn(`⚠️ Failed to delete ${result.failed.length} images:`, result.failed);
+      }
+      
+      if (result.success.length > 0) {
+        console.log(`✅ Successfully deleted ${result.success.length} images`);
+      }
+    } catch (error) {
+      console.error('Failed to delete images from storage:', error);
       throw error;
     }
   },
@@ -374,6 +485,10 @@ function deleteArticleFromLocalStorage(id: string): boolean {
   const articles = getArticlesFromLocalStorage();
   const index = articles.findIndex(article => article.id === id);
   if (index === -1) return false;
+  
+  // Note: For localStorage fallback, we can't delete images from Supabase
+  // as this is only used when Supabase is unavailable
+  // Images will need to be cleaned up manually when Supabase is back online
   
   articles.splice(index, 1);
   localStorage.setItem('articles', JSON.stringify(articles));

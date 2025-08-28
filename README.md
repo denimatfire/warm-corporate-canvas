@@ -94,6 +94,7 @@ src/
 - [TipTap Editor](TIPTAP_EDITOR_README.md) - Alternative editor
 - [Keyboard Shortcuts](KEYBOARD_SHORTCUTS.md) - Complete shortcut reference
 - [Quick Reference Card](KEYBOARD_SHORTCUTS_QUICK_REFERENCE.md) - Print-friendly shortcuts
+- [Automatic Image Cleanup](AUTOMATIC_IMAGE_CLEANUP.md) - Storage management on article deletion
 
 ## 🌐 **Deployment**
 

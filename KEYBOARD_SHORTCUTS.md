@@ -201,8 +201,8 @@ Ctrl+Shift+S      → Show Stats
 
 ### Toolbar Layout
 - **Left Side**: Formatting tools (Bold, Italic, Headings, Lists, etc.)
-- **Right Side**: Word count display with 📊 icon
 - **Center**: Spacing for balanced layout
+- **Right Side**: Utility tools (Image management, testing, etc.)
 - **Bottom**: Content area with focus ring
 
 ---

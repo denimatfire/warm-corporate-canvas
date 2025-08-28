@@ -56,7 +56,7 @@
 3. **Combine shortcuts** for complex formatting
 4. **Undo/Redo** to experiment safely
 5. **Use the 🧪 Test All button** to verify functionality
-6. **Word count** is displayed on the right side of the toolbar
+6. **Use the 🧪 Test All button** to verify all functionality
 
 ---
 

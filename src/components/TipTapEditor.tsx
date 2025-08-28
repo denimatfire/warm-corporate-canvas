@@ -899,14 +899,8 @@ Remove ${unusedImages.length} unused images from storage? This action cannot be 
   const MenuBar = () => (
     <div className="border-b border-gray-200 bg-white sticky top-0 z-10 shadow-sm">
       <div className="flex items-center gap-1 p-2 overflow-x-auto">
-        {/* Word Count - Moved to right side for better visibility */}
+        {/* Spacer to push other elements to the right */}
         <div className="flex-1"></div>
-        {getEditorStats() && (
-          <div className="flex items-center gap-1 border-l border-gray-200 pl-2 text-xs text-gray-600 font-medium">
-            <span className="hidden sm:inline">📊</span>
-            <span>{getEditorStats()?.wordCount || 0} words</span>
-          </div>
-        )}
         {/* Text Formatting */}
         <div className="flex items-center gap-1 border-r border-gray-200 pr-2">
           <Button
