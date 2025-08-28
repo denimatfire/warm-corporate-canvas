@@ -473,8 +473,53 @@ const Article_medium = () => {
             prose-p:text-lg prose-p:leading-relaxed prose-p:mb-8 prose-p:font-light prose-ul:mb-8 prose-li:mb-3
             prose-strong:font-semibold prose-strong:text-gray-900 prose-em:text-gray-700 prose-blockquote:border-l-4 
             prose-blockquote:border-gray-300 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600"
-                            dangerouslySetInnerHTML={{ __html: formatArticleContent(article.content) }}
+            dangerouslySetInnerHTML={{ __html: article.content }}
           />
+          
+          {/* Custom CSS for better image display in published articles */}
+          <style>{`
+            .prose img {
+              display: block !important;
+              margin: 1.5rem auto !important;
+              border-radius: 0.5rem !important;
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+              transition: all 0.2s ease-in-out !important;
+              max-width: 100% !important;
+              height: auto !important;
+            }
+            
+            .prose img:hover {
+              box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+              transform: translateY(-2px) !important;
+            }
+            
+            .prose .image-container {
+              text-align: center !important;
+              margin: 2rem 0 !important;
+            }
+            
+            .prose .image-container img {
+              margin: 0 auto !important;
+            }
+            
+            /* Ensure all images are centered by default */
+            .prose figure {
+              text-align: center !important;
+              margin: 2rem 0 !important;
+            }
+            
+            .prose figure img {
+              margin: 0 auto !important;
+            }
+            
+            /* Override any left-aligned image styles */
+            .prose img[style*="text-align: left"],
+            .prose img[style*="float: left"] {
+              text-align: center !important;
+              float: none !important;
+              margin: 1.5rem auto !important;
+            }
+          `}</style>
         </motion.div>
 
         {/* Medium-style Article Actions */}

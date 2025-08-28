@@ -32,6 +32,7 @@
 |---------------|------------|
 | `Ctrl + Shift + Delete` | **Clear All** |
 | `Ctrl + Shift + S` | **Show Stats** |
+| `Ctrl + Shift + C` | **Center Image** |
 
 ---
 

@@ -270,6 +270,27 @@
 
   .prose img {
     @apply rounded-lg my-6 max-w-full h-auto;
+    display: block !important;
+    margin: 1.5rem auto !important;
+    text-align: center !important;
+  }
+  
+  /* Ensure all images in prose content are centered */
+  .prose figure {
+    text-align: center !important;
+    margin: 2rem 0 !important;
+  }
+  
+  .prose figure img {
+    margin: 0 auto !important;
+  }
+  
+  /* Override any left-aligned image styles */
+  .prose img[style*="text-align: left"],
+  .prose img[style*="float: left"] {
+    text-align: center !important;
+    float: none !important;
+    margin: 1.5rem auto !important;
   }
 
   /* React Quill custom styles */

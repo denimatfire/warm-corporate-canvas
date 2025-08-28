@@ -57,8 +57,6 @@ import {
 const ResizableImage: React.FC<NodeViewProps> = ({ node, updateAttributes }) => {
   const [isResizing, setIsResizing] = useState(false);
   const [isSelected, setIsSelected] = useState(false);
-  const [startSize, setStartSize] = useState({ width: 0, height: 0 });
-  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLImageElement>(null);
   const resizeRef = useRef<HTMLDivElement>(null);
 
@@ -90,36 +88,40 @@ const ResizableImage: React.FC<NodeViewProps> = ({ node, updateAttributes }) => 
     if (!imageRef.current) return;
 
     setIsResizing(true);
-    setStartSize({ width: imageRef.current.offsetWidth, height: imageRef.current.offsetHeight });
-    setStartPos({ x: e.clientX, y: e.clientY });
+    
+    // Store initial dimensions and position in refs to avoid state issues
+    const startWidth = imageRef.current.offsetWidth;
+    const startHeight = imageRef.current.offsetHeight;
+    const startX = e.clientX;
+    const startY = e.clientY;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
 
-      const deltaX = e.clientX - startPos.x;
-      const deltaY = e.clientY - startPos.y;
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
 
-      let newWidth = startSize.width;
-      let newHeight = startSize.height;
+      let newWidth = startWidth;
+      let newHeight = startHeight;
 
       // Resize based on handle position
       if (handle === 'se') {
-        newWidth = Math.max(100, startSize.width + deltaX);
-        newHeight = Math.max(100, startSize.height + deltaY);
+        newWidth = Math.max(100, startWidth + deltaX);
+        newHeight = Math.max(100, startHeight + deltaY);
       } else if (handle === 'sw') {
-        newWidth = Math.max(100, startSize.width - deltaX);
-        newHeight = Math.max(100, startSize.height + deltaY);
+        newWidth = Math.max(100, startWidth - deltaX);
+        newHeight = Math.max(100, startHeight + deltaY);
       } else if (handle === 'ne') {
-        newWidth = Math.max(100, startSize.width + deltaX);
-        newHeight = Math.max(100, startSize.height - deltaY);
+        newWidth = Math.max(100, startWidth + deltaX);
+        newHeight = Math.max(100, startHeight - deltaY);
       } else if (handle === 'nw') {
-        newWidth = Math.max(100, startSize.width - deltaX);
-        newHeight = Math.max(100, startSize.height - deltaY);
+        newWidth = Math.max(100, startWidth - deltaX);
+        newHeight = Math.max(100, startHeight - deltaY);
       }
 
       // Maintain aspect ratio if Shift is held
       if (e.shiftKey) {
-        const aspectRatio = startSize.width / startSize.height;
+        const aspectRatio = startWidth / startHeight;
         if (Math.abs(deltaX) > Math.abs(deltaY)) {
           newHeight = newWidth / aspectRatio;
         } else {
@@ -127,11 +129,24 @@ const ResizableImage: React.FC<NodeViewProps> = ({ node, updateAttributes }) => 
         }
       }
 
-      updateAttributes({ width: newWidth, height: newHeight });
+      // Update image dimensions in real-time
+      if (imageRef.current) {
+        imageRef.current.style.width = `${newWidth}px`;
+        imageRef.current.style.height = `${newHeight}px`;
+      }
     };
 
     const handleMouseUp = () => {
       setIsResizing(false);
+      
+      // Final update to the editor attributes
+      if (imageRef.current) {
+        const finalWidth = imageRef.current.offsetWidth;
+        const finalHeight = imageRef.current.offsetHeight;
+        updateAttributes({ width: finalWidth, height: finalHeight });
+        console.log('✅ Final image size:', { width: finalWidth, height: finalHeight });
+      }
+      
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
@@ -151,20 +166,26 @@ const ResizableImage: React.FC<NodeViewProps> = ({ node, updateAttributes }) => 
   };
   
   return (
-    <NodeViewWrapper className="inline-block relative group">
-      <div className="relative inline-block">
-        <img
-          ref={imageRef}
-          src={src}
-          alt={alt}
-          width={width}
-          height={height}
-          className={`max-w-full h-auto rounded-lg cursor-pointer transition-all ${
-            isSelected ? 'ring-2 ring-blue-500 ring-opacity-75' : ''
-          }`}
-          onClick={handleImageClick}
-          draggable={false}
-        />
+    <NodeViewWrapper className="block relative group my-4">
+      <div className="flex justify-center">
+        <div className="relative inline-block">
+          <img
+            ref={imageRef}
+            src={src}
+            alt={alt}
+            width={width}
+            height={height}
+            className={`rounded-lg cursor-pointer transition-all ${
+              isSelected ? 'ring-2 ring-blue-500 ring-opacity-75' : ''
+            }`}
+            style={{ 
+              maxWidth: '100%', 
+              height: 'auto',
+              display: 'block'
+            }}
+            onClick={handleImageClick}
+            draggable={false}
+          />
         
         {/* Resize Handles */}
         {isSelected && (
@@ -203,6 +224,7 @@ const ResizableImage: React.FC<NodeViewProps> = ({ node, updateAttributes }) => 
             </button>
           </>
         )}
+        </div>
       </div>
     </NodeViewWrapper>
   );
@@ -215,7 +237,7 @@ const ResizableImageExtension = Image.extend({
   },
 }).configure({
   HTMLAttributes: {
-    class: 'max-w-full h-auto rounded-lg',
+    class: 'rounded-lg',
   },
 });
 
@@ -345,12 +367,59 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
     if (imageUrl) {
       // Check if it's a valid URL (either http/https or data URL)
       if (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) {
-        editor.chain().focus().setImage({ 
-          src: imageUrl, 
-          alt: imageAlt || 'Image',
-          width: 800,
-          height: 600
-        }).run();
+        // Load image to get natural dimensions for better sizing
+        const img = new window.Image();
+        img.onload = () => {
+          // Calculate responsive dimensions for better layout
+          const maxWidth = 800;
+          const maxHeight = 600;
+          const minWidth = 300;
+          const minHeight = 200;
+          
+          let finalWidth = img.naturalWidth;
+          let finalHeight = img.naturalHeight;
+          
+          // Scale down if image is too large while maintaining aspect ratio
+          if (finalWidth > maxWidth || finalHeight > maxHeight) {
+            const ratio = Math.min(maxWidth / finalWidth, maxHeight / finalHeight);
+            finalWidth = Math.round(finalWidth * ratio);
+            finalHeight = Math.round(finalHeight * ratio);
+          }
+          
+          // Scale up if image is too small for better visibility
+          if (finalWidth < minWidth || finalHeight < minHeight) {
+            const ratio = Math.max(minWidth / finalWidth, minHeight / finalHeight);
+            finalWidth = Math.round(finalWidth * ratio);
+            finalHeight = Math.round(finalHeight * ratio);
+          }
+          
+          // Ensure dimensions are reasonable
+          finalWidth = Math.max(200, Math.min(800, finalWidth));
+          finalHeight = Math.max(150, Math.min(600, finalHeight));
+          
+          console.log('🖼️ Adding URL image with dimensions:', { 
+            original: { width: img.naturalWidth, height: img.naturalHeight },
+            final: { width: finalWidth, height: finalHeight }
+          });
+          
+          editor.chain().focus().setImage({ 
+            src: imageUrl, 
+            alt: imageAlt || 'Image',
+            width: finalWidth,
+            height: finalHeight
+          }).run();
+        };
+        img.onerror = () => {
+          // Fallback to default size if image loading fails
+          editor.chain().focus().setImage({ 
+            src: imageUrl, 
+            alt: imageAlt || 'Image',
+            width: 400,
+            height: 300
+          }).run();
+        };
+        img.src = imageUrl;
+        
         setImageUrl('');
         setImageAlt('');
         setIsImageDialogOpen(false);
@@ -394,13 +463,49 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       // Track uploaded image path for cleanup
       setUploadedImages(prev => [...prev, uploadResult.path]);
 
-      // Insert the uploaded image into the editor
-      editor.chain().focus().setImage({ 
-        src: uploadResult.url, 
-        alt: imageAlt || selectedFile.name,
-        width: 800, // Default width for content images
-        height: 600  // Default height for content images
-      }).run();
+      // Insert the uploaded image into the editor with intelligent sizing
+      const img = new window.Image();
+      img.onload = () => {
+        // Calculate responsive dimensions for better layout
+        const maxWidth = 800; // Maximum width for content images
+        const maxHeight = 600; // Maximum height for content images
+        const minWidth = 300;  // Minimum width for better visibility
+        const minHeight = 200; // Minimum height for better visibility
+        
+        let finalWidth = img.naturalWidth;
+        let finalHeight = img.naturalHeight;
+        
+        // Scale down if image is too large while maintaining aspect ratio
+        if (finalWidth > maxWidth || finalHeight > maxHeight) {
+          const ratio = Math.min(maxWidth / finalWidth, maxHeight / finalHeight);
+          finalWidth = Math.round(finalWidth * ratio);
+          finalHeight = Math.round(finalHeight * ratio);
+        }
+        
+        // Scale up if image is too small for better visibility
+        if (finalWidth < minWidth || finalHeight < minHeight) {
+          const ratio = Math.max(minWidth / finalWidth, minHeight / finalHeight);
+          finalWidth = Math.round(finalWidth * ratio);
+          finalHeight = Math.round(finalHeight * ratio);
+        }
+        
+        // Ensure dimensions are reasonable
+        finalWidth = Math.max(200, Math.min(800, finalWidth));
+        finalHeight = Math.max(150, Math.min(600, finalHeight));
+        
+        console.log('🖼️ Inserting image with dimensions:', { 
+          original: { width: img.naturalWidth, height: img.naturalHeight },
+          final: { width: finalWidth, height: finalHeight }
+        });
+        
+        editor.chain().focus().setImage({ 
+          src: uploadResult.url, 
+          alt: imageAlt || selectedFile.name,
+          width: finalWidth,
+          height: finalHeight
+        }).run();
+      };
+      img.src = uploadResult.url;
 
       // Reset form
       setSelectedFile(null);
@@ -878,6 +983,32 @@ Remove ${unusedImages.length} unused images from storage? This action cannot be 
           event.preventDefault();
           clearEditor();
         }
+        // Center image: Ctrl+Shift+C
+        if (event.ctrlKey && event.shiftKey && event.key === 'c') {
+          event.preventDefault();
+          if (editor.isActive('image')) {
+            // Center the currently selected image
+            const { state } = editor;
+            const { selection } = state;
+            if (!selection.empty) {
+              const node = state.doc.nodeAt(selection.from);
+              if (node && node.type.name === 'image') {
+                editor.chain().focus().updateAttributes('image', { 
+                  class: 'mx-auto block' 
+                }).run();
+                toast({
+                  title: "Image centered",
+                  description: "Selected image has been centered using keyboard shortcut",
+                });
+              }
+            }
+          } else {
+            toast({
+              title: "No image selected",
+              description: "Please select an image to center it",
+            });
+          }
+        }
         // Show stats: Ctrl+Shift+S
         if (event.ctrlKey && event.shiftKey && event.key === 's') {
           event.preventDefault();
@@ -1097,37 +1228,72 @@ Remove ${unusedImages.length} unused images from storage? This action cannot be 
         </div>
 
         {/* Image Management */}
-        {uploadedImages.length > 0 && (
-          <div className="flex items-center gap-1 border-r border-gray-200 pr-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCleanupUnusedImages}
-              className="h-8 w-8 p-0"
-              title={`Cleanup unused images (${uploadedImages.length} tracked)`}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={exportImageTrackingData}
-              className="h-8 w-8 p-0"
-              title="Export image tracking data"
-            >
-              📊
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={checkAndCleanupUnusedImages}
-              className="h-8 w-8 p-0"
-              title="Check for unused images"
-            >
-              🔍
-            </Button>
-          </div>
-        )}
+        <div className="flex items-center gap-1 border-r border-gray-200 pr-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              if (editor && editor.isActive('image')) {
+                // Center the currently selected image
+                const { state } = editor;
+                const { selection } = state;
+                if (selection.empty) return;
+                
+                const node = state.doc.nodeAt(selection.from);
+                if (node && node.type.name === 'image') {
+                  // Add center alignment class to image
+                  editor.chain().focus().updateAttributes('image', { 
+                    class: 'mx-auto block' 
+                  }).run();
+                  toast({
+                    title: "Image centered",
+                    description: "Selected image has been centered",
+                  });
+                }
+              } else {
+                toast({
+                  title: "No image selected",
+                  description: "Please select an image to center it",
+                });
+              }
+            }}
+            className="h-8 w-8 p-0"
+            title="Center selected image (Ctrl+Shift+C)"
+          >
+            🎯
+          </Button>
+          {uploadedImages.length > 0 && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCleanupUnusedImages}
+                className="h-8 w-8 p-0"
+                title={`Cleanup unused images (${uploadedImages.length} tracked)`}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={exportImageTrackingData}
+                className="h-8 w-8 p-0"
+                title="Export image tracking data"
+              >
+                📊
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={checkAndCleanupUnusedImages}
+                className="h-8 w-8 p-0"
+                title="Check for unused images"
+              >
+                🔍
+              </Button>
+            </>
+          )}
+        </div>
 
         {/* History */}
         <div className="flex items-center gap-1">
@@ -1201,8 +1367,36 @@ Remove ${unusedImages.length} unused images from storage? This action cannot be 
       
       <EditorContent 
         editor={editor} 
-        className="min-h-[400px] bg-white focus-within:ring-2 focus-within:ring-blue-200 focus-within:ring-opacity-50 transition-all"
+        className="min-h-[400px] bg-white focus-within:ring-2 focus-within:ring-blue-200 focus-within:ring-opacity-50 transition-all prose-img:max-w-none"
+        style={{
+          '--tw-prose-img-max-width': 'none',
+        } as React.CSSProperties}
       />
+      
+      {/* Custom CSS for better image display in published articles */}
+      <style>{`
+        .ProseMirror img {
+          display: block !important;
+          margin: 1.5rem auto !important;
+          border-radius: 0.5rem !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+          transition: all 0.2s ease-in-out !important;
+        }
+        
+        .ProseMirror img:hover {
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+          transform: translateY(-2px) !important;
+        }
+        
+        .ProseMirror .image-container {
+          text-align: center !important;
+          margin: 2rem 0 !important;
+        }
+        
+        .ProseMirror .image-container img {
+          margin: 0 auto !important;
+        }
+      `}</style>
 
       {/* Link Dialog */}
       <Dialog open={isLinkDialogOpen} onOpenChange={setIsLinkDialogOpen}>

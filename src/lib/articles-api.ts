@@ -217,7 +217,7 @@ export const articlesApi = {
   },
 
   // Helper function to extract image paths from article content
-  private extractImagePathsFromContent(content: string): string[] {
+  extractImagePathsFromContent(content: string): string[] {
     const imagePaths: string[] = [];
     
     try {
@@ -243,12 +243,12 @@ export const articlesApi = {
   },
 
   // Helper function to check if URL is a Supabase image
-  private isSupabaseImageUrl(url: string): boolean {
+  isSupabaseImageUrl(url: string): boolean {
     return url.includes('supabase.co') && url.includes('Article_images');
   },
 
   // Helper function to extract image path from Supabase URL
-  private extractImagePathFromUrl(url: string): string | null {
+  extractImagePathFromUrl(url: string): string | null {
     try {
       const urlObj = new URL(url);
       const pathParts = urlObj.pathname.split('/');
@@ -264,7 +264,7 @@ export const articlesApi = {
   },
 
   // Helper function to delete images from Supabase Storage
-  private async deleteImagesFromStorage(imagePaths: string[]): Promise<void> {
+  async deleteImagesFromStorage(imagePaths: string[]): Promise<void> {
     try {
       // Use the batchDeleteImages function from image-upload.ts
       const { batchDeleteImages } = await import('./image-upload');

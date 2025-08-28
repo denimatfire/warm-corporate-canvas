@@ -425,8 +425,53 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         className="prose prose-lg max-w-none pb-12"
-                        dangerouslySetInnerHTML={{ __html: formatArticleContent(article.content) }}
+        dangerouslySetInnerHTML={{ __html: article.content }}
       />
+      
+      {/* Custom CSS for better image display in published articles */}
+      <style>{`
+        .prose img {
+          display: block !important;
+          margin: 1.5rem auto !important;
+          border-radius: 0.5rem !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+          transition: all 0.2s ease-in-out !important;
+          max-width: 100% !important;
+          height: auto !important;
+        }
+        
+        .prose img:hover {
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+          transform: translateY(-2px) !important;
+        }
+        
+        .prose .image-container {
+          text-align: center !important;
+          margin: 2rem 0 !important;
+        }
+        
+        .prose .image-container img {
+          margin: 0 auto !important;
+        }
+        
+        /* Ensure all images are centered by default */
+        .prose figure {
+          text-align: center !important;
+          margin: 2rem 0 !important;
+        }
+        
+        .prose figure img {
+          margin: 0 auto !important;
+        }
+        
+        /* Override any left-aligned image styles */
+        .prose img[style*="text-align: left"],
+        .prose img[style*="float: left"] {
+          text-align: center !important;
+          float: none !important;
+          margin: 1.5rem auto !important;
+        }
+      `}</style>
 
       {/* Comments Section */}
       <motion.div
