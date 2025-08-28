@@ -64,13 +64,14 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [lastSavedContent, setLastSavedContent] = useState('');
+  const [lastAutoSaveTime, setLastAutoSaveTime] = useState(0);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const currentUser = getCurrentUser();
   const canPublish = canPublishArticles();
 
-  const isEditing = !!article;
+  const isEditing = !!article && !!article.id;
 
   // Refresh current user to ensure username is updated
   useEffect(() => {
@@ -112,9 +113,15 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
 
 
 
-  // Debounced auto-save when content changes (only after user stops typing for 10 seconds)
+  // Debounced auto-save when content changes (only after user stops typing for 30 seconds)
   useEffect(() => {
     if (!content || content === lastSavedContent) return;
+
+    // Skip auto-save if content is too short (likely just formatting)
+    if (content.length < 10) {
+      console.log('⏰ Skipping auto-save - content too short');
+      return;
+    }
 
     const timeoutId = setTimeout(() => {
       if (content !== lastSavedContent) {
@@ -122,7 +129,7 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
         handleAutoSave();
         setLastSavedContent(content);
       }
-    }, 10000); // Wait 10 seconds after user stops typing
+    }, 30000); // Wait 30 seconds after user stops typing to reduce frequent saves
 
     return () => clearTimeout(timeoutId);
   }, [content, lastSavedContent]);
@@ -130,19 +137,55 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
   const handleAutoSave = async () => {
     if (!title && !content) return; // Don't auto-save empty articles
     
+    // Don't auto-save if we're already saving
+    if (isSaving) {
+      console.log('🔄 Skipping auto-save - manual save in progress');
+      return;
+    }
+    
     // Only auto-save if content has actually changed
     if (content === lastSavedContent) return;
 
+    // Cooldown check: don't auto-save more than once every 2 minutes
+    const now = Date.now();
+    if (now - lastAutoSaveTime < 120000) { // 2 minutes
+      console.log('🔄 Skipping auto-save - cooldown period (last save was ' + Math.round((now - lastAutoSaveTime) / 1000) + 's ago)');
+      return;
+    }
+
+    // Additional check: don't auto-save if we're just adding line breaks or minimal formatting
+    const trimmedContent = content.trim();
+    const trimmedLastSaved = lastSavedContent.trim();
+    if (trimmedContent === trimmedLastSaved) {
+      console.log('🔄 Skipping auto-save - only whitespace/formatting changes');
+      return;
+    }
+
     // For editing existing articles, only auto-save if there are substantial changes
-    if (isEditing && article) {
+    if (isEditing && article?.id) {
       const contentLengthDiff = Math.abs(content.length - (article.content?.length || 0));
-      if (contentLengthDiff < 20) { // Increased threshold to 20 characters
-        console.log('🔄 Skipping auto-save - minimal changes detected');
+      if (contentLengthDiff < 50) { // Increased threshold to 50 characters to reduce frequent saves
+        console.log('🔄 Skipping auto-save - minimal changes detected (diff: ' + contentLengthDiff + ' chars)');
         return;
       }
     }
 
-    console.log('🔄 Auto-saving draft...', { isEditing, hasChanges: content !== lastSavedContent });
+    // Safety check: if we have an article but no ID, something is wrong
+    if (article && !article.id) {
+      console.log('⚠️ Auto-save blocked - article exists but has no ID');
+      return;
+    }
+
+    console.log('🔄 Auto-saving draft...', { 
+      isEditing, 
+      hasChanges: content !== lastSavedContent,
+      contentLength: content.length,
+      lastSavedLength: lastSavedContent.length,
+      articleId: article?.id,
+      articleTitle: article?.title,
+      hasArticle: !!article,
+      articleKeys: article ? Object.keys(article) : []
+    });
 
     const draftArticle = {
       title: title || 'Untitled Draft',
@@ -159,15 +202,19 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
     try {
       if (isEditing && article?.id) {
         console.log('🔄 Updating existing article:', article.id);
-        await articlesApi.update(article.id, draftArticle); // Added await here
+        await articlesApi.update(article.id, draftArticle);
         console.log('✅ Auto-save update completed');
       } else if (!isEditing) {
         console.log('🔄 Creating new draft article');
-        await articlesApi.create(draftArticle); // Added await here
+        await articlesApi.create(draftArticle);
         console.log('✅ Auto-save create completed');
+      } else {
+        console.log('⚠️ Auto-save skipped - unclear state:', { isEditing, hasArticle: !!article, articleId: article?.id });
+        return;
       }
       
       setLastSavedContent(content);
+      setLastAutoSaveTime(Date.now());
       console.log('✅ Auto-save completed');
     } catch (error) {
       console.error('❌ Auto-save failed:', error);

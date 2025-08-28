@@ -92,6 +92,8 @@ src/
 - [Article Management](ARTICLE_MANAGEMENT_README.md) - Content system guide
 - [Quill Enhancements](QUILL_ENHANCEMENTS.md) - Editor features
 - [TipTap Editor](TIPTAP_EDITOR_README.md) - Alternative editor
+- [Keyboard Shortcuts](KEYBOARD_SHORTCUTS.md) - Complete shortcut reference
+- [Quick Reference Card](KEYBOARD_SHORTCUTS_QUICK_REFERENCE.md) - Print-friendly shortcuts
 
 ## 🌐 **Deployment**
 

@@ -37,13 +37,21 @@ import {
   Undo,
   Redo,
   Move,
-  Maximize2
+  Maximize2,
+  Trash2
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { useToast } from './ui/use-toast';
+import { 
+  uploadImage, 
+  ImageUploadResult, 
+  extractImagePathFromUrl, 
+  isSupabaseImageUrl, 
+  batchDeleteImages 
+} from '../lib/image-upload';
 
 // Custom Image Component with Resize Functionality
 const ResizableImage: React.FC<NodeViewProps> = ({ node, updateAttributes }) => {
@@ -234,6 +242,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [activeTab, setActiveTab] = useState<'upload' | 'url'>('upload');
   const [dragActive, setDragActive] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]); // Track uploaded image paths
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -334,13 +343,24 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
 
   const addImage = () => {
     if (imageUrl) {
-      editor.chain().focus().setImage({ 
-        src: imageUrl, 
-        alt: imageAlt || 'Image' 
-      }).run();
-      setImageUrl('');
-      setImageAlt('');
-      setIsImageDialogOpen(false);
+      // Check if it's a valid URL (either http/https or data URL)
+      if (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) {
+        editor.chain().focus().setImage({ 
+          src: imageUrl, 
+          alt: imageAlt || 'Image',
+          width: 800,
+          height: 600
+        }).run();
+        setImageUrl('');
+        setImageAlt('');
+        setIsImageDialogOpen(false);
+      } else {
+        toast({
+          title: "Invalid image URL",
+          description: "Please enter a valid image URL starting with http:// or https://",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -351,31 +371,35 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
     setUploadProgress(0);
 
     try {
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 100);
-
-      // For now, we'll create a local blob URL
-      // In a real app, you'd upload to your server/cloud storage here
-      const imageUrl = URL.createObjectURL(selectedFile);
+      // Upload to Supabase Storage
+      console.log('🚀 Starting Supabase image upload...');
       
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Set initial progress for image processing
+      setUploadProgress(10);
       
-      clearInterval(progressInterval);
+      // Simulate image processing progress
+      await new Promise(resolve => setTimeout(resolve, 200));
+      setUploadProgress(30);
+      
+      // Upload image to Supabase with content-images folder
+      const uploadResult: ImageUploadResult = await uploadImage(selectedFile, {
+        folder: 'content-images',
+        maxSize: 10, // Allow up to 10MB for content images
+        quality: 0.8
+      });
+      
+      console.log('✅ Supabase upload successful:', uploadResult);
       setUploadProgress(100);
 
-      // Insert the image into the editor
+      // Track uploaded image path for cleanup
+      setUploadedImages(prev => [...prev, uploadResult.path]);
+
+      // Insert the uploaded image into the editor
       editor.chain().focus().setImage({ 
-        src: imageUrl, 
-        alt: imageAlt || selectedFile.name 
+        src: uploadResult.url, 
+        alt: imageAlt || selectedFile.name,
+        width: 800, // Default width for content images
+        height: 600  // Default height for content images
       }).run();
 
       // Reset form
@@ -385,14 +409,31 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       
       toast({
         title: "Image uploaded successfully!",
-        description: "Your image has been added to the editor.",
+        description: `Image uploaded to Supabase: ${(uploadResult.size / 1024 / 1024).toFixed(2)}MB`,
       });
 
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error('❌ Supabase upload failed:', error);
+      
+      let errorMessage = "There was an error uploading your image. Please try again.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('User not authenticated')) {
+          errorMessage = "Please log in to upload images.";
+        } else if (error.message.includes('File size must be less than')) {
+          errorMessage = error.message;
+        } else if (error.message.includes('File type must be one of')) {
+          errorMessage = error.message;
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Upload failed",
-        description: "There was an error uploading your image. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -405,9 +446,467 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
     editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
   };
 
+  // Function to extract image URLs from editor content
+  const extractImageUrlsFromContent = (): string[] => {
+    if (!editor) return [];
+    
+    const imageUrls: string[] = [];
+    editor.state.doc.descendants((node) => {
+      if (node.type.name === 'image' && node.attrs.src) {
+        imageUrls.push(node.attrs.src);
+      }
+    });
+    
+    return imageUrls;
+  };
+
+  // Function to find unused images by comparing uploaded paths with content URLs
+  const findUnusedImages = async (uploadedPaths: string[], contentUrls: string[]): Promise<string[]> => {
+    const unusedImages: string[] = [];
+    
+    for (const uploadedPath of uploadedPaths) {
+      let isUsed = false;
+      
+      // Check if this uploaded image is referenced in the content
+      for (const contentUrl of contentUrls) {
+        if (isSupabaseImageUrl(contentUrl)) {
+          const contentPath = extractImagePathFromUrl(contentUrl);
+          if (contentPath === uploadedPath) {
+            isUsed = true;
+            break;
+          }
+        }
+      }
+      
+      if (!isUsed) {
+        unusedImages.push(uploadedPath);
+      }
+    }
+    
+    console.log('🔍 Image usage analysis:', {
+      uploaded: uploadedPaths.length,
+      content: contentUrls.length,
+      unused: unusedImages.length
+    });
+    
+    return unusedImages;
+  };
+
+  // Function to clean up unused images from Supabase storage
+  const cleanupUnusedImages = async (unusedPaths: string[]): Promise<void> => {
+    if (unusedPaths.length === 0) return;
+    
+    try {
+      console.log('🗑️ Starting cleanup of', unusedPaths.length, 'unused images...');
+      
+      // Delete unused images from Supabase storage
+      const result = await batchDeleteImages(unusedPaths);
+      
+      console.log('✅ Cleanup completed:', {
+        successful: result.success.length,
+        failed: result.failed.length
+      });
+      
+      // Remove successfully deleted images from tracking
+      if (result.success.length > 0) {
+        setUploadedImages(prev => prev.filter(path => !result.success.includes(path)));
+      }
+      
+      // Show cleanup results to user
+      if (result.success.length > 0) {
+        toast({
+          title: "Cleanup completed",
+          description: `Removed ${result.success.length} unused images from storage${result.failed.length > 0 ? ` (${result.failed.length} failed)` : ''}`,
+        });
+      }
+      
+      if (result.failed.length > 0) {
+        toast({
+          title: "Cleanup partially failed",
+          description: `${result.failed.length} images could not be removed. Check console for details.`,
+          variant: "destructive",
+        });
+      }
+      
+    } catch (error) {
+      console.error('❌ Error during image cleanup:', error);
+      toast({
+        title: "Cleanup failed",
+        description: "There was an error cleaning up unused images",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Function to clean up uploaded images when component unmounts
+  const cleanupUploadedImages = async () => {
+    if (uploadedImages.length === 0) return;
+    
+    try {
+      console.log('🧹 Cleaning up uploaded images:', uploadedImages);
+      
+      // Get current content images
+      const contentImages = extractImageUrlsFromContent();
+      console.log('📝 Current content images:', contentImages);
+      
+      // Find unused images and clean them up
+      const unusedImages = await findUnusedImages(uploadedImages, contentImages);
+      if (unusedImages.length > 0) {
+        console.log('🗑️ Found unused images to clean up:', unusedImages);
+        await cleanupUnusedImages(unusedImages);
+      }
+    } catch (error) {
+      console.error('❌ Error during image cleanup:', error);
+    }
+  };
+
+  // Function to manually clean up unused images
+  const handleCleanupUnusedImages = async () => {
+    try {
+      const contentImages = extractImageUrlsFromContent();
+      console.log('🧹 Manual cleanup - Content images:', contentImages);
+      console.log('🧹 Manual cleanup - Uploaded images:', uploadedImages);
+      
+      // Find and clean up unused images
+      const unusedImages = await findUnusedImages(uploadedImages, contentImages);
+      
+      if (unusedImages.length === 0) {
+        toast({
+          title: "No cleanup needed",
+          description: "All uploaded images are currently in use",
+        });
+        return;
+      }
+      
+      // Show detailed confirmation dialog before cleanup
+      const stats = getStorageStats();
+      const message = `Found ${unusedImages.length} unused images out of ${stats.totalUploaded} uploaded.
+      
+Current usage:
+• ${stats.totalInContent} images in content
+• ${stats.supabaseInContent} Supabase images in content
+• ${stats.externalInContent} external images in content
+• ${stats.potentialUnused} potentially unused
+
+Remove ${unusedImages.length} unused images from storage? This action cannot be undone.`;
+
+      if (confirm(message)) {
+        await cleanupUnusedImages(unusedImages);
+      }
+      
+    } catch (error) {
+      console.error('❌ Manual cleanup failed:', error);
+      toast({
+        title: "Cleanup failed",
+        description: "There was an error during cleanup",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Function to export image tracking data for debugging
+  const exportImageTrackingData = () => {
+    const contentImages = extractImageUrlsFromContent();
+    const trackingData = {
+      contentImages,
+      uploadedImages,
+      timestamp: new Date().toISOString(),
+      editorContent: editor?.getHTML() || ''
+    };
+    
+    console.log('📊 Image tracking data:', trackingData);
+    
+    // Create downloadable file
+    const blob = new Blob([JSON.stringify(trackingData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `image-tracking-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Data exported",
+      description: "Image tracking data has been exported for debugging",
+    });
+  };
+
+  // Function to get storage usage statistics
+  const getStorageStats = () => {
+    const contentImages = extractImageUrlsFromContent();
+    const supabaseImages = contentImages.filter(url => isSupabaseImageUrl(url));
+    const externalImages = contentImages.filter(url => !isSupabaseImageUrl(url));
+    
+    return {
+      totalUploaded: uploadedImages.length,
+      totalInContent: contentImages.length,
+      supabaseInContent: supabaseImages.length,
+      externalInContent: externalImages.length,
+      potentialUnused: uploadedImages.length - supabaseImages.length
+    };
+  };
+
+  // Function to test all editor functionality
+  const testAllFunctionality = () => {
+    if (!editor) return;
+    
+    try {
+      // Test text formatting
+      editor.chain().focus().setContent('<p>Testing all editor functionality...</p>').run();
+      
+      // Test bold
+      editor.chain().focus().extendMarkRange('bold').toggleBold().run();
+      
+      // Test italic
+      editor.chain().focus().extendMarkRange('italic').toggleItalic().run();
+      
+      // Test underline
+      editor.chain().focus().extendMarkRange('underline').toggleUnderline().run();
+      
+      // Test strike
+      editor.chain().focus().extendMarkRange('strike').toggleStrike().run();
+      
+      // Test highlight
+      editor.chain().focus().extendMarkRange('highlight').toggleHighlight().run();
+      
+      // Test headings
+      editor.chain().focus().setHeading({ level: 1 }).run();
+      editor.chain().focus().setHeading({ level: 2 }).run();
+      editor.chain().focus().setHeading({ level: 3 }).run();
+      
+      // Test lists
+      editor.chain().focus().setParagraph().run();
+      editor.chain().focus().toggleBulletList().run();
+      editor.chain().focus().toggleOrderedList().run();
+      
+      // Test alignment
+      editor.chain().focus().setTextAlign('left').run();
+      editor.chain().focus().setTextAlign('center').run();
+      editor.chain().focus().setTextAlign('right').run();
+      
+      // Test special elements
+      editor.chain().focus().setParagraph().run();
+      editor.chain().focus().toggleBlockquote().run();
+      editor.chain().focus().setParagraph().run();
+      editor.chain().focus().toggleCodeBlock().run();
+      editor.chain().focus().setParagraph().run();
+      editor.chain().focus().setHorizontalRule().run();
+      
+      // Test table
+      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+      
+      toast({
+        title: "Functionality Test Complete",
+        description: "All editor features have been tested successfully!",
+      });
+      
+    } catch (error) {
+      console.error('❌ Functionality test failed:', error);
+      toast({
+        title: "Test Failed",
+        description: "Some editor features may not be working correctly",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Function to clear editor content
+  const clearEditor = () => {
+    if (!editor) return;
+    
+    if (confirm('Are you sure you want to clear all content? This action cannot be undone.')) {
+      editor.chain().focus().clearContent().run();
+      toast({
+        title: "Editor Cleared",
+        description: "All content has been removed from the editor",
+      });
+    }
+  };
+
+  // Function to get editor statistics
+  const getEditorStats = () => {
+    if (!editor) return null;
+    
+    const content = editor.getHTML();
+    const textContent = editor.getText();
+    const wordCount = textContent.trim().split(/\s+/).filter(word => word.length > 0).length;
+    const charCount = textContent.length;
+    
+    return {
+      wordCount,
+      charCount,
+      hasContent: content.length > 0,
+      contentLength: content.length
+    };
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupUploadedImages();
+    };
+  }, []);
+
+  // Periodic cleanup check (every 5 minutes)
+  useEffect(() => {
+    if (uploadedImages.length === 0) return;
+    
+    const interval = setInterval(() => {
+      console.log('🔄 Periodic cleanup check triggered');
+      checkAndCleanupUnusedImages();
+    }, 5 * 60 * 1000); // 5 minutes
+    
+    return () => clearInterval(interval);
+  }, [uploadedImages.length]);
+
+  // Listen for content changes to track image usage
+  useEffect(() => {
+    if (!editor) return;
+    
+    const handleUpdate = () => {
+      const contentImages = extractImageUrlsFromContent();
+      console.log('🔄 Content updated, current images:', contentImages);
+    };
+    
+    editor.on('update', handleUpdate);
+    
+    return () => {
+      editor.off('update', handleUpdate);
+    };
+  }, [editor]);
+
+  // Listen for delete/backspace to handle image removal
+  useEffect(() => {
+    if (!editor) return;
+    
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.key === 'Delete' || event.key === 'Backspace') && editor.isActive('image')) {
+        console.log('🗑️ Image deletion detected - scheduling cleanup check');
+        // Schedule a cleanup check after a short delay to allow the editor to update
+        setTimeout(() => {
+          checkAndCleanupUnusedImages();
+        }, 1000);
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [editor]);
+
+  // Function to check and cleanup unused images
+  const checkAndCleanupUnusedImages = async () => {
+    try {
+      const contentImages = extractImageUrlsFromContent();
+      const unusedImages = await findUnusedImages(uploadedImages, contentImages);
+      
+      if (unusedImages.length > 0) {
+        console.log('🔄 Auto-cleanup: Found', unusedImages.length, 'unused images');
+        // Auto-cleanup without confirmation for small numbers of images
+        if (unusedImages.length <= 3) {
+          await cleanupUnusedImages(unusedImages);
+        } else {
+          console.log('🔄 Auto-cleanup: Too many unused images, manual cleanup recommended');
+        }
+      }
+    } catch (error) {
+      console.error('❌ Auto-cleanup check failed:', error);
+    }
+  };
+
+  // Keyboard shortcuts for editor
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Prevent default browser shortcuts when editor is focused
+      if (event.target === editor.view.dom || editor.view.dom.contains(event.target as Node)) {
+        // Bold: Ctrl+B
+        if (event.ctrlKey && event.key === 'b') {
+          event.preventDefault();
+          editor.chain().focus().toggleBold().run();
+        }
+        // Italic: Ctrl+I
+        if (event.ctrlKey && event.key === 'i') {
+          event.preventDefault();
+          editor.chain().focus().toggleItalic().run();
+        }
+        // Underline: Ctrl+U
+        if (event.ctrlKey && event.key === 'u') {
+          event.preventDefault();
+          editor.chain().focus().toggleUnderline().run();
+        }
+        // Bullet List: Ctrl+Shift+8
+        if (event.ctrlKey && event.shiftKey && event.key === '8') {
+          event.preventDefault();
+          editor.chain().focus().toggleBulletList().run();
+        }
+        // Numbered List: Ctrl+Shift+7
+        if (event.ctrlKey && event.shiftKey && event.key === '7') {
+          event.preventDefault();
+          editor.chain().focus().toggleOrderedList().run();
+        }
+        // Blockquote: Ctrl+Shift+Q
+        if (event.ctrlKey && event.shiftKey && event.key === 'q') {
+          event.preventDefault();
+          editor.chain().focus().toggleBlockquote().run();
+        }
+        // Code Block: Ctrl+Shift+C
+        if (event.ctrlKey && event.shiftKey && event.key === 'c') {
+          event.preventDefault();
+          editor.chain().focus().toggleCodeBlock().run();
+        }
+        // Heading 1: Ctrl+Alt+1
+        if (event.ctrlKey && event.altKey && event.key === '1') {
+          event.preventDefault();
+          editor.chain().focus().toggleHeading({ level: 1 }).run();
+        }
+        // Heading 2: Ctrl+Alt+2
+        if (event.ctrlKey && event.altKey && event.key === '2') {
+          event.preventDefault();
+          editor.chain().focus().toggleHeading({ level: 2 }).run();
+        }
+        // Heading 3: Ctrl+Alt+3
+        if (event.ctrlKey && event.altKey && event.key === '3') {
+          event.preventDefault();
+          editor.chain().focus().toggleHeading({ level: 3 }).run();
+        }
+        // Clear content: Ctrl+Shift+Delete
+        if (event.ctrlKey && event.shiftKey && event.key === 'Delete') {
+          event.preventDefault();
+          clearEditor();
+        }
+        // Show stats: Ctrl+Shift+S
+        if (event.ctrlKey && event.shiftKey && event.key === 's') {
+          event.preventDefault();
+          const stats = getEditorStats();
+          if (stats) {
+            toast({
+              title: "Editor Statistics",
+              description: `${stats.wordCount} words, ${stats.charCount} characters`,
+            });
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [editor]);
+
   const MenuBar = () => (
-    <div className="border-b border-gray-200 bg-white sticky top-0 z-10">
+    <div className="border-b border-gray-200 bg-white sticky top-0 z-10 shadow-sm">
       <div className="flex items-center gap-1 p-2 overflow-x-auto">
+        {/* Word Count - Moved to right side for better visibility */}
+        <div className="flex-1"></div>
+        {getEditorStats() && (
+          <div className="flex items-center gap-1 border-l border-gray-200 pl-2 text-xs text-gray-600 font-medium">
+            <span className="hidden sm:inline">📊</span>
+            <span>{getEditorStats()?.wordCount || 0} words</span>
+          </div>
+        )}
         {/* Text Formatting */}
         <div className="flex items-center gap-1 border-r border-gray-200 pr-2">
           <Button
@@ -415,6 +914,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().toggleBold().run()}
             className="h-8 w-8 p-0"
+            title="Bold (Ctrl+B)"
           >
             <Bold className="h-4 w-4" />
           </Button>
@@ -423,6 +923,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().toggleItalic().run()}
             className="h-8 w-8 p-0"
+            title="Italic (Ctrl+I)"
           >
             <Italic className="h-4 w-4" />
           </Button>
@@ -431,6 +932,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().toggleUnderline().run()}
             className="h-8 w-8 p-0"
+            title="Underline (Ctrl+U)"
           >
             <UnderlineIcon className="h-4 w-4" />
           </Button>
@@ -439,6 +941,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().toggleStrike().run()}
             className="h-8 w-8 p-0"
+            title="Strikethrough"
           >
             <Strikethrough className="h-4 w-4" />
           </Button>
@@ -447,6 +950,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().toggleHighlight().run()}
             className="h-8 w-8 p-0"
+            title="Highlight text"
           >
             <Highlighter className="h-4 w-4" />
           </Button>
@@ -459,6 +963,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
             className="h-8 w-8 p-0"
+            title="Heading 1 (Ctrl+Alt+1)"
           >
             <Heading1 className="h-4 w-4" />
           </Button>
@@ -467,6 +972,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
             className="h-8 w-8 p-0"
+            title="Heading 2 (Ctrl+Alt+2)"
           >
             <Heading2 className="h-4 w-4" />
           </Button>
@@ -475,6 +981,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
             className="h-8 w-8 p-0"
+            title="Heading 3 (Ctrl+Alt+3)"
           >
             <Heading3 className="h-4 w-4" />
           </Button>
@@ -487,6 +994,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().toggleBulletList().run()}
             className="h-8 w-8 p-0"
+            title="Bullet List (Ctrl+Shift+8)"
           >
             <List className="h-4 w-4" />
           </Button>
@@ -495,6 +1003,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
             className="h-8 w-8 p-0"
+            title="Numbered List (Ctrl+Shift+7)"
           >
             <ListOrdered className="h-4 w-4" />
           </Button>
@@ -507,6 +1016,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().setTextAlign('left').run()}
             className="h-8 w-8 p-0"
+            title="Align Left"
           >
             <AlignLeft className="h-4 w-4" />
           </Button>
@@ -515,6 +1025,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().setTextAlign('center').run()}
             className="h-8 w-8 p-0"
+            title="Align Center"
           >
             <AlignCenter className="h-4 w-4" />
           </Button>
@@ -523,6 +1034,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().setTextAlign('right').run()}
             className="h-8 w-8 p-0"
+            title="Align Right"
           >
             <AlignRight className="h-4 w-4" />
           </Button>
@@ -535,6 +1047,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
             className="h-8 w-8 p-0"
+            title="Blockquote (Ctrl+Shift+Q)"
           >
             <Quote className="h-4 w-4" />
           </Button>
@@ -543,6 +1056,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
             className="h-8 w-8 p-0"
+            title="Code Block (Ctrl+Shift+C)"
           >
             <Code className="h-4 w-4" />
           </Button>
@@ -551,6 +1065,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => editor.chain().focus().setHorizontalRule().run()}
             className="h-8 w-8 p-0"
+            title="Horizontal Rule"
           >
             <Minus className="h-4 w-4" />
           </Button>
@@ -563,6 +1078,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => setIsImageDialogOpen(true)}
             className="h-8 w-8 p-0"
+            title="Insert Image"
           >
             <ImageIcon className="h-4 w-4" />
           </Button>
@@ -571,6 +1087,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={() => setIsLinkDialogOpen(true)}
             className="h-8 w-8 p-0"
+            title="Insert Link"
           >
             <LinkIcon className="h-4 w-4" />
           </Button>
@@ -579,10 +1096,44 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             size="sm"
             onClick={addTable}
             className="h-8 w-8 p-0"
+            title="Insert Table"
           >
             <TableIcon className="h-4 w-4" />
           </Button>
         </div>
+
+        {/* Image Management */}
+        {uploadedImages.length > 0 && (
+          <div className="flex items-center gap-1 border-r border-gray-200 pr-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCleanupUnusedImages}
+              className="h-8 w-8 p-0"
+              title={`Cleanup unused images (${uploadedImages.length} tracked)`}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={exportImageTrackingData}
+              className="h-8 w-8 p-0"
+              title="Export image tracking data"
+            >
+              📊
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={checkAndCleanupUnusedImages}
+              className="h-8 w-8 p-0"
+              title="Check for unused images"
+            >
+              🔍
+            </Button>
+          </div>
+        )}
 
         {/* History */}
         <div className="flex items-center gap-1">
@@ -592,6 +1143,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().undo()}
             className="h-8 w-8 p-0"
+            title="Undo (Ctrl+Z)"
           >
             <Undo className="h-4 w-4" />
           </Button>
@@ -601,8 +1153,48 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
             onClick={() => editor.chain().focus().redo().run()}
             disabled={!editor.can().redo()}
             className="h-8 w-8 p-0"
+            title="Redo (Ctrl+Y)"
           >
             <Redo className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Test Button */}
+        <div className="flex items-center gap-1 border-l border-gray-200 pl-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={testAllFunctionality}
+            className="h-8 px-3 text-xs"
+            title="Test all editor functionality"
+          >
+            🧪 Test All
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={clearEditor}
+            className="h-8 px-3 text-xs"
+            title="Clear all editor content (Ctrl+Shift+Delete)"
+          >
+            🗑️ Clear
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const stats = getEditorStats();
+              if (stats) {
+                toast({
+                  title: "Editor Statistics",
+                  description: `${stats.wordCount} words, ${stats.charCount} characters`,
+                });
+              }
+            }}
+            className="h-8 px-3 text-xs"
+            title="Show editor statistics (Ctrl+Shift+S)"
+          >
+            📊 Stats
           </Button>
         </div>
       </div>
@@ -615,7 +1207,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       
       <EditorContent 
         editor={editor} 
-        className="min-h-[400px] bg-white"
+        className="min-h-[400px] bg-white focus-within:ring-2 focus-within:ring-blue-200 focus-within:ring-opacity-50 transition-all"
       />
 
       {/* Link Dialog */}
@@ -660,6 +1252,36 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
               Upload an image file or enter an image URL. Click on images in the editor to resize them using the blue handles.
             </p>
           </DialogHeader>
+          
+          {/* Upload Status */}
+          {uploadedImages.length > 0 && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-blue-700">
+                    📸 <strong>{uploadedImages.length}</strong> image{uploadedImages.length !== 1 ? 's' : ''} uploaded to Supabase
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    Images are stored permanently and optimized for web delivery
+                  </p>
+                </div>
+                <div className="text-right">
+                  <button
+                    onClick={() => {
+                      const stats = getStorageStats();
+                      toast({
+                        title: "Storage Statistics",
+                        description: `${stats.totalInContent} images in content, ${stats.potentialUnused} potentially unused`,
+                      });
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-800 underline"
+                  >
+                    View Stats
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Tabs for Upload vs URL */}
           <div className="flex space-x-1 border-b border-gray-200">
@@ -741,7 +1363,10 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
                         </button>
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        Supports: JPG, PNG, GIF, WebP (max 5MB)
+                        Supports: JPG, PNG, GIF, WebP (max 10MB)
+                      </p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        Images are uploaded to Supabase and optimized automatically
                       </p>
                     </div>
                   )}
@@ -754,12 +1379,12 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
                   accept="image/*"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file && file.size <= 5 * 1024 * 1024) { // 5MB limit
+                    if (file && file.size <= 10 * 1024 * 1024) { // 10MB limit
                       setSelectedFile(file);
                     } else if (file) {
                       toast({
                         title: "File too large",
-                        description: "Please select an image smaller than 5MB.",
+                        description: "Please select an image smaller than 10MB.",
                         variant: "destructive",
                       });
                     }
@@ -787,7 +1412,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
                   {isUploading ? (
                     <div className="flex items-center space-x-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Uploading... {uploadProgress}%</span>
+                      <span>Uploading to Supabase... {uploadProgress}%</span>
                     </div>
                   ) : (
                     'Upload & Insert Image'
@@ -796,11 +1421,18 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
 
                 {/* Upload Progress */}
                 {isUploading && (
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
+                  <div className="space-y-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-600 text-center">
+                      {uploadProgress < 50 ? 'Processing image...' : 
+                       uploadProgress < 90 ? 'Uploading to Supabase...' : 
+                       'Finalizing...'}
+                    </p>
                   </div>
                 )}
               </div>

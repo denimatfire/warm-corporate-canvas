@@ -257,3 +257,43 @@ export const deleteImage = ImageUploadService.deleteImage.bind(ImageUploadServic
 export const updateImage = ImageUploadService.updateImage.bind(ImageUploadService);
 export const getImageDimensions = ImageUploadService.getImageDimensions.bind(ImageUploadService);
 export const getImageOrientation = ImageUploadService.getImageOrientation.bind(ImageUploadService);
+
+// Utility functions for image cleanup
+export const extractImagePathFromUrl = (url: string): string | null => {
+  try {
+    // Extract path from Supabase URL
+    // Example: https://xxx.supabase.co/storage/v1/object/public/Article_images/content-images/123456-abc123.jpg
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname.split('/');
+    const storageIndex = pathParts.findIndex(part => part === 'storage');
+    if (storageIndex !== -1 && pathParts[storageIndex + 4] === 'Article_images') {
+      // Return the path after 'Article_images'
+      return pathParts.slice(storageIndex + 5).join('/');
+    }
+    return null;
+  } catch (error) {
+    console.error('Error extracting image path from URL:', error);
+    return null;
+  }
+};
+
+export const isSupabaseImageUrl = (url: string): boolean => {
+  return url.includes('supabase.co') && url.includes('Article_images');
+};
+
+export const batchDeleteImages = async (filePaths: string[]): Promise<{ success: string[], failed: string[] }> => {
+  const success: string[] = [];
+  const failed: string[] = [];
+
+  for (const filePath of filePaths) {
+    try {
+      await ImageUploadService.deleteImage(filePath);
+      success.push(filePath);
+    } catch (error) {
+      console.error(`Failed to delete image: ${filePath}`, error);
+      failed.push(filePath);
+    }
+  }
+
+  return { success, failed };
+};
