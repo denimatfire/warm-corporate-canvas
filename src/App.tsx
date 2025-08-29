@@ -8,6 +8,7 @@ import WritingPage from "./pages/Writing";
 import PhotosPage from "./pages/Photos";
 import Article_medium from "./components/Article_medium";
 import ArticleManagement from "./pages/ArticleManagement";
+import PhotoManagement from "./pages/PhotoManagement";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -37,6 +38,11 @@ const App = () => (
           <Route path="/admin/articles" element={
             <ProtectedRoute requiredRole="writer" showLogin={true}>
               <ArticleManagement />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/photos" element={
+            <ProtectedRoute requiredRole="writer" showLogin={true}>
+              <PhotoManagement />
             </ProtectedRoute>
           } />
           <Route path="/login" element={<LoginPage />} />

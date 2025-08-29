@@ -33,8 +33,10 @@ const LoginPage: React.FC = () => {
           description: `Welcome back, ${result.user.email}!`,
         });
         
-        // Redirect to article management
-        window.location.href = '/admin/articles';
+        // Redirect to the page they were trying to access, or default to articles
+        const params = new URLSearchParams(window.location.search);
+        const redirectTo = params.get('redirect') || '/admin/articles';
+        navigate(redirectTo);
       } else {
         setError(result.error || 'Login failed. Please try again.');
       }
@@ -60,7 +62,7 @@ const LoginPage: React.FC = () => {
             </div>
             <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
             <CardDescription>
-              Sign in to access your article management dashboard
+              Sign in to access your admin dashboard (Articles & Photos)
             </CardDescription>
           </CardHeader>
           
@@ -145,7 +147,7 @@ const LoginPage: React.FC = () => {
                 <p><strong>Password:</strong> test123456</p>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Use these credentials to access the admin dashboard and create articles.
+                Use these credentials to access the admin dashboard for managing articles and photos.
               </p>
             </div>
             

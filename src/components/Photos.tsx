@@ -1,93 +1,36 @@
 import { useState, useEffect } from "react";
-import { X, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { X, ZoomIn, ChevronLeft, ChevronRight, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getPublishedPhotos, Photo } from "@/lib/photos-api";
+import { supabase } from "@/lib/articles-api";
 
 interface PhotosProps {
   showAll?: boolean;
 }
 
 const Photos = ({ showAll = false }: PhotosProps) => {
-  const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Enhanced photos data with simplified properties
-  const photos = [
-    {
-      id: 1,
-      src: "/Henkle.JPG",
-      alt: "Henkle photo",
-      title: "Henkle Hackathon Finalist Presentation",
-      category: "Personal",
-      caption: "Presenting our project on Use of AIML in Supplychain in Control Towerat the Henkle Hackathon Finalist Presentation"
-    },
-    {
-      id: 2,
-      src: "/MBAconvocation.JPG",
-      alt: "MBA Convocation Ceremony",
-      title: "MBA Convocation",
-      category: "Academic",
-      caption: "Celebrating the completion of my MBA journey! A milestone achievement that represents years of hard work and dedication ✨"
-    },
-    {
-      id: 3,
-      src: "/MtechConvocation.JPG",
-      alt: "M.Tech Convocation Ceremony",
-      title: "M.Tech Convocation",
-      category: "Academic",
-      caption: "Another milestone achieved! M.Tech convocation - representing the culmination of advanced studies and research in technology 🔬"
-    },
-    {
-      id: 4,
-      src: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&h=600&fit=crop",
-      alt: "Ocean waves at beach",
-      title: "Ocean Waves",
-      category: "Seascape",
-      caption: "Morning coffee with a view. Simple moments, profound beauty. ☕️🌊"
-    },
-    {
-      id: 5,
-      src: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=600&h=400&fit=crop",
-      alt: "Night city skyline",
-      title: "City Lights",
-      category: "Urban",
-      caption: "The city never sleeps, and neither do the dreams it inspires. 🌃✨"
-    },
-    {
-      id: 6,
-      src: "https://images.unsplash.com/photo-1418489098061-ce87b5dc3aee?w=600&h=600&fit=crop",
-      alt: "Desert dunes at sunset",
-      title: "Desert Dreams",
-      category: "Landscape",
-      caption: "Adventures await beyond the horizon. Every journey begins with a single step. 🥾⛰️"
-    },
-    {
-      id: 7,
-      src: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&h=400&fit=crop",
-      alt: "Misty lake reflection",
-      title: "Reflection",
-      category: "Nature",
-      caption: "Reflections in still waters. Finding peace in nature's mirror. 🏔️💧"
-    },
-    {
-      id: 8,
-      src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=600&fit=crop",
-      alt: "Street photography scene",
-      title: "Street Life",
-      category: "Street",
-      caption: "Capturing the pulse of the city, one moment at a time. 🚶‍♂️📸"
-    },
-    {
-      id: 9,
-      src: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=600&h=400&fit=crop",
-      alt: "Wildflower field",
-      title: "Wild Beauty",
-      category: "Nature",
-      caption: "Nature's palette at its finest. Wildflowers dancing in the breeze. 🌸💨"
-    }
-  ];
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsAuthenticated(!!user);
+    };
+    checkAuth();
+  }, []);
+
+  // Fetch published photos from database
+  const { data: photos = [], isLoading } = useQuery({
+    queryKey: ["published-photos"],
+    queryFn: getPublishedPhotos
+  });
 
   const currentPhotoIndex = selectedPhoto ? photos.findIndex(p => p.id === selectedPhoto.id) : -1;
 
@@ -123,17 +66,33 @@ const Photos = ({ showAll = false }: PhotosProps) => {
     }
   }, [selectedPhoto, currentPhotoIndex]);
 
+  // Display photos (limit to 3 if not showAll)
+  const displayPhotos = showAll ? photos : photos.slice(0, 3);
+
   return (
     <section id="photos" className={`py-20 ${isMobile ? 'px-4' : 'px-6'} bg-gradient-section`}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className={`text-center ${isMobile ? 'mb-12' : 'mb-16'} animate-fade-in`}>
-          <h2 
-            className={`${isMobile ? 'text-3xl lg:text-4xl' : 'text-4xl lg:text-5xl'} font-bold text-foreground mb-6 cursor-pointer hover:text-primary transition-colors`}
-            onClick={() => navigate('/photos')}
-          >
-            Photo <span className="text-primary">Gallery</span>
-          </h2>
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <h2 
+              className={`${isMobile ? 'text-3xl lg:text-4xl' : 'text-4xl lg:text-5xl'} font-bold text-foreground cursor-pointer hover:text-primary transition-colors`}
+              onClick={() => navigate('/photos')}
+            >
+              Photo <span className="text-primary">Gallery</span>
+            </h2>
+            {isAuthenticated && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/admin/photos')}
+                className="flex items-center gap-2"
+              >
+                <Settings className="w-4 h-4" />
+                Manage
+              </Button>
+            )}
+          </div>
           <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-muted-foreground max-w-3xl mx-auto`}>
             Capturing moments and perspectives through the lens. A collection of photographs 
             from travels, adventures, and everyday beauty that inspires me.
@@ -143,58 +102,108 @@ const Photos = ({ showAll = false }: PhotosProps) => {
         {/* Photo Counter */}
         <div className="text-center mb-8 animate-slide-up">
           <div className="text-sm text-muted-foreground">
-            {photos.slice(0, showAll ? photos.length : 3).length} photos
+            {displayPhotos.length} photos
+            {!showAll && photos.length > 3 && (
+              <span className="ml-2 text-primary">
+                • <button 
+                  onClick={() => navigate('/photos')}
+                  className="underline hover:no-underline"
+                >
+                  View all {photos.length}
+                </button>
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Photo Grid */}
-        <div className={`grid ${isMobile ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'} gap-4 ${isMobile ? 'gap-4' : 'gap-6'} animate-slide-up`}>
-          {photos.slice(0, showAll ? photos.length : 3).map((photo, index) => (
-            <div
-              key={photo.id}
-              className="group cursor-pointer animate-slide-up bg-card rounded-lg border border-border overflow-hidden hover:shadow-lg transition-all duration-300"
-              style={{ animationDelay: `${index * 0.1}s` }}
-              onClick={() => setSelectedPhoto(photo)}
-            >
-              {/* Image Container */}
-              <div className="relative aspect-square overflow-hidden">
-                <img
-                  src={photo.src}
-                  alt={photo.alt}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                
-                {/* Lightroom-style Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                    <h3 className={`font-semibold ${isMobile ? 'text-xs' : 'text-sm'} mb-1`}>{photo.title}</h3>
-                    <p className="text-xs text-gray-200 opacity-90">{photo.category}</p>
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Loading photos...</p>
+          </div>
+        ) : displayPhotos.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No photos available yet</p>
+            {isAuthenticated && (
+              <Button
+                onClick={() => navigate('/admin/photos')}
+                className="mt-4"
+              >
+                Upload Your First Photo
+              </Button>
+            )}
+          </div>
+        ) : (
+          /* Photo Grid */
+          <div className={`grid ${isMobile ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'} gap-4 ${isMobile ? 'gap-4' : 'gap-6'} animate-slide-up`}>
+            {displayPhotos.map((photo, index) => (
+              <div
+                key={photo.id}
+                className="group cursor-pointer animate-slide-up bg-card rounded-lg border border-border overflow-hidden hover:shadow-lg transition-all duration-300"
+                style={{ animationDelay: `${index * 0.1}s` }}
+                onClick={() => setSelectedPhoto(photo)}
+              >
+                {/* Image Container */}
+                <div className="relative aspect-square overflow-hidden">
+                  <img
+                    src={photo.image_url}
+                    alt={photo.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  
+                  {/* Lightroom-style Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                      <h3 className={`font-semibold ${isMobile ? 'text-xs' : 'text-sm'} mb-1`}>{photo.title}</h3>
+                      {photo.category && (
+                        <p className="text-xs text-gray-200 opacity-90">{photo.category}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Zoom Icon */}
+                  <div className="absolute top-3 right-3 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <ZoomIn className="w-4 h-4 text-white" />
                   </div>
                 </div>
                 
-                {/* Zoom Icon */}
-                <div className="absolute top-3 right-3 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <ZoomIn className="w-4 h-4 text-white" />
+                {/* Photo Info */}
+                <div className={`${isMobile ? 'p-3' : 'p-4'}`}>
+                  {photo.category && (
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-primary uppercase tracking-wide">
+                        {photo.category}
+                      </span>
+                    </div>
+                  )}
+                  <h3 className={`font-semibold text-foreground ${isMobile ? 'text-xs' : 'text-sm'} mb-1 line-clamp-1`}>
+                    {photo.title}
+                  </h3>
+                  {photo.caption && (
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {photo.caption}
+                    </p>
+                  )}
+                  {photo.tags && photo.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {photo.tags.slice(0, 2).map((tag) => (
+                        <span key={tag} className="text-xs bg-muted px-2 py-1 rounded">
+                          {tag}
+                        </span>
+                      ))}
+                      {photo.tags.length > 2 && (
+                        <span className="text-xs text-muted-foreground">
+                          +{photo.tags.length - 2}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-              
-              {/* Photo Info */}
-              <div className={`${isMobile ? 'p-3' : 'p-4'}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-primary uppercase tracking-wide">
-                    {photo.category}
-                  </span>
-                </div>
-                <h3 className={`font-semibold text-foreground ${isMobile ? 'text-xs' : 'text-sm'} mb-1 line-clamp-1`}>
-                  {photo.title}
-                </h3>
-                <p className="text-xs text-muted-foreground line-clamp-2">
-                  {photo.caption}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Google Photos-style Modal */}
         {selectedPhoto && (
@@ -237,8 +246,8 @@ const Photos = ({ showAll = false }: PhotosProps) => {
               {/* Photo */}
               <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
                 <img
-                  src={selectedPhoto.src}
-                  alt={selectedPhoto.alt}
+                  src={selectedPhoto.image_url}
+                  alt={selectedPhoto.title}
                   className={`w-full h-auto ${isMobile ? 'max-h-[50vh]' : 'max-h-[65vh]'} object-contain rounded-lg`}
                 />
               </div>
@@ -246,15 +255,28 @@ const Photos = ({ showAll = false }: PhotosProps) => {
               {/* Photo Info - Mobile optimized spacing */}
               <div className="text-center text-white">
                 <h2 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold mb-4`}>{selectedPhoto.title}</h2>
-                <p className={`${isMobile ? 'text-base' : 'text-lg'} mb-6 leading-relaxed max-w-3xl mx-auto text-gray-300`}>
-                  {selectedPhoto.caption}
-                </p>
+                {selectedPhoto.caption && (
+                  <p className={`${isMobile ? 'text-base' : 'text-lg'} mb-6 leading-relaxed max-w-3xl mx-auto text-gray-300`}>
+                    {selectedPhoto.caption}
+                  </p>
+                )}
                 
-                {/* Category only */}
-                <div className="flex items-center justify-center">
-                  <span className="px-4 py-2 bg-white/10 rounded-full border border-white/20 text-sm">
-                    {selectedPhoto.category}
-                  </span>
+                {/* Category and Tags */}
+                <div className="flex items-center justify-center gap-2 flex-wrap">
+                  {selectedPhoto.category && (
+                    <span className="px-4 py-2 bg-white/10 rounded-full border border-white/20 text-sm">
+                      {selectedPhoto.category}
+                    </span>
+                  )}
+                  {selectedPhoto.tags && selectedPhoto.tags.length > 0 && (
+                    <div className="flex gap-2 flex-wrap justify-center">
+                      {selectedPhoto.tags.slice(0, 4).map((tag) => (
+                        <span key={tag} className="px-3 py-1 bg-white/5 rounded-full border border-white/10 text-xs">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

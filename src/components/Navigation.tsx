@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, User, FileText, Camera, Calendar } from "lucide-react";
+import { ChevronDown, User, FileText, Camera, Calendar, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -7,8 +7,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -173,7 +178,7 @@ const Navigation = () => {
                   Explore <ChevronDown className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-card border-border">
+              <DropdownMenuContent className="bg-card border-border min-w-48">
                 <DropdownMenuItem 
                   onClick={() => navigate('/writing')}
                   className="cursor-pointer hover:bg-secondary"
@@ -188,13 +193,34 @@ const Navigation = () => {
                   <Camera className="w-4 h-4 mr-2" />
                   Photos
                 </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => navigate('/login')}
-                  className="cursor-pointer hover:bg-secondary"
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Article Management
-                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator />
+                
+                {/* Page Manager Submenu */}
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="cursor-pointer hover:bg-secondary">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Page Manager
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="bg-card border-border">
+                    <DropdownMenuItem 
+                      onClick={() => navigate('/admin/articles')}
+                      className="cursor-pointer hover:bg-secondary"
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      Article Management
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => navigate('/admin/photos')}
+                      className="cursor-pointer hover:bg-secondary"
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      Photo Management
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                
+
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -249,9 +275,30 @@ const Navigation = () => {
             <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/photos'))} className="justify-start">
               Photos
             </Button>
-            <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/login'))} className="justify-start">
-              Article Management
-            </Button>
+            
+            {/* Mobile Page Manager Section */}
+            <div className="border-t border-border pt-2 mt-2">
+              <div className="px-2 text-xs font-medium text-muted-foreground mb-2">Page Manager</div>
+              <Button 
+                variant="ghost" 
+                onClick={() => handleNavigation(() => navigate('/admin/articles'))} 
+                className="justify-start text-sm"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Article Management
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => handleNavigation(() => navigate('/admin/photos'))} 
+                className="justify-start text-sm"
+              >
+                <Camera className="w-4 h-4 mr-2" />
+                Photo Management
+              </Button>
+            </div>
+            
+
+            
             <Button variant="outline" onClick={() => handleNavigation(() => scrollToSection('contact'))} className="justify-start mt-2">
               Contact
             </Button>

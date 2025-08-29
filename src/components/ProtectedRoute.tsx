@@ -15,7 +15,7 @@ import {
   logout 
 } from '../data/auth';
 import { Button } from './ui/button';
-import Login from './Login';
+import { useNavigate } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -30,8 +30,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const [isAuth, setIsAuth] = useState(false);
   const [canAccess, setCanAccess] = useState(false);
-  const [showLoginForm, setShowLoginForm] = useState(false);
   const [currentUser, setCurrentUser] = useState(getCurrentUser());
+  const navigate = useNavigate();
 
   useEffect(() => {
     checkAuth();
@@ -78,7 +78,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       setCurrentUser(currentUser);
       
       if (!authenticated && showLogin) {
-        setShowLoginForm(true);
+        navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+        return;
       }
     } catch (error) {
       console.error('❌ Auth check failed:', error);
@@ -86,20 +87,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       setCanAccess(false);
       setCurrentUser(null);
       if (showLogin) {
-        setShowLoginForm(true);
+        navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+        return;
       }
     }
   };
 
   const handleLoginSuccess = () => {
     checkAuth();
-    setShowLoginForm(false);
   };
 
   const handleLogout = () => {
     logout();
-    checkAuth();
-    setShowLoginForm(true);
+    navigate('/login');
   };
 
 
@@ -159,14 +159,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // If login form should be shown, display it
-  if (showLoginForm && showLogin) {
-    return (
-      <Login 
-        onLoginSuccess={handleLoginSuccess}
-        onCancel={showLogin ? undefined : () => setShowLoginForm(false)}
-      />
-    );
+  // If user is not authenticated and login is required, redirect to login page
+  if (!isAuth && showLogin) {
+    navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+    return null;
   }
 
   // If no access and no login, show access denied
@@ -194,7 +190,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         <div className="flex items-center justify-center gap-4">
           <Button
             variant="outline"
-            onClick={() => setShowLoginForm(true)}
+            onClick={() => navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)}
             className="flex items-center gap-2"
           >
             <FileText className="w-4 h-4" />
