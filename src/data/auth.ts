@@ -298,3 +298,136 @@ export const canAccessArticleManagement = (): boolean => {
   const user = getCurrentUser();
   return user?.role === 'admin' || user?.role === 'writer';
 };
+
+// Admin functions for managing user roles
+export const grantUserRole = async (userId: string, role: 'admin' | 'writer' | 'viewer'): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== 'admin') {
+      return { success: false, error: 'Only admins can grant user roles' };
+    }
+
+    const { error } = await supabase
+      .from('user_roles')
+      .upsert({
+        user_id: userId,
+        role: role,
+        granted_by: currentUser.id
+      }, {
+        onConflict: 'user_id'
+      });
+
+    if (error) {
+      console.error('Failed to grant user role:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error granting user role:', error);
+    return { success: false, error: 'Failed to grant user role' };
+  }
+};
+
+export const revokeUserRole = async (userId: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== 'admin') {
+      return { success: false, error: 'Only admins can revoke user roles' };
+    }
+
+    const { error } = await supabase
+      .from('user_roles')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Failed to revoke user role:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error revoking user role:', error);
+    return { success: false, error: 'Failed to revoke user role' };
+  }
+};
+
+interface UserRoleData {
+  user_id: string;
+  role: string;
+  granted_at: string;
+  users: {
+    id: string;
+    email: string;
+    created_at: string;
+  }[];
+}
+
+export const getAllUsersWithRoles = async (): Promise<{ success: boolean; users?: Array<{ id: string; email: string; role: string; created_at: string }>; error?: string }> => {
+  try {
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== 'admin') {
+      return { success: false, error: 'Only admins can view all users' };
+    }
+
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select(`
+        user_id,
+        role,
+        granted_at,
+        users:user_id (
+          id,
+          email,
+          created_at
+        )
+      `)
+      .order('granted_at', { ascending: false });
+
+    if (error) {
+      console.error('Failed to fetch users with roles:', error);
+      return { success: false, error: error.message };
+    }
+
+    const users = (data as UserRoleData[])?.map((item: UserRoleData) => ({
+      id: item.user_id,
+      email: item.users?.[0]?.email || 'Unknown',
+      role: item.role,
+      created_at: item.users?.[0]?.created_at || item.granted_at
+    })) || [];
+
+    return { success: true, users };
+  } catch (error) {
+    console.error('Error fetching users with roles:', error);
+    return { success: false, error: 'Failed to fetch users' };
+  }
+};
+
+export const updateUserRole = async (userId: string, newRole: 'admin' | 'writer' | 'viewer'): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== 'admin') {
+      return { success: false, error: 'Only admins can update user roles' };
+    }
+
+    const { error } = await supabase
+      .from('user_roles')
+      .update({
+        role: newRole,
+        granted_by: currentUser.id,
+        granted_at: new Date().toISOString()
+      })
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Failed to update user role:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    return { success: false, error: 'Failed to update user role' };
+  }
+};

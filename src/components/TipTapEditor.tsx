@@ -10,6 +10,9 @@ import Highlight from '@tiptap/extension-highlight';
 import CodeBlock from '@tiptap/extension-code-block';
 import Blockquote from '@tiptap/extension-blockquote';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
+import BulletList from '@tiptap/extension-bullet-list';
+import OrderedList from '@tiptap/extension-ordered-list';
+import ListItem from '@tiptap/extension-list-item';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
@@ -89,6 +92,22 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
         heading: {
           levels: [1, 2, 3],
         },
+        // Ensure list extensions are enabled and properly configured
+        bulletList: {
+          HTMLAttributes: {
+            class: 'list-disc list-outside space-y-1',
+          },
+        },
+        orderedList: {
+          HTMLAttributes: {
+            class: 'list-decimal list-outside space-y-1',
+          },
+        },
+        listItem: {
+          HTMLAttributes: {
+            class: 'ml-6',
+          },
+        },
         // Disable extensions that we're configuring separately
         codeBlock: false,
         blockquote: false,
@@ -146,6 +165,22 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       TableCell.configure({
         HTMLAttributes: {
           class: 'border border-gray-300 p-2',
+        },
+      }),
+      // Explicitly add list extensions for better control
+      BulletList.configure({
+        HTMLAttributes: {
+          class: 'list-disc list-outside space-y-1',
+        },
+      }),
+      OrderedList.configure({
+        HTMLAttributes: {
+          class: 'list-decimal list-outside space-y-1',
+        },
+      }),
+      ListItem.configure({
+        HTMLAttributes: {
+          class: 'mb-1',
         },
       }),
     ],
@@ -768,6 +803,27 @@ Remove ${unusedImages.length} unused images from storage? This action cannot be 
           event.preventDefault();
           editor.chain().focus().toggleOrderedList().run();
         }
+        // Toggle list item: Tab (when in list)
+        if (event.key === 'Tab' && (editor.isActive('bulletList') || editor.isActive('orderedList'))) {
+          event.preventDefault();
+          if (event.shiftKey) {
+            // Shift+Tab: Decrease list level
+            editor.chain().focus().liftListItem('listItem').run();
+          } else {
+            // Tab: Increase list level
+            editor.chain().focus().sinkListItem('listItem').run();
+          }
+        }
+        // Enter in empty list item: Exit list
+        if (event.key === 'Enter' && editor.isActive('listItem')) {
+          const { state } = editor;
+          const { selection } = state;
+          const node = state.doc.nodeAt(selection.from);
+          if (node && node.textContent.trim() === '') {
+            event.preventDefault();
+            editor.chain().focus().liftListItem('listItem').run();
+          }
+        }
         // Blockquote: Ctrl+Shift+Q
         if (event.ctrlKey && event.shiftKey && event.key === 'q') {
           event.preventDefault();
@@ -932,18 +988,28 @@ Remove ${unusedImages.length} unused images from storage? This action cannot be 
           <Button
             variant={editor.isActive('bulletList') ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            onClick={() => {
+              console.log('🔍 Toggling bullet list...');
+              const result = editor.chain().focus().toggleBulletList().run();
+              console.log('✅ Bullet list toggle result:', result);
+              console.log('🔍 Current bullet list state:', editor.isActive('bulletList'));
+            }}
             className="h-8 w-8 p-0"
-            title="Bullet List (Ctrl+Shift+8)"
+            title="Bullet List (Ctrl+Shift+8) - Use Tab/Shift+Tab to indent/outdent"
           >
             <List className="h-4 w-4" />
           </Button>
           <Button
             variant={editor.isActive('orderedList') ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            onClick={() => {
+              console.log('🔍 Toggling ordered list...');
+              const result = editor.chain().focus().toggleOrderedList().run();
+              console.log('✅ Ordered list toggle result:', result);
+              console.log('🔍 Current ordered list state:', editor.isActive('orderedList'));
+            }}
             className="h-8 w-8 p-0"
-            title="Numbered List (Ctrl+Shift+7)"
+            title="Numbered List (Ctrl+Shift+7) - Use Tab/Shift+Tab to indent/outdent"
           >
             <ListOrdered className="h-4 w-4" />
           </Button>
@@ -1188,7 +1254,7 @@ Remove ${unusedImages.length} unused images from storage? This action cannot be 
         } as React.CSSProperties}
       />
       
-      {/* Custom CSS for better image display in published articles */}
+      {/* Custom CSS for better image display and list styling */}
       <style>{`
         .ProseMirror img {
           display: block !important;
@@ -1211,6 +1277,61 @@ Remove ${unusedImages.length} unused images from storage? This action cannot be 
         .ProseMirror .image-container img {
           margin: 0 auto !important;
         }
+        
+                 /* Enhanced list styling */
+         .ProseMirror ul {
+           list-style-type: disc !important;
+           padding-left: 2rem !important;
+           margin: 1rem 0 !important;
+           list-style-position: outside !important;
+         }
+         
+         .ProseMirror ol {
+           list-style-type: decimal !important;
+           padding-left: 2rem !important;
+           margin: 1rem 0 !important;
+           list-style-position: outside !important;
+         }
+         
+         .ProseMirror li {
+           margin: 0.5rem 0 !important;
+           line-height: 1.6 !important;
+           padding-left: 0.5rem !important;
+         }
+         
+         .ProseMirror ul li::marker {
+           color: #6b7280 !important;
+           font-weight: 500 !important;
+           margin-right: 0.5rem !important;
+         }
+         
+         .ProseMirror ol li::marker {
+           color: #6b7280 !important;
+           font-weight: 500 !important;
+           margin-right: 0.5rem !important;
+         }
+         
+         /* Nested list styling */
+         .ProseMirror ul ul {
+           list-style-type: circle !important;
+           margin: 0.5rem 0 !important;
+           padding-left: 1.5rem !important;
+         }
+         
+         .ProseMirror ul ul ul {
+           list-style-type: square !important;
+           padding-left: 1.5rem !important;
+         }
+         
+         .ProseMirror ol ol {
+           list-style-type: lower-alpha !important;
+           padding-left: 1.5rem !important;
+         }
+         
+         .ProseMirror ol ol ol {
+           list-style-type: lower-roman !important;
+           padding-left: 1.5rem !important;
+         }
       `}</style>
 
       {/* Link Dialog */}
