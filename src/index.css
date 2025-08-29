@@ -343,3 +343,516 @@
     transform: scale(1);
   }
 }
+
+@layer utilities {
+  /* Mobile-first responsive utilities */
+  .mobile-container {
+    @apply px-4 sm:px-6;
+  }
+  
+  .mobile-grid {
+    @apply grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4;
+  }
+  
+  .mobile-flex {
+    @apply flex-col sm:flex-row;
+  }
+  
+  .mobile-text {
+    @apply text-sm sm:text-base;
+  }
+  
+  .mobile-heading {
+    @apply text-xl sm:text-2xl md:text-3xl;
+  }
+  
+  .mobile-padding {
+    @apply p-4 sm:p-6;
+  }
+  
+  .mobile-gap {
+    @apply gap-2 sm:gap-4;
+  }
+  
+  .mobile-button {
+    @apply w-full sm:w-auto;
+  }
+  
+  .mobile-dialog {
+    @apply w-[95vw] sm:w-auto max-w-2xl;
+  }
+  
+  /* Touch-friendly button sizes for mobile */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Mobile-optimized spacing */
+  .mobile-space-y {
+    @apply space-y-3 sm:space-y-4;
+  }
+  
+  .mobile-space-x {
+    @apply space-x-2 sm:space-x-4;
+  }
+  
+  /* Mobile-friendly card layouts */
+  .mobile-card {
+    @apply p-3 sm:p-4;
+  }
+  
+  .mobile-card-header {
+    @apply p-3 sm:p-4 pb-2;
+  }
+  
+  .mobile-card-content {
+    @apply p-3 sm:p-4 pt-0;
+  }
+  
+  /* Mobile-optimized form layouts */
+  .mobile-form-grid {
+    @apply grid-cols-1 sm:grid-cols-2;
+  }
+  
+  .mobile-form-actions {
+    @apply flex-col sm:flex-row gap-2;
+  }
+  
+  /* Mobile-friendly navigation */
+  .mobile-nav {
+    @apply flex-col sm:flex-row items-start sm:items-center;
+  }
+  
+  .mobile-nav-item {
+    @apply w-full sm:w-auto;
+  }
+  
+  /* Mobile-optimized image handling */
+  .mobile-image {
+    @apply max-h-32 sm:max-h-48;
+  }
+  
+  .mobile-icon {
+    @apply w-8 h-8 sm:w-12 sm:h-12;
+  }
+  
+  /* Mobile-friendly badge and tag layouts */
+  .mobile-badge-container {
+    @apply flex flex-wrap gap-1;
+  }
+  
+  .mobile-badge {
+    @apply text-xs;
+  }
+  
+  /* Mobile-optimized button groups */
+  .mobile-button-group {
+    @apply flex-col sm:flex-row gap-2;
+  }
+  
+  .mobile-button-full {
+    @apply w-full sm:w-auto;
+  }
+  
+  /* Mobile-friendly dialog improvements */
+  .mobile-dialog-content {
+    @apply w-[95vw] sm:w-auto max-w-2xl mx-4;
+  }
+  
+  .mobile-dialog-header {
+    @apply p-4 sm:p-6;
+  }
+  
+  .mobile-dialog-body {
+    @apply p-4 sm:p-6;
+  }
+  
+  .mobile-dialog-footer {
+    @apply p-4 sm:p-6 pt-0;
+  }
+  
+  /* Mobile-optimized loading states */
+  .mobile-loading {
+    @apply py-8 sm:py-12;
+  }
+  
+  .mobile-loading-spinner {
+    @apply w-8 h-8 sm:w-12 sm:h-12;
+  }
+  
+  /* Mobile-friendly empty states */
+  .mobile-empty {
+    @apply py-8 sm:py-12;
+  }
+  
+  .mobile-empty-icon {
+    @apply w-12 h-12 sm:w-16 sm:h-16;
+  }
+  
+  /* Mobile-optimized search and filter layouts */
+  .mobile-search-container {
+    @apply flex-col sm:flex-row gap-4;
+  }
+  
+  .mobile-filter-container {
+    @apply flex-col sm:flex-row gap-2 sm:gap-4;
+  }
+  
+  .mobile-select {
+    @apply w-full sm:w-auto;
+  }
+  
+  /* Mobile-friendly statistics cards */
+  .mobile-stats-grid {
+    @apply grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6;
+  }
+  
+  .mobile-stats-title {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .mobile-stats-value {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  /* Mobile-optimized article and photo lists */
+  .mobile-list-item {
+    @apply p-4 sm:p-6;
+  }
+  
+  .mobile-list-content {
+    @apply flex-col sm:flex-row gap-4;
+  }
+  
+  .mobile-list-actions {
+    @apply flex-col sm:flex-row items-stretch sm:items-center gap-2;
+  }
+  
+  .mobile-list-meta {
+    @apply flex-col sm:flex-row sm:items-center gap-2 sm:gap-4;
+  }
+  
+  /* Mobile-friendly upload and edit forms */
+  .mobile-upload-area {
+    @apply p-4 sm:p-6;
+  }
+  
+  .mobile-form-field {
+    @apply space-y-2;
+  }
+  
+  .mobile-form-actions {
+    @apply flex-col sm:flex-row justify-end gap-2;
+  }
+  
+  /* Mobile-optimized responsive breakpoints */
+  .mobile-only {
+    @apply block sm:hidden;
+  }
+  
+  .desktop-only {
+    @apply hidden sm:block;
+  }
+  
+  .mobile-text-short {
+    @apply text-sm;
+  }
+  
+  .mobile-text-long {
+    @apply text-base;
+  }
+  
+  /* Mobile-friendly hover states */
+  .mobile-hover {
+    @apply hover:shadow-md transition-shadow;
+  }
+  
+  /* Mobile-optimized transitions */
+  .mobile-transition {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  /* Mobile-friendly focus states */
+  .mobile-focus {
+    @apply focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+  
+  /* Mobile-optimized accessibility */
+  .mobile-sr-only {
+    @apply sr-only;
+  }
+  
+  .mobile-accessible {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+}
+
+/* Mobile-specific media queries for better control */
+@media (max-width: 640px) {
+  .mobile-container {
+    @apply px-4;
+  }
+  
+  .mobile-text {
+    @apply text-sm;
+  }
+  
+  .mobile-heading {
+    @apply text-xl;
+  }
+  
+  .mobile-padding {
+    @apply p-4;
+  }
+  
+  .mobile-gap {
+    @apply gap-2;
+  }
+  
+  .mobile-button {
+    @apply w-full;
+  }
+  
+  .mobile-dialog {
+    @apply w-[95vw];
+  }
+  
+  .mobile-card {
+    @apply p-3;
+  }
+  
+  .mobile-form-grid {
+    @apply grid-cols-1;
+  }
+  
+  .mobile-form-actions {
+    @apply flex-col gap-2;
+  }
+  
+  .mobile-nav {
+    @apply flex-col items-start;
+  }
+  
+  .mobile-nav-item {
+    @apply w-full;
+  }
+  
+  .mobile-image {
+    @apply max-h-32;
+  }
+  
+  .mobile-icon {
+    @apply w-8 h-8;
+  }
+  
+  .mobile-button-group {
+    @apply flex-col gap-2;
+  }
+  
+  .mobile-button-full {
+    @apply w-full;
+  }
+  
+  .mobile-dialog-content {
+    @apply w-[95vw] mx-4;
+  }
+  
+  .mobile-loading {
+    @apply py-8;
+  }
+  
+  .mobile-loading-spinner {
+    @apply w-8 h-8;
+  }
+  
+  .mobile-empty {
+    @apply py-8;
+  }
+  
+  .mobile-empty-icon {
+    @apply w-12 h-12;
+  }
+  
+  .mobile-search-container {
+    @apply flex-col gap-4;
+  }
+  
+  .mobile-filter-container {
+    @apply flex-col gap-2;
+  }
+  
+  .mobile-select {
+    @apply w-full;
+  }
+  
+  .mobile-stats-grid {
+    @apply grid-cols-2 gap-4;
+  }
+  
+  .mobile-stats-title {
+    @apply text-xs;
+  }
+  
+  .mobile-stats-value {
+    @apply text-xl;
+  }
+  
+  .mobile-list-item {
+    @apply p-4;
+  }
+  
+  .mobile-list-content {
+    @apply flex-col gap-4;
+  }
+  
+  .mobile-list-actions {
+    @apply flex-col items-stretch gap-2;
+  }
+  
+  .mobile-list-meta {
+    @apply flex-col gap-2;
+  }
+  
+  .mobile-upload-area {
+    @apply p-4;
+  }
+  
+  .mobile-form-actions {
+    @apply flex-col justify-end gap-2;
+  }
+}
+
+/* Tablet-specific optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .mobile-container {
+    @apply px-6;
+  }
+  
+  .mobile-text {
+    @apply text-base;
+  }
+  
+  .mobile-heading {
+    @apply text-2xl;
+  }
+  
+  .mobile-padding {
+    @apply p-6;
+  }
+  
+  .mobile-gap {
+    @apply gap-4;
+  }
+  
+  .mobile-button {
+    @apply w-auto;
+  }
+  
+  .mobile-dialog {
+    @apply w-auto;
+  }
+  
+  .mobile-card {
+    @apply p-4;
+  }
+  
+  .mobile-form-grid {
+    @apply grid-cols-2;
+  }
+  
+  .mobile-form-actions {
+    @apply flex-row gap-2;
+  }
+  
+  .mobile-nav {
+    @apply flex-row items-center;
+  }
+  
+  .mobile-nav-item {
+    @apply w-auto;
+  }
+  
+  .mobile-image {
+    @apply max-h-48;
+  }
+  
+  .mobile-icon {
+    @apply w-12 h-12;
+  }
+  
+  .mobile-button-group {
+    @apply flex-row gap-2;
+  }
+  
+  .mobile-button-full {
+    @apply w-auto;
+  }
+  
+  .mobile-dialog-content {
+    @apply w-auto mx-0;
+  }
+  
+  .mobile-loading {
+    @apply py-12;
+  }
+  
+  .mobile-loading-spinner {
+    @apply w-12 h-12;
+  }
+  
+  .mobile-empty {
+    @apply py-12;
+  }
+  
+  .mobile-empty-icon {
+    @apply w-16 h-16;
+  }
+  
+  .mobile-search-container {
+    @apply flex-row gap-4;
+  }
+  
+  .mobile-filter-container {
+    @apply flex-row gap-4;
+  }
+  
+  .mobile-select {
+    @apply w-auto;
+  }
+  
+  .mobile-stats-grid {
+    @apply grid-cols-4 gap-6;
+  }
+  
+  .mobile-stats-title {
+    @apply text-sm;
+  }
+  
+  .mobile-stats-value {
+    @apply text-2xl;
+  }
+  
+  .mobile-list-item {
+    @apply p-6;
+  }
+  
+  .mobile-list-content {
+    @apply flex-row gap-4;
+  }
+  
+  .mobile-list-actions {
+    @apply flex-row items-center gap-2;
+  }
+  
+  .mobile-list-meta {
+    @apply flex-row items-center gap-4;
+  }
+  
+  .mobile-upload-area {
+    @apply p-6;
+  }
+  
+  .mobile-form-actions {
+    @apply flex-row justify-end gap-2;
+  }
+}

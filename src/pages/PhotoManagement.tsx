@@ -189,19 +189,44 @@ const PhotoManagement = () => {
   return (
     <div className="min-h-screen bg-gradient-hero text-foreground">
       <Navigation />
-      <div className="pt-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-2">Photo Management</h1>
-            <p className="text-muted-foreground">
-              Upload, organize, and manage your portfolio photos
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Photo Management</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage your photo portfolio and uploads
             </p>
           </div>
+          
+          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+            <div className="text-right flex-1 sm:flex-none">
+              <p className="text-sm text-muted-foreground">Welcome back,</p>
+              <p className="font-medium">Dhruba</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                try {
+                  toast.info("Checking photo status...");
+                  await queryClient.invalidateQueries({ queryKey: ["photos"] });
+                  toast.success("Photos list refreshed! Check console for details.");
+                } catch (error) {
+                  toast.error(`Failed to refresh: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                }
+              }}
+              className="ml-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
 
-          {/* Controls */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex-1 flex gap-2">
+        {/* Controls */}
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 flex flex-col sm:flex-row gap-2 sm:gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
@@ -212,7 +237,7 @@ const PhotoManagement = () => {
                 />
               </div>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -226,14 +251,19 @@ const PhotoManagement = () => {
               </Select>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
               <Button
                 variant={showUnpublished ? "default" : "outline"}
                 onClick={() => setShowUnpublished(!showUnpublished)}
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 <Filter className="w-4 h-4" />
-                {showUnpublished ? "All Photos" : "Published Only"}
+                <span className="sm:hidden">
+                  {showUnpublished ? "All Photos" : "Published Only"}
+                </span>
+                <span className="hidden sm:inline">
+                  {showUnpublished ? "All Photos" : "Published Only"}
+                </span>
               </Button>
               
               <Button
@@ -252,10 +282,11 @@ const PhotoManagement = () => {
                     toast.error(`Failed to fix photos: ${error instanceof Error ? error.message : 'Unknown error'}`);
                   }
                 }}
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 <Settings className="w-4 h-4" />
-                Fix Photos
+                <span className="sm:hidden">Fix Photos</span>
+                <span className="hidden sm:inline">Fix Photos</span>
               </Button>
               
               <Button
@@ -263,44 +294,45 @@ const PhotoManagement = () => {
                 onClick={async () => {
                   try {
                     toast.info("Checking photo status...");
-                    // Force refresh to see current state
                     await queryClient.invalidateQueries({ queryKey: ["photos"] });
                     toast.success("Photos list refreshed! Check console for details.");
                   } catch (error) {
                     toast.error(`Failed to refresh: ${error instanceof Error ? error.message : 'Unknown error'}`);
                   }
                 }}
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 <RefreshCw className="w-4 h-4" />
-                Check Status
+                <span className="sm:hidden">Check Status</span>
+                <span className="hidden sm:inline">Check Status</span>
               </Button>
               
               <Button
                 variant="outline"
                 onClick={async () => {
                   try {
-                    // Force refresh the photos list
                     await queryClient.invalidateQueries({ queryKey: ["photos"] });
                     toast.success("Photos list refreshed!");
                   } catch (error) {
                     toast.error(`Failed to refresh: ${error instanceof Error ? error.message : 'Unknown error'}`);
                   }
                 }}
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 <RefreshCw className="w-4 h-4" />
-                Refresh
+                <span className="sm:hidden">Refresh</span>
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
               
               <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="flex items-center gap-2">
+                  <Button className="flex items-center justify-center gap-2 w-full sm:w-auto">
                     <Plus className="w-4 h-4" />
-                    Upload Photo
+                    <span className="sm:hidden">Upload Photo</span>
+                    <span className="hidden sm:inline">Upload Photo</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl" aria-describedby="upload-dialog-description">
+                <DialogContent className="max-w-2xl w-[95vw] sm:w-auto" aria-describedby="upload-dialog-description">
                   <DialogHeader>
                     <DialogTitle>Upload New Photo</DialogTitle>
                     <p id="upload-dialog-description" className="text-sm text-muted-foreground">
@@ -312,13 +344,13 @@ const PhotoManagement = () => {
                     {/* File Upload */}
                     <div className="space-y-2">
                       <Label>Photo File</Label>
-                      <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                      <div className="border-2 border-dashed border-border rounded-lg p-4 sm:p-6 text-center">
                         {selectedFile ? (
                           <div className="space-y-2">
                             <img 
                               src={previewUrl} 
                               alt="Preview" 
-                              className="max-h-48 mx-auto rounded-lg"
+                              className="max-h-32 sm:max-h-48 mx-auto rounded-lg"
                             />
                             <div className="flex items-center justify-center gap-2">
                               <span className="text-sm text-muted-foreground">
@@ -338,7 +370,7 @@ const PhotoManagement = () => {
                           </div>
                         ) : (
                           <div>
-                            <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
+                            <Upload className="w-8 h-8 sm:w-12 sm:h-12 mx-auto text-muted-foreground mb-2" />
                             <p className="text-sm text-muted-foreground mb-2">
                               Click to select or drag and drop
                             </p>
@@ -363,7 +395,7 @@ const PhotoManagement = () => {
                     </div>
 
                     {/* Form Fields */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="title">Title *</Label>
                         <Input
@@ -417,16 +449,18 @@ const PhotoManagement = () => {
                       <Label htmlFor="is_published">Publish immediately</Label>
                     </div>
 
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-col sm:flex-row justify-end gap-2">
                       <Button
                         variant="outline"
                         onClick={() => setIsUploadDialogOpen(false)}
+                        className="w-full sm:w-auto"
                       >
                         Cancel
                       </Button>
                       <Button
                         onClick={handleUpload}
                         disabled={createPhotoMutation.isPending}
+                        className="w-full sm:w-auto"
                       >
                         {createPhotoMutation.isPending ? "Uploading..." : "Upload Photo"}
                       </Button>
@@ -436,140 +470,145 @@ const PhotoManagement = () => {
               </Dialog>
             </div>
           </div>
-
-          {/* Photo Grid */}
-          {isLoading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-4 text-muted-foreground">Loading photos...</p>
-            </div>
-          ) : filteredPhotos.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No photos found</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredPhotos.map((photo) => (
-                <Card key={photo.id} className="overflow-hidden">
-                  <div className="aspect-square overflow-hidden">
-                    <img
-                      src={photo.image_url}
-                      alt={photo.title}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  
-                  <CardHeader className="p-4 pb-2">
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-lg line-clamp-2">{photo.title}</CardTitle>
-                      <Badge variant={photo.is_published ? "default" : "secondary"}>
-                        {photo.is_published ? "Published" : "Draft"}
-                      </Badge>
-                    </div>
-                    {photo.caption && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {photo.caption}
-                      </p>
-                    )}
-                  </CardHeader>
-                  
-                  <CardContent className="p-4 pt-0">
-                    <div className="space-y-3">
-                      {photo.category && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-primary">
-                            {photo.category}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {photo.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {photo.tags.slice(0, 3).map((tag) => (
-                            <Badge key={tag} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                          {photo.tags.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{photo.tags.length - 3}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{new Date(photo.created_at).toLocaleDateString()}</span>
-                        <span>{photo.is_published ? "Public" : "Private"}</span>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(photo)}
-                          className="flex-1"
-                        >
-                          <Edit className="w-4 h-4 mr-1" />
-                          Edit
-                        </Button>
-                        
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleTogglePublish(photo)}
-                          className="flex-1"
-                        >
-                          {photo.is_published ? (
-                            <>
-                              <EyeOff className="w-4 h-4 mr-1" />
-                              Unpublish
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="w-4 h-4 mr-1" />
-                              Publish
-                            </>
-                          )}
-                        </Button>
-                        
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Photo</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete "{photo.title}"? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(photo)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
         </div>
+
+        {/* Photo Grid */}
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Loading photos...</p>
+          </div>
+        ) : filteredPhotos.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No photos found</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            {filteredPhotos.map((photo) => (
+              <Card key={photo.id} className="overflow-hidden">
+                <div className="aspect-square overflow-hidden">
+                  <img
+                    src={photo.image_url}
+                    alt={photo.title}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                
+                <CardHeader className="p-3 sm:p-4 pb-2">
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="text-base sm:text-lg line-clamp-2">{photo.title}</CardTitle>
+                    <Badge variant={photo.is_published ? "default" : "secondary"} className="text-xs">
+                      {photo.is_published ? "Published" : "Draft"}
+                    </Badge>
+                  </div>
+                  {photo.caption && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {photo.caption}
+                    </p>
+                  )}
+                </CardHeader>
+                
+                <CardContent className="p-3 sm:p-4 pt-0">
+                  <div className="space-y-3">
+                    {photo.category && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-primary">
+                          {photo.category}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {photo.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {photo.tags.slice(0, 3).map((tag) => (
+                          <Badge key={tag} variant="outline" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {photo.tags.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{photo.tags.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{new Date(photo.created_at).toLocaleDateString()}</span>
+                      <span>{photo.is_published ? "Public" : "Private"}</span>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(photo)}
+                        className="flex items-center justify-center gap-1 flex-1"
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        <span className="sm:hidden">Edit</span>
+                        <span className="hidden sm:inline">Edit</span>
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleTogglePublish(photo)}
+                        className="flex items-center justify-center gap-1 flex-1"
+                      >
+                        {photo.is_published ? (
+                          <>
+                            <EyeOff className="w-4 h-4 mr-1" />
+                            <span className="sm:hidden">Unpublish</span>
+                            <span className="hidden sm:inline">Unpublish</span>
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-4 h-4 mr-1" />
+                            <span className="sm:hidden">Publish</span>
+                            <span className="hidden sm:inline">Publish</span>
+                          </>
+                        )}
+                      </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="flex-1">
+                            <Trash2 className="w-4 h-4" />
+                            <span className="sm:hidden ml-1">Delete</span>
+                            <span className="hidden sm:inline ml-1">Delete</span>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Photo</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{photo.title}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(photo)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Edit Dialog */}
       <Dialog open={!!editingPhoto} onOpenChange={() => setEditingPhoto(null)}>
-        <DialogContent className="max-w-2xl" aria-describedby="edit-dialog-description">
+        <DialogContent className="max-w-2xl w-[95vw] sm:w-auto" aria-describedby="edit-dialog-description">
           <DialogHeader>
             <DialogTitle>Edit Photo</DialogTitle>
             <p id="edit-dialog-description" className="text-sm text-muted-foreground">
@@ -584,7 +623,7 @@ const PhotoManagement = () => {
                 <img
                   src={editingPhoto.image_url}
                   alt={editingPhoto.title}
-                  className="max-h-48 mx-auto rounded-lg border"
+                  className="max-h-32 sm:max-h-48 mx-auto rounded-lg border"
                 />
                 <p className="text-sm text-muted-foreground mt-2">
                   Current photo: {editingPhoto.title}
@@ -592,7 +631,7 @@ const PhotoManagement = () => {
               </div>
             )}
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-title">Title</Label>
                 <Input
@@ -643,16 +682,18 @@ const PhotoManagement = () => {
               <Label htmlFor="edit-is_published">Published</Label>
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col sm:flex-row justify-end gap-2">
               <Button
                 variant="outline"
                 onClick={() => setEditingPhoto(null)}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUpdate}
                 disabled={updatePhotoMutation.isPending}
+                className="w-full sm:w-auto"
               >
                 {updatePhotoMutation.isPending ? "Updating..." : "Update Photo"}
               </Button>

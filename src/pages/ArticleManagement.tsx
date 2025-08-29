@@ -300,17 +300,17 @@ const ArticleManagement: React.FC = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Article Management</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Article Management</h1>
               <p className="text-muted-foreground mt-1">
                 Manage your articles and content
               </p>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="text-right">
+            <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              <div className="text-right flex-1 sm:flex-none">
                 <p className="text-sm text-muted-foreground">Welcome back,</p>
                 <p className="font-medium">{displayUsername || 'Dhruba'}</p>
               </div>
@@ -332,103 +332,107 @@ const ArticleManagement: React.FC = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Articles</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Articles</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className="text-xl sm:text-2xl font-bold">{stats.total}</div>
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Published</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Published</CardTitle>
               <Eye className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.published}</div>
+              <div className="text-xl sm:text-2xl font-bold text-green-600">{stats.published}</div>
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Drafts</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Drafts</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{stats.drafts}</div>
+              <div className="text-xl sm:text-2xl font-bold text-yellow-600">{stats.drafts}</div>
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Tags</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Tags</CardTitle>
               <Tag className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.totalTags}</div>
+              <div className="text-xl sm:text-2xl font-bold text-blue-600">{stats.totalTags}</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Controls */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search articles..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search articles..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
+            
+            <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="draft">Drafts</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={tagFilter} onValueChange={(value: any) => setTagFilter(value)}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filter by tag" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tags</SelectItem>
+                {getUniqueTags().map(tag => (
+                  <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
-          <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-              <SelectItem value="draft">Drafts</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Select value={tagFilter} onValueChange={(value: any) => setTagFilter(value)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by tag" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Tags</SelectItem>
-              {getUniqueTags().map(tag => (
-                <SelectItem key={tag} value={tag}>{tag}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Button 
-            variant="outline" 
-            onClick={handleRefresh} 
-            disabled={isRefreshing}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing ? 'Refreshing...' : 'Refresh'}
-          </Button>
-          
-          {canCreateArticles() && (
-            <Button onClick={handleCreateArticle} className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Create Article
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+            <Button 
+              variant="outline" 
+              onClick={handleRefresh} 
+              disabled={isRefreshing}
+              className="flex items-center justify-center gap-2 w-full sm:w-auto"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
             </Button>
-          )}
+            
+            {canCreateArticles() && (
+              <Button onClick={handleCreateArticle} className="flex items-center justify-center gap-2 w-full sm:w-auto">
+                <Plus className="h-4 w-4" />
+                Create Article
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Articles List */}
@@ -465,13 +469,13 @@ const ArticleManagement: React.FC = () => {
                 key={article.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="border rounded-lg p-6 hover:shadow-md transition-shadow"
+                className="border rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow"
               >
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-foreground">{article.title}</h3>
-                      <Badge variant={article.status === 'published' ? 'default' : 'secondary'}>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                      <h3 className="text-lg sm:text-xl font-semibold text-foreground">{article.title}</h3>
+                      <Badge variant={article.status === 'published' ? 'default' : 'secondary'} className="w-fit">
                         {article.status}
                       </Badge>
                     </div>
@@ -480,7 +484,7 @@ const ArticleManagement: React.FC = () => {
                       {article.excerpt}
                     </p>
                     
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <User className="h-4 w-4" />
                         {article.author}
@@ -498,25 +502,28 @@ const ArticleManagement: React.FC = () => {
                     {article.tags.length > 0 && (
                       <div className="flex items-center gap-2 mt-3">
                         <Tag className="h-4 w-4 text-muted-foreground" />
-                        {article.tags.map(tag => (
-                          <Badge key={tag} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
+                        <div className="flex flex-wrap gap-1">
+                          {article.tags.map(tag => (
+                            <Badge key={tag} variant="outline" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-2 ml-4">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2 sm:ml-4">
                     {canEditArticles() && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleEditArticle(article)}
-                        className="flex items-center gap-1"
+                        className="flex items-center justify-center gap-1 w-full sm:w-auto"
                       >
                         <Edit className="h-4 w-4" />
-                        Edit
+                        <span className="sm:hidden">Edit</span>
+                        <span className="hidden sm:inline">Edit</span>
                       </Button>
                     )}
                     
@@ -525,17 +532,19 @@ const ArticleManagement: React.FC = () => {
                         variant={article.status === 'published' ? 'destructive' : 'default'}
                         size="sm"
                         onClick={() => handleTogglePublish(article)}
-                        className="flex items-center gap-1"
+                        className="flex items-center justify-center gap-1 w-full sm:w-auto"
                       >
                         {article.status === 'published' ? (
                           <>
                             <Eye className="h-4 w-4" />
-                            Unpublish
+                            <span className="sm:hidden">Unpublish</span>
+                            <span className="hidden sm:inline">Unpublish</span>
                           </>
                         ) : (
                           <>
                             <Eye className="h-4 w-4" />
-                            Publish
+                            <span className="sm:hidden">Publish</span>
+                            <span className="hidden sm:inline">Publish</span>
                           </>
                         )}
                       </Button>
@@ -546,10 +555,11 @@ const ArticleManagement: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeleteArticle(article.id)}
-                        className="flex items-center gap-1 text-destructive hover:text-destructive"
+                        className="flex items-center justify-center gap-1 w-full sm:w-auto text-destructive hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
-                        Delete
+                        <span className="sm:hidden">Delete</span>
+                        <span className="hidden sm:inline">Delete</span>
                       </Button>
                     )}
                   </div>
