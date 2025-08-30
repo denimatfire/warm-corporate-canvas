@@ -80,7 +80,7 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
     
     // Use immediate meta tag update for better social media crawler compatibility
     ensureMetaTagsImmediate({
-      title: `${article.title} - Dhrubajyoti Das Portfolio`,
+      title: article.title,
       description: article.excerpt || 'Read this article on Dhrubajyoti Das Portfolio',
       image: article.cover_image,
       url: window.location.href,

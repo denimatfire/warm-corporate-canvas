@@ -87,7 +87,7 @@ const Article_medium = () => {
           if (foundArticle) {
             // Use immediate meta tag update for better social media crawler compatibility
             ensureMetaTagsImmediate({
-              title: `${foundArticle.title} - Dhrubajyoti Das Portfolio`,
+              title: foundArticle.title,
               description: foundArticle.excerpt || 'Read this article on Dhrubajyoti Das Portfolio',
               image: foundArticle.cover_image,
               url: window.location.href,
