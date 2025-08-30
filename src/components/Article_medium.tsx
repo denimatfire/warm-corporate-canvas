@@ -81,6 +81,11 @@ const Article_medium = () => {
         try {
           const foundArticle = await articlesApi.getById(id);
           setArticle(foundArticle);
+          
+          // Update meta tags for social media sharing
+          if (foundArticle) {
+            updateMetaTags(foundArticle);
+          }
         } catch (error) {
           console.error('Error fetching article:', error);
           setArticle(null);
@@ -91,6 +96,11 @@ const Article_medium = () => {
     };
     
     fetchArticle();
+    
+    // Cleanup: reset meta tags when component unmounts
+    return () => {
+      resetMetaTags();
+    };
   }, [id]);
 
   // Redirect if article not found (only after loading is complete)
@@ -261,6 +271,85 @@ const Article_medium = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  // Update meta tags for social media sharing
+  const updateMetaTags = (article: ArticleType) => {
+    // Update page title
+    document.title = `${article.title} - Dhrubajyoti Das Portfolio`;
+    
+    // Update Open Graph meta tags
+    updateMetaTag('og:title', article.title);
+    updateMetaTag('og:description', article.excerpt || 'Read this article on Dhrubajyoti Das Portfolio');
+    updateMetaTag('og:type', 'article');
+    
+    // Update Twitter meta tags
+    updateMetaTag('twitter:title', article.title);
+    updateMetaTag('twitter:description', article.excerpt || 'Read this article on Dhrubajyoti Das Portfolio');
+    
+    // Update article-specific meta tags
+    updateMetaTag('article:author', article.author);
+    updateMetaTag('article:published_time', article.published_at || article.created_at);
+    updateMetaTag('article:modified_time', article.updated_at);
+    
+    // If article has a cover image, use it
+    if (article.cover_image) {
+      updateMetaTag('og:image', article.cover_image);
+      updateMetaTag('twitter:image', article.cover_image);
+    }
+    
+    // If article has tags, add them
+    if (article.tags && article.tags.length > 0) {
+      updateMetaTag('article:tag', article.tags.join(', '));
+    }
+  };
+
+  // Reset meta tags to default portfolio values
+  const resetMetaTags = () => {
+    document.title = 'Dhrubajyoti Das - Personal Portfolio';
+    
+    // Reset to default portfolio meta tags
+    updateMetaTag('og:title', 'Dhrubajyoti Das - Personal Portfolio');
+    updateMetaTag('og:description', 'Professional portfolio showcasing expertise in technology, leadership, and innovation. Explore my journey, writings, and photography.');
+    updateMetaTag('og:type', 'website');
+    updateMetaTag('og:image', 'https://warm-corporate-canvas.netlify.app/portfolio-preview.png');
+    
+    updateMetaTag('twitter:title', 'Dhrubajyoti Das - Personal Portfolio');
+    updateMetaTag('twitter:description', 'Professional portfolio showcasing expertise in technology, leadership, and innovation.');
+    updateMetaTag('twitter:image', 'https://warm-corporate-canvas.netlify.app/portfolio-preview.png');
+    
+    // Remove article-specific meta tags
+    removeMetaTag('article:author');
+    removeMetaTag('article:published_time');
+    removeMetaTag('article:modified_time');
+    removeMetaTag('article:tag');
+  };
+
+  // Helper function to update meta tags
+  const updateMetaTag = (property: string, content: string) => {
+    let meta = document.querySelector(`meta[property="${property}"]`) || 
+               document.querySelector(`meta[name="${property}"]`);
+    
+    if (!meta) {
+      meta = document.createElement('meta');
+      if (property.startsWith('og:') || property.startsWith('article:')) {
+        meta.setAttribute('property', property);
+      } else {
+        meta.setAttribute('name', property);
+      }
+      document.head.appendChild(meta);
+    }
+    
+    meta.setAttribute('content', content);
+  };
+
+  // Helper function to remove meta tags
+  const removeMetaTag = (property: string) => {
+    const meta = document.querySelector(`meta[property="${property}"]`) || 
+                 document.querySelector(`meta[name="${property}"]`);
+    if (meta) {
+      meta.remove();
+    }
   };
 
   // Show loading state while checking for article
