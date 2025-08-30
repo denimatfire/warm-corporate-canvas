@@ -232,11 +232,15 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
       let uploadResult: ImageUploadResult;
 
       if (isEditing && coverImagePath) {
-        // Update existing image
+        // Update existing image - this will delete the old one first
+        console.log('🔄 Updating existing image from path:', coverImagePath);
         uploadResult = await updateImage(coverImagePath, file);
+        console.log('✅ Image updated successfully');
       } else {
         // Upload new image
+        console.log('🆕 Uploading new image');
         uploadResult = await uploadImage(file);
+        console.log('✅ New image uploaded successfully');
       }
 
       // Update state with new image URL and path
@@ -247,6 +251,20 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
       // Force state update
       setCoverImage(uploadResult.url);
       setCoverImagePath(uploadResult.path);
+      
+      // If we're editing an existing article, update the database immediately
+      if (isEditing && article?.id) {
+        try {
+          await articlesApi.update(article.id, {
+            cover_image: uploadResult.url,
+            cover_image_path: uploadResult.path
+          });
+          console.log('✅ Database updated with new cover image');
+        } catch (dbError) {
+          console.warn('⚠️ Failed to update database, but image was uploaded:', dbError);
+          // Don't throw error here, just log it
+        }
+      }
       
       // Verify state was updated
       setTimeout(() => {
@@ -300,6 +318,19 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
       // Clear state regardless of storage deletion result
       setCoverImage('');
       setCoverImagePath(null);
+
+      // If we're editing an existing article, update the database to remove the cover image
+      if (isEditing && article?.id) {
+        try {
+          await articlesApi.update(article.id, {
+            cover_image: '',
+            cover_image_path: null
+          });
+          console.log('✅ Database updated to remove cover image');
+        } catch (dbError) {
+          console.warn('⚠️ Failed to update database, but image was removed locally:', dbError);
+        }
+      }
 
       toast({
         title: 'Image removed',
@@ -652,6 +683,10 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
                 src={coverImage}
                 alt="Cover preview"
                 className="w-20 h-20 object-cover rounded-lg border"
+                onError={(e) => {
+                  console.error('Failed to load cover image preview:', coverImage);
+                  e.currentTarget.style.display = 'none';
+                }}
               />
               <Button
                 variant="ghost"
@@ -674,6 +709,7 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
             <p>• Supported formats: JPEG, PNG, WebP</p>
             <p>• Maximum size: 5MB</p>
             <p>• Images are automatically optimized for web</p>
+            <p>• Click the X button to remove the current image</p>
           </div>
         </div>
       </div>
