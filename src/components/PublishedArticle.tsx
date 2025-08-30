@@ -98,11 +98,11 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
     updateMetaTag('og:title', 'Dhrubajyoti Das - Personal Portfolio');
     updateMetaTag('og:description', 'Professional portfolio showcasing expertise in technology, leadership, and innovation. Explore my journey, writings, and photography.');
     updateMetaTag('og:type', 'website');
-    updateMetaTag('og:image', 'https://warm-corporate-canvas.netlify.app/portfolio-preview.png');
+    updateMetaTag('og:image', 'https://your-project.supabase.co/storage/v1/object/public/portfolio-images/portfolio-preview.png');
     
     updateMetaTag('twitter:title', 'Dhrubajyoti Das - Personal Portfolio');
     updateMetaTag('twitter:description', 'Professional portfolio showcasing expertise in technology, leadership, and innovation.');
-    updateMetaTag('twitter:image', 'https://warm-corporate-canvas.netlify.app/portfolio-preview.png');
+    updateMetaTag('twitter:image', 'https://your-project.supabase.co/storage/v1/object/public/portfolio-images/portfolio-preview.png');
     
     // Remove article-specific meta tags
     removeMetaTag('article:author');
