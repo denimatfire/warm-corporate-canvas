@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -20,7 +21,7 @@ import {
   Share,
   Mail
 } from 'lucide-react';
-import { Article, Comment, addComment, getCommentsByArticleId } from '../data/articles';
+import { Article } from '../lib/articles-api';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
@@ -28,7 +29,7 @@ import { Progress } from './ui/progress';
 import { useToast } from '../hooks/use-toast';
 import jsPDF from 'jspdf';
 import { formatArticleContent } from '../lib/utils';
-import { updateMetaTags, resetMetaTags, getSocialSharingUrls, copyToClipboard, debugMetaTags } from '../lib/meta-tags';
+import { updateMetaTags, resetMetaTags, getSocialSharingUrls, copyToClipboard, debugMetaTags, ensureMetaTagsImmediate } from '../lib/meta-tags';
 
 interface PublishedArticleProps {
   article: Article;
@@ -77,7 +78,8 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
       read_time: article.read_time
     });
     
-    updateMetaTags({
+    // Use immediate meta tag update for better social media crawler compatibility
+    ensureMetaTagsImmediate({
       title: `${article.title} - Dhrubajyoti Das Portfolio`,
       description: article.excerpt || 'Read this article on Dhrubajyoti Das Portfolio',
       image: article.cover_image,
@@ -87,7 +89,7 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
       publishedTime: article.published_at || article.created_at,
       modifiedTime: article.updated_at,
       tags: article.tags || [],
-      readingTime: article.read_time
+      readingTime: article.read_time?.toString()
     });
     
     // Debug: Log current meta tags after update
@@ -385,15 +387,15 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
             
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-                              {formatDate(article.published_at || article.updated_at)}
+                                          {formatDate(article.published_at || article.updated_at)}
+          </div>
+          
+          {article.read_time && (
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              {article.read_time} min read
             </div>
-            
-            {article.read_time && (
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                {article.read_time} min read
-              </div>
-            )}
+          )}
           </div>
 
           {article.excerpt && (

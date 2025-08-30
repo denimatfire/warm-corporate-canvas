@@ -42,6 +42,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ensureMetaTagsImmediate, debugMetaTags, resetMetaTags } from "@/lib/meta-tags";
 
 interface Comment {
   id: string;
@@ -84,7 +85,25 @@ const Article_medium = () => {
           
           // Update meta tags for social media sharing
           if (foundArticle) {
-            updateMetaTags(foundArticle);
+            // Use immediate meta tag update for better social media crawler compatibility
+            ensureMetaTagsImmediate({
+              title: `${foundArticle.title} - Dhrubajyoti Das Portfolio`,
+              description: foundArticle.excerpt || 'Read this article on Dhrubajyoti Das Portfolio',
+              image: foundArticle.cover_image,
+              url: window.location.href,
+              type: 'article',
+              author: foundArticle.author,
+              publishedTime: foundArticle.published_at || foundArticle.created_at,
+              modifiedTime: foundArticle.updated_at,
+              tags: foundArticle.tags || [],
+              readingTime: foundArticle.read_time
+            });
+            
+            // Debug: Log current meta tags after update
+            setTimeout(() => {
+              console.log('Meta tags after update in Article_medium:');
+              debugMetaTags();
+            }, 100);
           }
         } catch (error) {
           console.error('Error fetching article:', error);
@@ -273,84 +292,7 @@ const Article_medium = () => {
     });
   };
 
-  // Update meta tags for social media sharing
-  const updateMetaTags = (article: ArticleType) => {
-    // Update page title
-    document.title = `${article.title} - Dhrubajyoti Das Portfolio`;
-    
-    // Update Open Graph meta tags
-    updateMetaTag('og:title', article.title);
-    updateMetaTag('og:description', article.excerpt || 'Read this article on Dhrubajyoti Das Portfolio');
-    updateMetaTag('og:type', 'article');
-    
-    // Update Twitter meta tags
-    updateMetaTag('twitter:title', article.title);
-    updateMetaTag('twitter:description', article.excerpt || 'Read this article on Dhrubajyoti Das Portfolio');
-    
-    // Update article-specific meta tags
-    updateMetaTag('article:author', article.author);
-    updateMetaTag('article:published_time', article.published_at || article.created_at);
-    updateMetaTag('article:modified_time', article.updated_at);
-    
-    // If article has a cover image, use it
-    if (article.cover_image) {
-      updateMetaTag('og:image', article.cover_image);
-      updateMetaTag('twitter:image', article.cover_image);
-    }
-    
-    // If article has tags, add them
-    if (article.tags && article.tags.length > 0) {
-      updateMetaTag('article:tag', article.tags.join(', '));
-    }
-  };
-
-  // Reset meta tags to default portfolio values
-  const resetMetaTags = () => {
-    document.title = 'Dhrubajyoti Das - Personal Portfolio';
-    
-    // Reset to default portfolio meta tags
-    updateMetaTag('og:title', 'Dhrubajyoti Das - Personal Portfolio');
-    updateMetaTag('og:description', 'Professional portfolio showcasing expertise in technology, leadership, and innovation. Explore my journey, writings, and photography.');
-    updateMetaTag('og:type', 'website');
-    updateMetaTag('og:image', 'https://your-project.supabase.co/storage/v1/object/public/portfolio-images/portfolio-preview.png');
-    
-    updateMetaTag('twitter:title', 'Dhrubajyoti Das - Personal Portfolio');
-    updateMetaTag('twitter:description', 'Professional portfolio showcasing expertise in technology, leadership, and innovation.');
-    updateMetaTag('twitter:image', 'https://your-project.supabase.co/storage/v1/object/public/portfolio-images/portfolio-preview.png');
-    
-    // Remove article-specific meta tags
-    removeMetaTag('article:author');
-    removeMetaTag('article:published_time');
-    removeMetaTag('article:modified_time');
-    removeMetaTag('article:tag');
-  };
-
-  // Helper function to update meta tags
-  const updateMetaTag = (property: string, content: string) => {
-    let meta = document.querySelector(`meta[property="${property}"]`) || 
-               document.querySelector(`meta[name="${property}"]`);
-    
-    if (!meta) {
-      meta = document.createElement('meta');
-      if (property.startsWith('og:') || property.startsWith('article:')) {
-        meta.setAttribute('property', property);
-      } else {
-        meta.setAttribute('name', property);
-      }
-      document.head.appendChild(meta);
-    }
-    
-    meta.setAttribute('content', content);
-  };
-
-  // Helper function to remove meta tags
-  const removeMetaTag = (property: string) => {
-    const meta = document.querySelector(`meta[property="${property}"]`) || 
-                 document.querySelector(`meta[name="${property}"]`);
-    if (meta) {
-      meta.remove();
-    }
-  };
+  // Meta tags are now handled by the centralized utility in src/lib/meta-tags.ts
 
   // Show loading state while checking for article
   if (isLoading) {

@@ -26,6 +26,36 @@ export interface ArticleMetaData extends MetaTagData {
 }
 
 /**
+ * Ensure meta tags are set immediately for better social media crawler compatibility
+ * This should be called as early as possible in the page lifecycle
+ */
+export const ensureMetaTagsImmediate = (data: MetaTagData) => {
+  // Set critical meta tags immediately
+  document.title = data.title;
+  
+  // Update the most important meta tags first
+  updateMetaTag('og:title', data.title);
+  updateMetaTag('og:description', data.description);
+  updateMetaTag('og:type', data.type || 'website');
+  updateMetaTag('twitter:title', data.title);
+  updateMetaTag('twitter:description', data.description);
+  
+  if (data.url) {
+    updateMetaTag('og:url', data.url);
+  }
+  
+  if (data.image) {
+    updateMetaTag('og:image', data.image);
+    updateMetaTag('twitter:image', data.image);
+  }
+  
+  // Then update the rest asynchronously
+  setTimeout(() => {
+    updateMetaTags(data);
+  }, 0);
+};
+
+/**
  * Update meta tags dynamically
  */
 export const updateMetaTags = (data: MetaTagData) => {
