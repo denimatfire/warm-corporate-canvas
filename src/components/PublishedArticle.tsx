@@ -15,7 +15,10 @@ import {
   Calendar,
   User,
   Clock,
-  Tag
+  Tag,
+  Facebook,
+  Share,
+  Mail
 } from 'lucide-react';
 import { Article, Comment, addComment, getCommentsByArticleId } from '../data/articles';
 import { Button } from './ui/button';
@@ -25,6 +28,7 @@ import { Progress } from './ui/progress';
 import { useToast } from '../hooks/use-toast';
 import jsPDF from 'jspdf';
 import { formatArticleContent } from '../lib/utils';
+import { updateMetaTags, resetMetaTags, getSocialSharingUrls, copyToClipboard } from '../lib/meta-tags';
 
 interface PublishedArticleProps {
   article: Article;
@@ -48,7 +52,7 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
     setupReadingProgress();
     
     // Update meta tags for social media sharing
-    updateMetaTags();
+    updateArticleMetaTags();
     
     return () => {
       if (speechRef.current) {
@@ -60,85 +64,22 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
   }, [article.id]);
 
   // Update meta tags for social media sharing
-  const updateMetaTags = () => {
-    // Update page title
-    document.title = `${article.title} - Dhrubajyoti Das Portfolio`;
-    
-    // Update Open Graph meta tags
-    updateMetaTag('og:title', article.title);
-    updateMetaTag('og:description', article.excerpt || 'Read this article on Dhrubajyoti Das Portfolio');
-    updateMetaTag('og:type', 'article');
-    
-    // Update Twitter meta tags
-    updateMetaTag('twitter:title', article.title);
-    updateMetaTag('twitter:description', article.excerpt || 'Read this article on Dhrubajyoti Das Portfolio');
-    
-    // Update article-specific meta tags
-    updateMetaTag('article:author', article.author);
-    updateMetaTag('article:published_time', article.published_at || article.created_at);
-    updateMetaTag('article:modified_time', article.updated_at);
-    
-    // If article has a cover image, use it
-    if (article.cover_image) {
-      updateMetaTag('og:image', article.cover_image);
-      updateMetaTag('twitter:image', article.cover_image);
-    }
-    
-    // If article has tags, add them
-    if (article.tags && article.tags.length > 0) {
-      updateMetaTag('article:tag', article.tags.join(', '));
-    }
+  const updateArticleMetaTags = () => {
+    updateMetaTags({
+      title: `${article.title} - Dhrubajyoti Das Portfolio`,
+      description: article.excerpt || 'Read this article on Dhrubajyoti Das Portfolio',
+      image: article.cover_image,
+      url: window.location.href,
+      type: 'article',
+      author: article.author,
+      publishedTime: article.published_at || article.created_at,
+      modifiedTime: article.updated_at,
+      tags: article.tags || [],
+      readingTime: article.read_time
+    });
   };
 
-  // Reset meta tags to default portfolio values
-  const resetMetaTags = () => {
-    document.title = 'Dhrubajyoti Das - Personal Portfolio';
-    
-    // Reset to default portfolio meta tags
-    updateMetaTag('og:title', 'Dhrubajyoti Das - Personal Portfolio');
-    updateMetaTag('og:description', 'Professional portfolio showcasing expertise in technology, leadership, and innovation. Explore my journey, writings, and photography.');
-    updateMetaTag('og:type', 'website');
-    updateMetaTag('og:image', 'https://your-project.supabase.co/storage/v1/object/public/portfolio-images/portfolio-preview.png');
-    
-    updateMetaTag('twitter:title', 'Dhrubajyoti Das - Personal Portfolio');
-    updateMetaTag('twitter:description', 'Professional portfolio showcasing expertise in technology, leadership, and innovation.');
-    updateMetaTag('twitter:image', 'https://your-project.supabase.co/storage/v1/object/public/portfolio-images/portfolio-preview.png');
-    
-    // Remove article-specific meta tags
-    removeMetaTag('article:author');
-    removeMetaTag('article:published_time');
-    removeMetaTag('article:modified_time');
-    removeMetaTag('article:tag');
-  };
 
-  // Helper function to update meta tags
-  const updateMetaTag = (property: string, content: string) => {
-    let meta = document.querySelector(`meta[property="${property}"]`) || 
-               document.querySelector(`meta[name="${property}"]`);
-    
-    if (!meta) {
-      meta = document.createElement('meta');
-      if (property.startsWith('og:')) {
-        meta.setAttribute('property', property);
-      } else if (property.startsWith('article:')) {
-        meta.setAttribute('property', property);
-      } else {
-        meta.setAttribute('name', property);
-      }
-      document.head.appendChild(meta);
-    }
-    
-    meta.setAttribute('content', content);
-  };
-
-  // Helper function to remove meta tags
-  const removeMetaTag = (property: string) => {
-    const meta = document.querySelector(`meta[property="${property}"]`) || 
-                 document.querySelector(`meta[name="${property}"]`);
-    if (meta) {
-      meta.remove();
-    }
-  };
 
   const loadComments = () => {
     const articleComments = getCommentsByArticleId(article.id);
@@ -204,37 +145,42 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
     }
   };
 
-  const handleShare = (platform: 'linkedin' | 'twitter' | 'whatsapp' | 'copy') => {
-    const url = window.location.href;
-    const title = article.title;
-    const text = article.excerpt || '';
+  const handleShare = (platform: 'linkedin' | 'twitter' | 'facebook' | 'whatsapp' | 'copy') => {
+    const sharingUrls = getSocialSharingUrls({
+      title: article.title,
+      description: article.excerpt || '',
+      url: window.location.href
+    });
 
     switch (platform) {
       case 'linkedin':
-        window.open(
-          `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`,
-          '_blank'
-        );
+        window.open(sharingUrls.linkedin, '_blank');
         break;
       case 'twitter':
-        window.open(
-          `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
-          '_blank'
-        );
+        window.open(sharingUrls.twitter, '_blank');
+        break;
+      case 'facebook':
+        window.open(sharingUrls.facebook, '_blank');
         break;
       case 'whatsapp':
-        window.open(
-          `https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}`,
-          '_blank'
-        );
+        window.open(sharingUrls.whatsapp, '_blank');
         break;
       case 'copy':
-        navigator.clipboard.writeText(url);
-        setCopiedLink(true);
-        setTimeout(() => setCopiedLink(false), 2000);
-        toast({
-          title: 'Link copied',
-          description: 'Article link has been copied to clipboard.',
+        copyToClipboard(window.location.href).then(success => {
+          if (success) {
+            setCopiedLink(true);
+            setTimeout(() => setCopiedLink(false), 2000);
+            toast({
+              title: 'Link copied',
+              description: 'Article link has been copied to clipboard.',
+            });
+          } else {
+            toast({
+              title: 'Copy failed',
+              description: 'Failed to copy link to clipboard.',
+              variant: 'destructive'
+            });
+          }
         });
         break;
     }
@@ -330,6 +276,16 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
                 aria-label="Share on Twitter"
               >
                 <Twitter className="w-4 h-4" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleShare('facebook')}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted p-2"
+                aria-label="Share on Facebook"
+              >
+                <Facebook className="w-4 h-4" />
               </Button>
               
               <Button
