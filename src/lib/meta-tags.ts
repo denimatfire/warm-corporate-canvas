@@ -29,6 +29,8 @@ export interface ArticleMetaData extends MetaTagData {
  * Update meta tags dynamically
  */
 export const updateMetaTags = (data: MetaTagData) => {
+  console.log('Updating meta tags with:', data); // Debug log
+  
   // Update page title
   document.title = data.title;
   
@@ -43,8 +45,8 @@ export const updateMetaTags = (data: MetaTagData) => {
   
   if (data.image) {
     updateMetaTag('og:image', data.image);
-    updateMetaTag('twitter:image', data.image);
     updateMetaTag('og:image:secure_url', data.image);
+    updateMetaTag('twitter:image', data.image);
   }
   
   // Update Twitter meta tags
@@ -55,6 +57,7 @@ export const updateMetaTags = (data: MetaTagData) => {
   if (data.type === 'article') {
     const articleData = data as ArticleMetaData;
     
+    // Update article-specific meta tags
     updateMetaTag('article:author', articleData.author);
     updateMetaTag('article:published_time', articleData.publishedTime);
     updateMetaTag('article:modified_time', articleData.modifiedTime);
@@ -67,10 +70,16 @@ export const updateMetaTags = (data: MetaTagData) => {
     if (articleData.readingTime) {
       updateMetaTag('article:reading_time', articleData.readingTime);
     }
+    
+    // Also update the main meta tags for better compatibility
+    updateMetaTag('author', articleData.author);
+    updateMetaTag('description', data.description);
   }
   
   // Update structured data
   updateStructuredData(data);
+  
+  console.log('Meta tags updated successfully'); // Debug log
 };
 
 /**
@@ -91,6 +100,9 @@ export const updateMetaTag = (property: string, content: string) => {
   }
   
   meta.setAttribute('content', content);
+  
+  // Debug log
+  console.log(`Updated meta tag: ${property} = ${content}`);
 };
 
 /**
@@ -196,6 +208,7 @@ export const resetMetaTags = () => {
   const existingScript = document.querySelector('script[data-dynamic-structured-data]');
   if (existingScript) {
     existingScript.remove();
+  }
 };
 
 /**
@@ -216,6 +229,23 @@ export const getSocialSharingUrls = (data: MetaTagData) => {
     reddit: `https://reddit.com/submit?url=${encodeURIComponent(url)}&title=${title}`,
     email: `mailto:?subject=${title}&body=${description}%20${encodeURIComponent(url)}`
   };
+};
+
+/**
+ * Debug function to log all current meta tags
+ */
+export const debugMetaTags = () => {
+  console.log('=== Current Meta Tags ===');
+  const metaTags = document.querySelectorAll('meta');
+  metaTags.forEach(meta => {
+    const property = meta.getAttribute('property');
+    const name = meta.getAttribute('name');
+    const content = meta.getAttribute('content');
+    if (property || name) {
+      console.log(`${property || name}: ${content}`);
+    }
+  });
+  console.log('=== End Meta Tags ===');
 };
 
 /**

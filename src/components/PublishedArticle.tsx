@@ -28,7 +28,7 @@ import { Progress } from './ui/progress';
 import { useToast } from '../hooks/use-toast';
 import jsPDF from 'jspdf';
 import { formatArticleContent } from '../lib/utils';
-import { updateMetaTags, resetMetaTags, getSocialSharingUrls, copyToClipboard } from '../lib/meta-tags';
+import { updateMetaTags, resetMetaTags, getSocialSharingUrls, copyToClipboard, debugMetaTags } from '../lib/meta-tags';
 
 interface PublishedArticleProps {
   article: Article;
@@ -65,6 +65,18 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
 
   // Update meta tags for social media sharing
   const updateArticleMetaTags = () => {
+    console.log('Article data for meta tags:', {
+      title: article.title,
+      excerpt: article.excerpt,
+      cover_image: article.cover_image,
+      author: article.author,
+      published_at: article.published_at,
+      created_at: article.created_at,
+      updated_at: article.updated_at,
+      tags: article.tags,
+      read_time: article.read_time
+    });
+    
     updateMetaTags({
       title: `${article.title} - Dhrubajyoti Das Portfolio`,
       description: article.excerpt || 'Read this article on Dhrubajyoti Das Portfolio',
@@ -77,6 +89,12 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
       tags: article.tags || [],
       readingTime: article.read_time
     });
+    
+    // Debug: Log current meta tags after update
+    setTimeout(() => {
+      console.log('Meta tags after update:');
+      debugMetaTags();
+    }, 100);
   };
 
 
@@ -310,6 +328,21 @@ const PublishedArticle: React.FC<PublishedArticleProps> = ({ article }) => {
                 ) : (
                   <Copy className="w-4 h-4" />
                 )}
+              </Button>
+              
+              {/* Debug button - remove in production */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  console.log('Manual meta tag update triggered');
+                  updateArticleMetaTags();
+                }}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted p-2"
+                aria-label="Debug meta tags"
+                title="Debug: Update meta tags"
+              >
+                🐛
               </Button>
             </div>
           </div>
