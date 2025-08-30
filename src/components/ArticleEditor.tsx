@@ -82,23 +82,24 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
   useEffect(() => {
     if (article) {
       console.log('Article prop changed, syncing content:', article);
+      console.log('🖼️ Article cover_image:', article.cover_image);
+      console.log('🖼️ Article cover_image_path:', article.cover_image_path);
+      
       setTitle(article.title || '');
       setExcerpt(article.excerpt || '');
       setContent(article.content || '');
       // Initialize lastSavedContent to prevent false auto-save triggers
       setLastSavedContent(article.content || '');
-      // Only set cover image if we don't already have one or if the article has a different one
-      if (!coverImage || article.cover_image !== coverImage) {
-        setCoverImage(article.cover_image || '');
-      }
-      // Sync image path from article
-      if (article.cover_image_path !== coverImagePath) {
-        setCoverImagePath(article.cover_image_path || null);
-      }
+      // Always sync cover image from article to ensure consistency
+      setCoverImage(article.cover_image || '');
+      setCoverImagePath(article.cover_image_path || null);
       setTags(article.tags || []);
       setStatus(article.status || 'draft');
+      
+      console.log('🔄 State updated - coverImage:', article.cover_image || '');
+      console.log('🔄 State updated - coverImagePath:', article.cover_image_path || null);
     }
-  }, [article, coverImage]);
+  }, [article]); // Remove coverImage from dependencies to prevent infinite loop
 
   useEffect(() => {
     // Auto-save draft every 60 seconds, but only if there are actual changes
@@ -348,6 +349,42 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
         description: 'Image was removed from the editor, but there was an issue with storage cleanup.',
         variant: 'destructive',
       });
+    }
+  };
+
+  // Debug function to check current state vs database
+  const debugCoverImageState = async () => {
+    if (!isEditing || !article?.id) {
+      console.log('🔍 Debug: Not editing an article');
+      return;
+    }
+
+    try {
+      console.log('🔍 Debug: Current local state:');
+      console.log('🔍 coverImage:', coverImage);
+      console.log('🔍 coverImagePath:', coverImagePath);
+      
+      // Fetch fresh data from database
+      const freshArticle = await articlesApi.getById(article.id);
+      console.log('🔍 Debug: Fresh database data:');
+      console.log('🔍 DB cover_image:', freshArticle.cover_image);
+      console.log('🔍 DB cover_image_path:', freshArticle.cover_image_path);
+      
+      // Check if there's a mismatch
+      if (coverImage !== freshArticle.cover_image) {
+        console.warn('⚠️ MISMATCH: Local coverImage !== DB cover_image');
+        console.warn('Local:', coverImage);
+        console.warn('DB:', freshArticle.cover_image);
+      }
+      
+      if (coverImagePath !== freshArticle.cover_image_path) {
+        console.warn('⚠️ MISMATCH: Local coverImagePath !== DB cover_image_path');
+        console.warn('Local:', coverImagePath);
+        console.warn('DB:', freshArticle.cover_image_path);
+      }
+      
+    } catch (error) {
+      console.error('🔍 Debug: Failed to fetch fresh data:', error);
     }
   };
 
@@ -641,30 +678,42 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
         </div>
       </div>
 
-      {/* Cover Image */}
-      <div className="space-y-2">
-        <Label className="text-base font-medium">
-          Cover Image {status === 'published' && '*'}
-        </Label>
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploadingImage}
-            className="flex items-center gap-2"
-          >
-            {isUploadingImage ? (
-              <>
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              <>
-                <Upload className="w-4 h-4" />
-                Upload Image
-              </>
-            )}
-          </Button>
+                {/* Cover Image */}
+          <div className="space-y-2">
+            <Label className="text-base font-medium">
+              Cover Image {status === 'published' && '*'}
+            </Label>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingImage}
+                className="flex items-center gap-2"
+              >
+                {isUploadingImage ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    Upload Image
+                  </>
+                )}
+              </Button>
+              
+              {/* Debug button for troubleshooting */}
+              {isEditing && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={debugCoverImageState}
+                  className="flex items-center gap-2 text-xs"
+                >
+                  🔍 Debug State
+                </Button>
+              )}
           <input
             ref={fileInputRef}
             type="file"
