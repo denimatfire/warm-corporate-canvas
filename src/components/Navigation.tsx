@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, User, FileText, Camera, Calendar, Settings } from "lucide-react";
+import { ChevronDown, User, FileText, Camera, Calendar, Settings, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -180,6 +180,13 @@ const Navigation = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-card border-border min-w-48">
                 <DropdownMenuItem 
+                  onClick={() => navigate('/cv')}
+                  className="cursor-pointer hover:bg-secondary"
+                >
+                  <UserCircle className="w-4 h-4 mr-2" />
+                  Interactive CV
+                </DropdownMenuItem>
+                <DropdownMenuItem 
                   onClick={() => navigate('/writing')}
                   className="cursor-pointer hover:bg-secondary"
                 >
@@ -268,6 +275,10 @@ const Navigation = () => {
             </Button>
             <Button variant="ghost" onClick={() => handleNavigation(() => scrollToSection('about'))} className="justify-start">
               About Me
+            </Button>
+            <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/cv'))} className="justify-start">
+              <UserCircle className="w-4 h-4 mr-2" />
+              Interactive CV
             </Button>
             <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/writing'))} className="justify-start">
               Writing

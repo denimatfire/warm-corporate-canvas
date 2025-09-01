@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import WritingPage from "./pages/Writing";
 import PhotosPage from "./pages/Photos";
+import InteractiveCV from "./pages/InteractiveCV";
 import Article_medium from "./components/Article_medium";
 import ArticleManagement from "./pages/ArticleManagement";
 import PhotoManagement from "./pages/PhotoManagement";
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/writing" element={<WritingPage />} />
           <Route path="/photos" element={<PhotosPage />} />
+          <Route path="/cv" element={<InteractiveCV />} />
           <Route path="/article/:id" element={<Article_medium />} />
 
   

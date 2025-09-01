@@ -1,7 +1,14 @@
+import { useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import Photos from "@/components/Photos";
+import { initializeSEO } from "@/lib/seo-utils";
 
 const PhotosPage = () => {
+  useEffect(() => {
+    // Initialize SEO for photos page
+    initializeSEO('photos');
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-hero text-foreground">
       <Navigation />

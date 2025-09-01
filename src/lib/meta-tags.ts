@@ -8,12 +8,14 @@ export interface MetaTagData {
   description: string;
   image?: string;
   url?: string;
-  type?: 'website' | 'article';
+  type?: 'website' | 'article' | 'photo' | 'gallery';
   author?: string;
   publishedTime?: string;
   modifiedTime?: string;
   tags?: string[];
   readingTime?: string;
+  category?: string;
+  location?: string;
 }
 
 export interface ArticleMetaData extends MetaTagData {
@@ -159,7 +161,7 @@ export const updateStructuredData = (data: MetaTagData) => {
   if (data.type === 'article') {
     const articleData = data as ArticleMetaData;
     
-    // Create article structured data
+    // Create comprehensive article structured data
     const structuredData = {
       "@context": "https://schema.org",
       "@type": "Article",
@@ -167,22 +169,34 @@ export const updateStructuredData = (data: MetaTagData) => {
       "description": articleData.description,
       "author": {
         "@type": "Person",
-        "name": articleData.author
+        "name": articleData.author,
+        "url": "https://dasdhrubajyoti.netlify.app/",
+        "sameAs": [
+          "https://linkedin.com/in/dhrubajyoti-das",
+          "https://github.com/dhrubajyoti-das",
+          "https://twitter.com/dhrubajyoti-das"
+        ]
       },
       "datePublished": articleData.publishedTime,
       "dateModified": articleData.modifiedTime,
       "publisher": {
         "@type": "Organization",
         "name": "Dhrubajyoti Das Portfolio",
+        "url": "https://dasdhrubajyoti.netlify.app/",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://cctsyzvkrlbfnmptlxre.supabase.co/storage/v1/object/public/Article_images/portfolio-photos/Gemini_Generated_Image_qx6lf8qx6lf8qx6l.png"
+          "url": "https://cctsyzvkrlbfnmptlxre.supabase.co/storage/v1/object/public/Article_images/portfolio-photos/Gemini_Generated_Image_qx6lf8qx6lf8qx6l.png",
+          "width": 1200,
+          "height": 630
         }
       },
       "mainEntityOfPage": {
         "@type": "WebPage",
         "@id": data.url || window.location.href
-      }
+      },
+      "articleSection": "Technology",
+      "articleBody": articleData.description,
+      "inLanguage": "en-US"
     };
     
     if (articleData.image) {
@@ -190,23 +204,114 @@ export const updateStructuredData = (data: MetaTagData) => {
         "@type": "ImageObject",
         "url": articleData.image,
         "width": 1200,
-        "height": 630
+        "height": 630,
+        "caption": articleData.title
       };
     }
     
     if (articleData.tags && articleData.tags.length > 0) {
       structuredData["keywords"] = articleData.tags.join(', ');
+      structuredData["about"] = articleData.tags.map(tag => ({
+        "@type": "Thing",
+        "name": tag
+      }));
     }
     
     if (articleData.readingTime) {
       structuredData["wordCount"] = parseInt(articleData.readingTime) * 200; // Rough estimate
+      structuredData["timeRequired"] = `PT${articleData.readingTime}M`;
     }
     
-    // Add the structured data to the page
+    // Add breadcrumb structured data
+    const breadcrumbData = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://dasdhrubajyoti.netlify.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Writing",
+          "item": "https://dasdhrubajyoti.netlify.app/writing"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": articleData.title,
+          "item": data.url || window.location.href
+        }
+      ]
+    };
+    
+    // Add both structured data scripts
+    const articleScript = document.createElement('script');
+    articleScript.type = 'application/ld+json';
+    articleScript.setAttribute('data-dynamic-structured-data', 'article');
+    articleScript.textContent = JSON.stringify(structuredData);
+    document.head.appendChild(articleScript);
+    
+    const breadcrumbScript = document.createElement('script');
+    breadcrumbScript.type = 'application/ld+json';
+    breadcrumbScript.setAttribute('data-dynamic-structured-data', 'breadcrumb');
+    breadcrumbScript.textContent = JSON.stringify(breadcrumbData);
+    document.head.appendChild(breadcrumbScript);
+  }
+};
+
+/**
+ * Update structured data for photos/gallery
+ */
+export const updatePhotoStructuredData = (data: MetaTagData) => {
+  // Remove existing photo structured data
+  const existingScripts = document.querySelectorAll('script[data-dynamic-structured-data="photo"]');
+  existingScripts.forEach(script => script.remove());
+  
+  if (data.type === 'photo' || data.type === 'gallery') {
+    const photoData = {
+      "@context": "https://schema.org",
+      "@type": "ImageObject",
+      "name": data.title,
+      "description": data.description,
+      "url": data.url || window.location.href,
+      "contentUrl": data.image,
+      "author": {
+        "@type": "Person",
+        "name": data.author || "Dhrubajyoti Das",
+        "url": "https://dasdhrubajyoti.netlify.app/"
+      },
+      "datePublished": data.publishedTime,
+      "dateModified": data.modifiedTime,
+      "publisher": {
+        "@type": "Organization",
+        "name": "Dhrubajyoti Das Portfolio",
+        "url": "https://dasdhrubajyoti.netlify.app/"
+      }
+    };
+    
+    if (data.category) {
+      photoData["genre"] = data.category;
+    }
+    
+    if (data.tags && data.tags.length > 0) {
+      photoData["keywords"] = data.tags.join(', ');
+    }
+    
+    if (data.location) {
+      photoData["contentLocation"] = {
+        "@type": "Place",
+        "name": data.location
+      };
+    }
+    
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.setAttribute('data-dynamic-structured-data', 'true');
-    script.textContent = JSON.stringify(structuredData);
+    script.setAttribute('data-dynamic-structured-data', 'photo');
+    script.textContent = JSON.stringify(photoData);
     document.head.appendChild(script);
   }
 };
@@ -234,11 +339,9 @@ export const resetMetaTags = () => {
   removeMetaTag('article:tag');
   removeMetaTag('article:reading_time');
   
-  // Remove dynamic structured data
-  const existingScript = document.querySelector('script[data-dynamic-structured-data]');
-  if (existingScript) {
-    existingScript.remove();
-  }
+  // Remove all dynamic structured data
+  const existingScripts = document.querySelectorAll('script[data-dynamic-structured-data]');
+  existingScripts.forEach(script => script.remove());
 };
 
 /**
