@@ -1,309 +1,299 @@
-# 🚀 Warm Corporate Canvas - Development Setup Guide
+# 🚀 Setup Guide - Warm Corporate Canvas
 
-This comprehensive guide will help you set up the development environment for the Warm Corporate Canvas portfolio website, which uses Supabase as the primary backend with automatic fallback support.
+## 📋 **Overview**
 
-## 🎯 **What This Project Offers**
+This guide will help you set up the Warm Corporate Canvas project locally. The project is a modern portfolio website with integrated content management capabilities, built with React, TypeScript, and Supabase.
 
-- **Modern Tech Stack**: React 18, TypeScript 5, Vite 5, Tailwind CSS
-- **Professional Backend**: Supabase (PostgreSQL + Real-time + Auth)
-- **Advanced Editors**: Enhanced Quill with image editing + TipTap editor
-- **Responsive Design**: Mobile-first approach with touch gestures
-- **Real-time Features**: Live updates with offline fallback support
-- **Security**: Row Level Security (RLS) and authentication
+## 🎯 **Prerequisites**
 
-## 📋 **Prerequisites**
-
-Before you begin, ensure you have:
-
-- **Node.js 18+** and npm (recommend using [nvm](https://github.com/nvm-sh/nvm))
+### **Required Software**
+- **Node.js** 18.0.0 or higher
+- **npm** 9.0.0 or higher (or yarn)
 - **Git** for version control
-- **Supabase account** (free tier available at [supabase.com](https://supabase.com))
-- **Modern browser** (Chrome, Firefox, Safari, Edge)
+- **Code Editor** (VS Code recommended)
 
-## 🚀 **Step 1: Clone and Setup**
+### **Required Accounts**
+- **Supabase** account for backend services
+- **GitHub** account for repository access
+
+## 🏗️ **Project Architecture**
+
+### **Frontend Stack**
+- **React 18** - Modern React with hooks and concurrent features
+- **TypeScript** - Type-safe JavaScript development
+- **Vite** - Fast build tool and development server
+- **Tailwind CSS** - Utility-first CSS framework
+- **Framer Motion** - Animation library
+
+### **Backend Stack**
+- **Supabase** - PostgreSQL database + authentication + storage
+- **React Query** - Server state management
+- **LocalStorage** - Offline fallback support
+
+### **Content Management**
+- **TipTap** - Rich text editor with image support
+- **Resizable Images** - Interactive image editing
+- **Image Upload** - Drag & drop file management
+
+## 🚀 **Quick Start**
+
+### **1. Clone the Repository**
 
 ```bash
-# Clone the repository
-git clone <your-repo-url>
-cd warm-corporate-canvas
+git clone <your-repository-url>
+cd dasdhrubajyoti-portfolio
+```
 
-# Install dependencies
+### **2. Install Dependencies**
+
+```bash
 npm install
+```
 
-# Verify installation
+### **3. Environment Setup**
+
+Copy the environment template and configure your Supabase credentials:
+
+```bash
+cp env.example .env.local
+```
+
+Edit `.env.local` with your Supabase credentials:
+
+```env
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+```
+
+### **4. Start Development Server**
+
+```bash
 npm run dev
 ```
 
-## 🔐 **Step 2: Supabase Setup**
+The application will be available at `http://localhost:5173`
 
-### 2.1 Create Supabase Project
+## 🗄️ **Supabase Setup**
 
-1. Go to [supabase.com](https://supabase.com) and sign up/login
-2. Click "New Project"
-3. Choose your organization
-4. Enter project details:
-   - **Name**: `warm-corporate-canvas` (or your preferred name)
-   - **Database Password**: Generate a strong password
-   - **Region**: Choose closest to your users
-5. Click "Create new project"
-6. Wait for setup to complete (2-3 minutes)
+### **1. Create Supabase Project**
 
-### 2.2 Get Project Credentials
+1. Go to [supabase.com](https://supabase.com)
+2. Sign up or log in
+3. Create a new project
+4. Note your project URL and anon key
 
-1. In your Supabase dashboard, go to **Settings** → **API**
-2. Copy these values:
-   - **Project URL** (e.g., `https://abc123.supabase.co`)
-   - **Anon public key** (starts with `eyJ...`)
+### **2. Database Setup**
 
-### 2.3 Environment Configuration
+Run the following SQL scripts in your Supabase SQL Editor:
 
-1. Copy the example environment file:
-   ```bash
-   cp env.example .env.local
-   ```
-
-2. Edit `.env.local` with your Supabase credentials:
-   ```env
-   VITE_SUPABASE_URL=https://your-project-id.supabase.co
-   VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-   ```
-
-## 🗄️ **Step 3: Database Schema Setup**
-
-### 3.1 Create Articles Table
-
-1. In Supabase dashboard, go to **SQL Editor**
-2. Create a new query and run this SQL:
-
+#### **Articles Table**
 ```sql
 -- Create articles table
-CREATE TABLE articles (
+CREATE TABLE IF NOT EXISTS articles (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   title TEXT NOT NULL,
   content TEXT NOT NULL,
-  excerpt TEXT,
-  cover_image TEXT,
+  excerpt TEXT NOT NULL,
+  cover_image TEXT NOT NULL,
   cover_image_path TEXT,
   tags TEXT[] DEFAULT '{}',
   status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
   author TEXT NOT NULL,
-  read_time INTEGER DEFAULT 1,
+  read_time INTEGER DEFAULT 5,
   published_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Enable Row Level Security
+-- Enable RLS
 ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
 
--- Create policies (adjust based on your needs)
-CREATE POLICY "Public read access" ON articles
-  FOR SELECT USING (status = 'published');
-
-CREATE POLICY "Authenticated users can create" ON articles
-  FOR INSERT WITH (auth.role() = 'authenticated');
-
-CREATE POLICY "Users can update own articles" ON articles
-  FOR UPDATE USING (auth.uid()::text = author);
-
-CREATE POLICY "Users can delete own articles" ON articles
-  FOR DELETE USING (auth.uid()::text = author);
-
--- Create indexes for better performance
-CREATE INDEX idx_articles_status ON articles(status);
-CREATE INDEX idx_articles_created_at ON articles(created_at);
-CREATE INDEX idx_articles_tags ON articles USING GIN(tags);
-
--- Enable real-time
-ALTER PUBLICATION supabase_realtime ADD TABLE articles;
+-- Create policies
+CREATE POLICY "Allow public read access" ON articles FOR SELECT USING (true);
+CREATE POLICY "Allow authenticated insert" ON articles FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated update" ON articles FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated delete" ON articles FOR DELETE USING (auth.role() = 'authenticated');
 ```
 
-### 3.2 Create Storage Bucket (Optional)
-
-If you want to use Supabase Storage for images:
-
+#### **Photos Table**
 ```sql
--- Create storage bucket for article images
-INSERT INTO storage.buckets (id, name, public) 
-VALUES ('article-images', 'article-images', true);
+-- Create photos table
+CREATE TABLE IF NOT EXISTS photos (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  caption TEXT,
+  category TEXT DEFAULT 'Uncategorized',
+  image_url TEXT NOT NULL,
+  image_path TEXT NOT NULL,
+  is_published BOOLEAN DEFAULT false,
+  tags TEXT[] DEFAULT '{}',
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  published_at TIMESTAMP WITH TIME ZONE,
+  author_id UUID REFERENCES auth.users(id)
+);
 
--- Create storage policy
-CREATE POLICY "Public read access" ON storage.objects
-  FOR SELECT USING (bucket_id = 'article-images');
+-- Enable RLS
+ALTER TABLE photos ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can upload" ON storage.objects
-  FOR INSERT WITH (bucket_id = 'article-images' AND auth.role() = 'authenticated');
+-- Create policies
+CREATE POLICY "Allow public read access" ON photos FOR SELECT USING (is_published = true);
+CREATE POLICY "Allow authenticated insert" ON photos FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated update" ON photos FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated delete" ON photos FOR DELETE USING (auth.role() = 'authenticated');
 ```
 
-## 🔧 **Step 4: Test Your Setup**
+#### **Contacts Table**
+```sql
+-- Create contacts table
+CREATE TABLE IF NOT EXISTS contacts (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  message TEXT NOT NULL,
+  status TEXT DEFAULT 'new' CHECK (status IN ('new', 'read', 'replied', 'archived')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  read_at TIMESTAMP WITH TIME ZONE,
+  replied_at TIMESTAMP WITH TIME ZONE,
+  notes TEXT
+);
 
-### 4.1 Start Development Server
+-- Enable RLS
+ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
 
-```bash
-npm run dev
+-- Create policies
+CREATE POLICY "Allow public contact form submissions" ON contacts FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow authenticated users to read contacts" ON contacts FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated users to update contacts" ON contacts FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated users to delete contacts" ON contacts FOR DELETE USING (auth.role() = 'authenticated');
 ```
 
-### 4.2 Verify Supabase Connection
+### **3. Storage Setup**
 
-1. Open your browser to `http://localhost:5173`
-2. Open browser console (F12)
-3. Look for any Supabase connection errors
-4. Navigate to the Writing or Article Management section
-5. Try creating a test article
+1. Go to Storage in your Supabase dashboard
+2. Create the following buckets:
+   - **Article_images** - For article cover images
+   - **portfolio-photos** - For photo gallery images
 
-### 4.3 Check API Endpoints
+3. Set bucket policies to allow public read access
 
-The following API functions should work:
-- ✅ `articlesApi.getAll()` - Fetch all articles
-- ✅ `articlesApi.create()` - Create new article
-- ✅ `articlesApi.update()` - Update article
-- ✅ `articlesApi.delete()` - Delete article
-- ✅ Real-time subscriptions
+### **4. Authentication Setup**
 
-## 🎨 **Step 5: Customization**
+1. Go to Authentication in your Supabase dashboard
+2. Configure email templates if needed
+3. Set up any additional providers (Google, GitHub, etc.)
 
-### 5.1 Update Site Information
+## 🔧 **Development Workflow**
 
-Edit these files to customize your portfolio:
-
-- **`src/components/Hero.tsx`** - Main landing section
-- **`src/components/About.tsx`** - Professional overview
-- **`src/components/Contact.tsx`** - Contact information
-- **`src/components/Photos.tsx`** - Photo gallery
-
-### 5.2 Configure Authentication
-
-1. In Supabase dashboard, go to **Authentication** → **Settings**
-2. Configure your authentication providers
-3. Set up email templates
-4. Configure redirect URLs
-
-### 5.3 Customize Styling
-
-- **`tailwind.config.ts`** - Tailwind CSS configuration
-- **`src/index.css`** - Global styles
-- **`src/components/ui/`** - Shadcn/UI components
-
-## 🚀 **Step 6: Development Workflow**
-
-### 6.1 Available Scripts
+### **Available Scripts**
 
 ```bash
 # Development
-npm run dev          # Start dev server with hot reload
-npm run build:dev    # Build for development
-
-# Production
+npm run dev          # Start development server
 npm run build        # Build for production
 npm run preview      # Preview production build
-
-# Code Quality
 npm run lint         # Run ESLint
+
+# Database
+npm run db:reset     # Reset database (if configured)
+npm run db:migrate   # Run migrations (if configured)
 ```
 
-### 6.2 File Structure
+### **Code Quality**
 
+- **TypeScript** for type safety
+- **ESLint** for code quality
+- **Prettier** for code formatting
+- **Responsive design** principles
+
+## 📱 **Responsive Design**
+
+### **Breakpoints**
+- **Mobile**: 320px - 768px
+- **Tablet**: 768px - 1024px
+- **Desktop**: 1024px+
+
+### **Design Principles**
+- **Mobile-first** approach
+- **Touch-friendly** interactions
+- **Performance** optimized
+- **Accessibility** compliant
+
+## 🔐 **Security Features**
+
+### **Authentication**
+- **Supabase Auth** integration
+- **Protected routes** for admin areas
+- **Role-based access** control
+
+### **Data Protection**
+- **Row Level Security** (RLS)
+- **Input validation** on client and server
+- **SQL injection** prevention
+- **XSS protection**
+
+## 🚀 **Deployment**
+
+### **Netlify (Recommended)**
+
+1. Connect your GitHub repository
+2. Set build command: `npm run build`
+3. Set publish directory: `dist`
+4. Configure environment variables
+5. Deploy!
+
+### **Environment Variables for Production**
+
+```env
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 ```
-src/
-├── components/          # React components
-│   ├── ui/             # Shadcn/UI components
-│   ├── ArticleEditor.tsx    # Enhanced Quill editor
-│   ├── TipTapEditor.tsx     # TipTap editor
-│   └── ...                 # Other components
-├── pages/              # Page components
-├── lib/                # Utilities and API
-│   ├── articles-api.ts     # Supabase API integration
-│   ├── image-upload.ts     # Image handling
-│   └── utils.ts            # Helper functions
-├── hooks/              # Custom React hooks
-├── data/               # Data management
-└── assets/             # Static assets
-```
 
-## 🔍 **Troubleshooting**
+## 🆘 **Troubleshooting**
 
-### Common Issues
+### **Common Issues**
 
-#### Supabase Connection Errors
-```bash
-# Check environment variables
-echo $VITE_SUPABASE_URL
-echo $VITE_SUPABASE_ANON_KEY
+#### **Supabase Connection Errors**
+- Verify environment variables are correct
+- Check Supabase project status
+- Ensure RLS policies are configured
 
-# Verify in .env.local file
-cat .env.local
-```
+#### **Build Errors**
+- Clear `node_modules` and reinstall
+- Check TypeScript errors
+- Verify all dependencies are installed
 
-#### Build Errors
-```bash
-# Clear dependencies and reinstall
-rm -rf node_modules package-lock.json
-npm install
+#### **Image Upload Issues**
+- Check Supabase storage bucket permissions
+- Verify file size limits
+- Check authentication status
 
-# Clear Vite cache
-rm -rf dist
-npm run build
-```
+### **Getting Help**
 
-#### Database Permission Errors
-1. Check RLS policies in Supabase
-2. Verify user authentication status
-3. Check table permissions
+1. **Check the documentation** files
+2. **Review Supabase logs** in dashboard
+3. **Check browser console** for errors
+4. **Verify environment variables** are set correctly
 
-#### Real-time Not Working
-1. Ensure real-time is enabled in Supabase
-2. Check network connectivity
-3. Verify subscription setup
+## 📚 **Additional Resources**
 
-### Performance Issues
+- [Supabase Documentation](https://supabase.com/docs)
+- [React Documentation](https://react.dev)
+- [TypeScript Documentation](https://www.typescriptlang.org)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [Vite Documentation](https://vitejs.dev)
 
-1. **Database**: Add appropriate indexes
-2. **Images**: Optimize and compress images
-3. **Bundle**: Use `npm run build:dev` for development
-4. **Caching**: Implement proper caching strategies
+## 🎯 **Next Steps**
 
-## 📚 **Next Steps**
+After setup:
+1. **Test the application** locally
+2. **Create your first article** using the editor
+3. **Upload some photos** to the gallery
+4. **Test the contact form** functionality
+5. **Customize the design** to match your brand
 
-After successful setup:
+---
 
-1. **Read the Documentation**:
-   - [Project Structure](PROJECT_STRUCTURE.md)
-   - [Article Management](ARTICLE_MANAGEMENT_README.md)
-   - [Quill Enhancements](QUILL_ENHANCEMENTS.md)
-
-2. **Explore Features**:
-   - Try the enhanced Quill editor
-   - Test the TipTap editor
-   - Explore the photo gallery
-   - Test authentication
-
-3. **Customize**:
-   - Update content and branding
-   - Modify color schemes
-   - Add your own components
-
-4. **Deploy**:
-   - Connect to Netlify
-   - Set up environment variables
-   - Configure custom domain
-
-## 🆘 **Getting Help**
-
-If you encounter issues:
-
-1. **Check the logs**: Browser console and terminal
-2. **Review documentation**: All .md files in the project
-3. **Supabase dashboard**: Check logs and metrics
-4. **Community**: Supabase Discord, GitHub Issues
-
-## 🎉 **Congratulations!**
-
-You've successfully set up the Warm Corporate Canvas development environment! The project now has:
-
-- ✅ Modern React + TypeScript setup
-- ✅ Supabase backend with real-time capabilities
-- ✅ Enhanced rich text editors
-- ✅ Responsive design system
-- ✅ Professional development workflow
-
-Happy coding! 🚀
+**Happy coding! 🚀**

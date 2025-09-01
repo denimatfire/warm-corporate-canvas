@@ -446,11 +446,13 @@ const ArticleEditor: React.FC<ArticleEditorProps> = ({
       });
 
       onSave?.(savedArticle);
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Error saving article:', errorMessage);
       toast({
-        title: 'Error saving article',
-        description: 'There was an error saving your article. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: `Failed to save article: ${errorMessage}`,
+        variant: "destructive",
       });
     } finally {
       setIsSaving(false);

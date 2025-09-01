@@ -1,6 +1,9 @@
 # 🎹 TipTap Editor - Quick Reference Card
 
-## 📝 Essential Formatting
+> **Last Updated**: August 31, 2025 at 01:01 UTC  
+> **Version**: 2.0.0 - Supabase Integration Release
+
+## 📝 **Essential Formatting**
 | **Shortcut** | **Action** |
 |---------------|------------|
 | `Ctrl + B` | **Bold** |
@@ -9,7 +12,7 @@
 | `Ctrl + Z` | **Undo** |
 | `Ctrl + Y` | **Redo** |
 
-## 🏷️ Headings & Structure
+## 🏷️ **Headings & Structure**
 | **Shortcut** | **Action** |
 |---------------|------------|
 | `Ctrl + Alt + 1` | **Heading 1** |
@@ -18,7 +21,7 @@
 | `Ctrl + Shift + 8` | **Bullet List** |
 | `Ctrl + Shift + 7` | **Numbered List** |
 
-## 🎯 Alignment & Elements
+## 🎯 **Alignment & Elements**
 | **Shortcut** | **Action** |
 |---------------|------------|
 | `Ctrl + Shift + L` | **Align Left** |
@@ -27,7 +30,7 @@
 | `Ctrl + Shift + Q` | **Blockquote** |
 | `Ctrl + Shift + C` | **Code Block** |
 
-## 🛠️ Utilities
+## 🛠️ **Utilities**
 | **Shortcut** | **Action** |
 |---------------|------------|
 | `Ctrl + Shift + Delete` | **Clear All** |
@@ -36,29 +39,32 @@
 
 ---
 
-## 🖱️ Mouse & Touch Tips
+## 🖱️ **Mouse & Touch Tips**
 
-### Image Handling
+### **Image Handling**
 - **Click image** → Show resize handles
 - **Drag corners** → Resize (hold Shift for aspect ratio)
 - **Drag & drop** → Upload images instantly
 
-### Text Selection
+### **Text Selection**
 - **Double-click** → Select word
 - **Triple-click** → Select paragraph
 - **Ctrl + A** → Select all
 
 ---
 
-## 🚀 Pro Tips
+## 🚀 **Pro Tips**
 
 1. **Use shortcuts** instead of clicking buttons
 2. **Select text first**, then apply formatting
 3. **Combine shortcuts** for complex formatting
 4. **Undo/Redo** to experiment safely
 5. **Use the 🧪 Test All button** to verify functionality
-6. **Use the 🧪 Test All button** to verify all functionality
 
 ---
 
 *Print this card and keep it handy while editing!*
+
+---
+
+*For complete keyboard shortcuts documentation, see [KEYBOARD_SHORTCUTS.md](KEYBOARD_SHORTCUTS.md)*

@@ -1,4 +1,7 @@
-# Supabase Storage Setup for Image Uploads
+# 🗄️ Supabase Storage Setup for Image Uploads
+
+> **Last Updated**: August 31, 2025 at 01:01 UTC  
+> **Version**: 2.0.0 - Supabase Integration Release
 
 This guide will help you set up Supabase Storage to handle image uploads for your article editor.
 
@@ -143,3 +146,7 @@ const options: ImageUploadOptions = {
 ---
 
 Your image upload system is now **hosting-agnostic** and ready for production! 🎉
+
+---
+
+*For more information about Supabase setup, see [SUPABASE_SETUP.md](SUPABASE_SETUP.md)*

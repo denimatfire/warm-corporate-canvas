@@ -1,8 +1,11 @@
 # 🎹 TipTap Editor Keyboard Shortcuts
 
+> **Last Updated**: August 31, 2025 at 01:01 UTC  
+> **Version**: 2.0.0 - Supabase Integration Release
+
 This document provides a complete reference for all keyboard shortcuts available in the TipTap editor. These shortcuts help you work more efficiently without needing to use the mouse for common formatting tasks.
 
-## 📝 Text Formatting
+## 📝 **Text Formatting**
 
 | Shortcut | Action | Description |
 |----------|---------|-------------|
@@ -208,5 +211,9 @@ Ctrl+Shift+C      → Center Image
 
 ---
 
-*Last updated: January 2025*  
+*Last updated: August 31, 2025*  
 *Editor Version: TipTap 2.x with React 18*
+
+---
+
+*For more information about the TipTap editor, see [TIPTAP_EDITOR_README.md](TIPTAP_EDITOR_README.md)*

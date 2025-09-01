@@ -1,5 +1,8 @@
 # 🔐 Supabase Setup Guide for Warm Corporate Canvas
 
+> **Last Updated**: August 31, 2025 at 01:01 UTC  
+> **Version**: 2.0.0 - Supabase Integration Release
+
 This comprehensive guide will walk you through setting up Supabase as your backend for the Warm Corporate Canvas portfolio website, providing robust article management with real-time capabilities and automatic fallback support.
 
 ## 🎯 **What You'll Get**
@@ -24,7 +27,7 @@ This comprehensive guide will walk you through setting up Supabase as your backe
 2. Click "New Project"
 3. Choose your organization
 4. Enter project details:
-   - **Name**: `warm-corporate-canvas` (or your preferred name)
+   - **Name**: `dasdhrubajyoti-portfolio` (or your preferred name)
    - **Database Password**: Choose a strong password (save this!)
    - **Region**: Choose closest to your users
 5. Click "Create new project"
@@ -332,3 +335,7 @@ You've successfully set up Supabase for your Warm Corporate Canvas project! You 
 - ✅ Production-ready architecture
 
 Happy coding! 🚀
+
+---
+
+*For more information about the project structure, see [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)*

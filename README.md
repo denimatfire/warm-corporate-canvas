@@ -1,104 +1,126 @@
-# 🌟 Warm Corporate Canvas - Modern Portfolio Website
+# 🎯 Warm Corporate Canvas - Portfolio & Content Management System
 
-A sophisticated, responsive portfolio website built with React, TypeScript, and Tailwind CSS, featuring advanced article management, photo galleries, and professional presentation capabilities. Powered by Supabase for robust backend functionality with automatic fallback support.
+A modern, responsive portfolio website with integrated content management capabilities, built with React, TypeScript, and Supabase.
 
 ## ✨ **Key Features**
 
-- 🎨 **Modern UI/UX** - Beautiful, responsive design with Tailwind CSS and Shadcn/UI
-- 📝 **Advanced Content Management** - Enhanced Quill and TipTap rich text editors
-- 🖼️ **Professional Photo Gallery** - Organized categories with lightbox functionality
-- 🔐 **Secure Authentication** - Supabase-powered user management
-- 📱 **Mobile-First Design** - Touch-friendly interactions and responsive layouts
-- 🚀 **Real-time Updates** - Live content synchronization with offline fallback
-- 🎭 **Smooth Animations** - Framer Motion-powered interactions
-- 📊 **Analytics Dashboard** - Content statistics and performance metrics
+- 🎨 **Modern Portfolio Design** - Clean, professional interface with smooth animations
+- 📝 **Advanced Content Management** - TipTap rich text editor with image support
+- 📸 **Photo Gallery Management** - Upload, organize, and display photos
+- 📧 **Contact Form System** - Integrated with Supabase database
+- 🔐 **Role-Based Access Control** - Writer and admin permissions
+- 📱 **Mobile-First Responsive Design** - Works perfectly on all devices
+- 🚀 **Real-time Updates** - Instant data synchronization with Supabase
 
 ## 🛠️ **Tech Stack**
 
-- **Frontend**: React 18.3.1, TypeScript 5.8.3, Vite 5.4.19
-- **Styling**: Tailwind CSS 3.4.17, Shadcn/UI, Radix UI
-- **Backend**: Supabase (PostgreSQL + Real-time), LocalStorage fallback
-- **Editors**: Enhanced Quill (with image editing), TipTap
-- **State Management**: React Query, Custom Hooks
-- **Animations**: Framer Motion 12.23.12
-- **Deployment**: Netlify
-
-## 🚀 **Quick Start**
-
-### Prerequisites
-- Node.js 18+ and npm
-- Supabase account (for backend functionality)
-
-### Installation
-
-```bash
-# Clone the repository
-git clone <your-repo-url>
-cd warm-corporate-canvas
-
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp env.example .env.local
-# Edit .env.local with your Supabase credentials
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-```
-
-### Environment Setup
-
-Create a `.env.local` file with your Supabase credentials:
-
-```env
-VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-```
+- **Frontend**: React 18 + TypeScript + Vite
+- **Styling**: Tailwind CSS + Framer Motion
+- **Backend**: Supabase (Database + Authentication + Storage)
+- **Editor**: TipTap (Rich text editing with image support)
+- **State Management**: React Query + React Hooks
+- **UI Components**: Custom component library with shadcn/ui
 
 ## 📁 **Project Structure**
 
 ```
 src/
-├── components/          # React components
-│   ├── ui/             # Shadcn/UI components
-│   ├── ArticleEditor.tsx    # Enhanced Quill editor
-│   ├── TipTapEditor.tsx     # TipTap editor
+├── components/           # Reusable UI components
+│   ├── ArticleEditor.tsx    # Article creation/editing with TipTap
+│   ├── Article_medium.tsx   # Article viewing component
 │   ├── Navigation.tsx       # Main navigation
-│   └── ...                 # Other components
-├── pages/              # Page components
-├── lib/                # Utilities and API
-├── hooks/              # Custom React hooks
-├── data/               # Data management
-└── assets/             # Static assets
+│   ├── Hero.tsx            # Hero section with timeline
+│   ├── About.tsx           # About section
+│   ├── Writing.tsx         # Articles listing
+│   ├── Photos.tsx          # Photo gallery
+│   ├── Contact.tsx         # Contact form
+│   ├── TipTapEditor.tsx    # Rich text editor
+│   └── ui/                 # UI component library
+├── pages/                 # Page components
+│   ├── Index.tsx           # Homepage
+│   ├── Portfolio.tsx       # Portfolio layout
+│   ├── ArticleManagement.tsx # Admin article management
+│   ├── PhotoManagement.tsx  # Admin photo management
+│   └── ContactViewer.tsx    # Contact form submissions
+├── lib/                   # API and utility functions
+│   ├── articles-api.ts     # Article management API
+│   ├── photos-api.ts       # Photo management API
+│   ├── contact-api.ts      # Contact form API
+│   ├── image-upload.ts     # Image upload utilities
+│   └── utils.ts            # Helper functions
+└── data/                  # Data models and utilities
+    ├── articles.ts         # Article data management
+    ├── blogs.ts            # Legacy blog data (for migration)
+    └── auth.ts             # Authentication utilities
 ```
 
-## 🔧 **Available Scripts**
+## 🚀 **Getting Started**
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run build:dev` - Build for development
-- `npm run lint` - Run ESLint
-- `npm run preview` - Preview production build
+### **Prerequisites**
+- Node.js 18+ and npm/yarn
+- Supabase account and project
+
+### **Installation**
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Copy `.env.example` to `.env` and fill in your Supabase credentials
+4. Run the development server: `npm run dev`
+
+### **Environment Variables**
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
 ## 📚 **Documentation**
 
-- [Setup Guide](SETUP_GUIDE.md) - Development environment setup
-- [Project Structure](PROJECT_STRUCTURE.md) - Comprehensive architecture guide
-- [Supabase Setup](SUPABASE_SETUP.md) - Backend configuration
-- [Article Management](ARTICLE_MANAGEMENT_README.md) - Content system guide
-- [Quill Enhancements](QUILL_ENHANCEMENTS.md) - Editor features
-- [TipTap Editor](TIPTAP_EDITOR_README.md) - Alternative editor
-- [Keyboard Shortcuts](KEYBOARD_SHORTCUTS.md) - Complete shortcut reference
-- [Quick Reference Card](KEYBOARD_SHORTCUTS_QUICK_REFERENCE.md) - Print-friendly shortcuts
-- [Automatic Image Cleanup](AUTOMATIC_IMAGE_CLEANUP.md) - Storage management on article deletion
+- [Setup Guide](SETUP_GUIDE.md) - Complete setup instructions
+- [Supabase Setup](SUPABASE_SETUP.md) - Database and authentication setup
+- [TipTap Editor](TIPTAP_EDITOR_README.md) - Rich text editor features
+- [Photo Management](PHOTO_MANAGEMENT_SETUP.md) - Photo system setup
+- [Contact Form Migration](CONTACT_FORM_MIGRATION.md) - Supabase integration
+- [Project Structure](PROJECT_STRUCTURE.md) - Detailed project overview
 
-## 🌐 **Deployment**
+## 🎨 **Features Overview**
 
-The project is configured for Netlify deployment. Simply connect your repository and the build will be handled automatically.
+### **Content Management**
+- **Article Creation**: Rich text editing with TipTap
+- **Image Support**: Drag & drop, resizable images
+- **Draft System**: Save and publish workflow
+- **Tag Management**: Organize content with tags
+
+### **Photo Gallery**
+- **Upload System**: Drag & drop photo uploads
+- **Organization**: Categories, tags, and metadata
+- **Responsive Grid**: Mobile-optimized display
+- **Admin Management**: Full CRUD operations
+
+### **Contact System**
+- **Form Integration**: Supabase database storage
+- **Admin Interface**: View and manage submissions
+- **Status Tracking**: New, read, replied, archived
+- **Email Integration**: Automatic notifications
+
+## 🔧 **Development**
+
+### **Available Scripts**
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+### **Code Quality**
+- TypeScript for type safety
+- ESLint for code quality
+- Prettier for code formatting
+- Responsive design principles
+
+## 📱 **Responsive Design**
+
+- **Mobile-First**: Optimized for mobile devices
+- **Breakpoint System**: Tailwind CSS responsive utilities
+- **Touch-Friendly**: Optimized for touch interactions
+- **Performance**: Optimized images and animations
 
 ## 🤝 **Contributing**
 
@@ -110,14 +132,15 @@ The project is configured for Netlify deployment. Simply connect your repository
 
 ## 📄 **License**
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is licensed under the MIT License.
 
 ## 🆘 **Support**
 
 For questions or issues:
-1. Check the documentation files
-2. Review the troubleshooting guides
-3. Open an issue on GitHub
+- Check the documentation files
+- Review the project structure
+- Check Supabase dashboard for database issues
+- Verify environment variables are set correctly
 
 ---
 

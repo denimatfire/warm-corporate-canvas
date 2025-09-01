@@ -1,5 +1,8 @@
 # 🔐 **Supabase Admin Access Configuration Guide**
 
+> **Last Updated**: August 31, 2025 at 01:01 UTC  
+> **Version**: 2.0.0 - Supabase Integration Release
+
 This guide will walk you through setting up proper admin access control in Supabase for your Warm Corporate Canvas project, replacing the current hardcoded role system with a robust database-driven approach.
 
 ## 🎯 **What You'll Get**
@@ -371,3 +374,7 @@ Your Warm Corporate Canvas project now has enterprise-grade access control! 🚀
 - Review your SQL execution logs in Supabase
 - Verify all policies and functions were created
 - Test with a simple user first before scaling up
+
+---
+
+*For more information about Supabase setup, see [SUPABASE_SETUP.md](SUPABASE_SETUP.md)*

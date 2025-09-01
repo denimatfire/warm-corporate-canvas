@@ -15,7 +15,7 @@ import {
   Shield,
   Loader2
 } from 'lucide-react';
-import { Article } from '../lib/articles-api-new';
+import { Article } from '../lib/articles-api';
 import { canDeleteArticles, getCurrentUser } from '../data/auth';
 import { useArticles } from '../hooks/use-articles';
 import { Button } from './ui/button';
@@ -69,10 +69,11 @@ const ArticleList: React.FC<ArticleListProps> = ({
   }, [articles, searchTerm, statusFilter, sortBy, sortOrder]);
 
   const filterAndSortArticles = () => {
-    let filtered = articles.filter(article => {
-      const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (article.author && article.author.toLowerCase().includes(searchTerm.toLowerCase()));
+    const filtered = articles.filter(article => {
+      const matchesSearch = searchTerm === '' || 
+        article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        article.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const matchesStatus = statusFilter === 'all' || article.status === statusFilter;
       

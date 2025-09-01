@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { sendNotificationEmail, sendWelcomeEmail } from "@/lib/email-config";
-import { logContactToSheet } from "@/lib/sheets";
+import { contactApi } from "@/lib/contact-api";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -39,15 +39,18 @@ const Contact = () => {
       // Send welcome email to the user
       await sendWelcomeEmail(formData);
 
-      // Log to Google Sheets (non-blocking error handling)
-      const result = await logContactToSheet(formData);
-      if (!result.ok) {
-        console.warn("Sheets logging failed:", result.error);
-        toast({
-          title: "Message sent, but logging skipped",
-          description: "Email delivered successfully. Couldn't log to Google Sheets.",
-        });
-      }
+             // Log to Supabase database (non-blocking error handling)
+       try {
+         await contactApi.create(formData);
+         console.log("Contact form logged to Supabase successfully");
+       } catch (error: unknown) {
+         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+         console.warn("Supabase logging failed:", errorMessage);
+         toast({
+           title: "Message sent, but logging skipped",
+           description: "Email delivered successfully. Couldn't log to database.",
+         });
+       }
 
       toast({
         title: "Message sent successfully!",
@@ -57,12 +60,12 @@ const Contact = () => {
       // Reset form
       setFormData({ name: "", email: "", message: "" });
       
-    } catch (error) {
-      console.error('Failed to send email:', error);
-      const detail = (error as any)?.text || (error as any)?.message || (typeof error === 'string' ? error : '');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Failed to send email:', errorMessage);
       toast({
         title: "Failed to send message",
-        description: detail ? String(detail).slice(0, 400) : "There was an error sending your message. Please try again or contact me directly.",
+        description: errorMessage ? String(errorMessage).slice(0, 400) : "There was an error sending your message. Please try again or contact me directly.",
         variant: "destructive"
       });
     } finally {

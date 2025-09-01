@@ -1,10 +1,13 @@
-# Photo Management System Setup Guide
+# 📸 Photo Management System Setup Guide
+
+> **Last Updated**: August 31, 2025 at 01:01 UTC  
+> **Version**: 2.0.0 - Supabase Integration Release
 
 This guide will help you set up the complete Photo Management System for your portfolio website.
 
-## 🚀 Quick Start
+## 🚀 **Quick Start**
 
-### 1. Database Setup
+### 1. **Database Setup**
 Run the SQL commands in `PHOTOS_DATABASE_SETUP.sql` in your Supabase SQL Editor:
 
 ```sql
@@ -12,10 +15,10 @@ Run the SQL commands in `PHOTOS_DATABASE_SETUP.sql` in your Supabase SQL Editor:
 -- Run the entire file in your Supabase SQL Editor
 ```
 
-### 2. Storage Bucket Setup
+### 2. **Storage Bucket Setup**
 Ensure you have a storage bucket called `Article_images` in Supabase (you already have this).
 
-### 3. Environment Variables
+### 3. **Environment Variables**
 Make sure your `.env` file has the necessary Supabase credentials:
 ```env
 VITE_SUPABASE_URL=your_supabase_url
@@ -242,3 +245,7 @@ Your Photo Management System is now ready to use. You can:
 - Provide a beautiful photo gallery for visitors
 
 The system integrates seamlessly with your existing portfolio and maintains the same design language and user experience.
+
+---
+
+*For more information about the project structure, see [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)*

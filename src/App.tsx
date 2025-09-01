@@ -9,11 +9,11 @@ import PhotosPage from "./pages/Photos";
 import Article_medium from "./components/Article_medium";
 import ArticleManagement from "./pages/ArticleManagement";
 import PhotoManagement from "./pages/PhotoManagement";
+import ContactViewer from "./pages/ContactViewer";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
-import TipTapDemo from "./pages/TipTapDemo";
-import MetaTagTester from "./components/MetaTagTester";
+
 
 
 const queryClient = new QueryClient();
@@ -34,8 +34,7 @@ const App = () => (
           <Route path="/writing" element={<WritingPage />} />
           <Route path="/photos" element={<PhotosPage />} />
           <Route path="/article/:id" element={<Article_medium />} />
-          <Route path="/tiptap-demo" element={<TipTapDemo />} />
-          <Route path="/meta-tag-tester" element={<MetaTagTester />} />
+
   
           <Route path="/admin/articles" element={
             <ProtectedRoute requiredRole="writer" showLogin={true}>
@@ -45,6 +44,11 @@ const App = () => (
           <Route path="/admin/photos" element={
             <ProtectedRoute requiredRole="writer" showLogin={true}>
               <PhotoManagement />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/contacts" element={
+            <ProtectedRoute requiredRole="writer" showLogin={true}>
+              <ContactViewer />
             </ProtectedRoute>
           } />
           <Route path="/login" element={<LoginPage />} />
