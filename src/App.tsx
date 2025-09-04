@@ -35,7 +35,7 @@ const App = () => (
           <Route path="/writing" element={<WritingPage />} />
           <Route path="/photos" element={<PhotosPage />} />
           <Route path="/cv" element={<InteractiveCV />} />
-          <Route path="/article/:id" element={<Article_medium />} />
+          <Route path="/article/:slug" element={<Article_medium />} />
 
   
           <Route path="/admin/articles" element={

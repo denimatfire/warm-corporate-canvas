@@ -10,6 +10,7 @@ declare global {
 export interface Article {
   id: string;
   title: string;
+  slug: string;
   content: string;
   excerpt: string;
   cover_image: string;
@@ -25,6 +26,7 @@ export interface Article {
 
 export interface CreateArticleData {
   title: string;
+  slug: string;
   content: string;
   excerpt: string;
   cover_image: string;
@@ -37,6 +39,7 @@ export interface CreateArticleData {
 
 export interface UpdateArticleData {
   title?: string;
+  slug?: string;
   content?: string;
   excerpt?: string;
   cover_image?: string;
@@ -112,12 +115,67 @@ export const articlesApi = {
     }
   },
 
-  // Create new article
-  async create(articleData: CreateArticleData): Promise<Article> {
+  // Get article by slug
+  async getBySlug(slug: string): Promise<Article> {
     try {
       const { data, error } = await supabase
         .from('articles')
-        .insert([articleData])
+        .select('*')
+        .eq('slug', slug)
+        .single();
+
+      if (error) throw error;
+      if (!data) throw new Error('Article not found');
+      
+      return data;
+    } catch (error) {
+      console.error(`Failed to fetch article with slug ${slug}:`, error);
+      throw error;
+    }
+  },
+
+  // Get article by slug or ID (for backward compatibility)
+  async getBySlugOrId(identifier: string): Promise<Article> {
+    try {
+      // First try to get by slug
+      try {
+        return await this.getBySlug(identifier);
+      } catch (slugError) {
+        // If slug fails, try by ID for backward compatibility
+        return await this.getById(identifier);
+      }
+    } catch (error) {
+      console.error(`Failed to fetch article with identifier ${identifier}:`, error);
+      throw error;
+    }
+  },
+
+  // Create new article
+  async create(articleData: CreateArticleData): Promise<Article> {
+    try {
+      // Generate unique slug if not provided
+      let slug = articleData.slug;
+      if (!slug) {
+        const { generateSlug, generateUniqueSlug } = await import('./slug-utils');
+        const baseSlug = generateSlug(articleData.title);
+        
+        // Get existing slugs to ensure uniqueness
+        const { data: existingArticles } = await supabase
+          .from('articles')
+          .select('slug');
+        
+        const existingSlugs = existingArticles?.map(article => article.slug) || [];
+        slug = generateUniqueSlug(baseSlug, existingSlugs);
+      }
+
+      const articleDataWithSlug = {
+        ...articleData,
+        slug
+      };
+
+      const { data, error } = await supabase
+        .from('articles')
+        .insert([articleDataWithSlug])
         .select()
         .single();
 
@@ -138,6 +196,21 @@ export const articlesApi = {
         ...updates,
         updated_at: new Date().toISOString()
       };
+
+      // Generate new slug if title is being updated
+      if (updates.title && !updates.slug) {
+        const { generateSlug, generateUniqueSlug } = await import('./slug-utils');
+        const baseSlug = generateSlug(updates.title);
+        
+        // Get existing slugs to ensure uniqueness (excluding current article)
+        const { data: existingArticles } = await supabase
+          .from('articles')
+          .select('slug')
+          .neq('id', id);
+        
+        const existingSlugs = existingArticles?.map(article => article.slug) || [];
+        updateData.slug = generateUniqueSlug(baseSlug, existingSlugs);
+      }
 
       // Handle published_at field properly
       if (updates.status === 'published' && !updates.published_at) {
@@ -390,6 +463,32 @@ export const articlesApiWithFallback = {
     }
   },
 
+  async getBySlug(slug: string): Promise<Article> {
+    try {
+      return await articlesApi.getBySlug(slug);
+    } catch (error) {
+      console.warn('Supabase failed, falling back to localStorage:', error);
+      const article = getArticleFromLocalStorageBySlug(slug);
+      if (!article) throw new Error('Article not found');
+      return article;
+    }
+  },
+
+  async getBySlugOrId(identifier: string): Promise<Article> {
+    try {
+      return await articlesApi.getBySlugOrId(identifier);
+    } catch (error) {
+      console.warn('Supabase failed, falling back to localStorage:', error);
+      // Try by slug first, then by ID
+      let article = getArticleFromLocalStorageBySlug(identifier);
+      if (!article) {
+        article = getArticleFromLocalStorage(identifier);
+      }
+      if (!article) throw new Error('Article not found');
+      return article;
+    }
+  },
+
   async create(articleData: CreateArticleData): Promise<Article> {
     try {
       return await articlesApi.create(articleData);
@@ -441,10 +540,39 @@ function getArticleFromLocalStorage(id: string): Article | undefined {
   return articles.find(article => article.id === id);
 }
 
+function getArticleFromLocalStorageBySlug(slug: string): Article | undefined {
+  const articles = getArticlesFromLocalStorage();
+  return articles.find(article => article.slug === slug);
+}
+
 function createArticleInLocalStorage(articleData: CreateArticleData): Article {
   const articles = getArticlesFromLocalStorage();
+  
+  // Generate slug if not provided (simple fallback for localStorage)
+  let slug = articleData.slug;
+  if (!slug) {
+    // Simple slug generation for localStorage fallback
+    slug = articleData.title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 60);
+    
+    // Ensure uniqueness
+    let counter = 1;
+    let uniqueSlug = slug;
+    while (articles.some(article => article.slug === uniqueSlug)) {
+      uniqueSlug = `${slug}-${counter}`;
+      counter++;
+    }
+    slug = uniqueSlug;
+  }
+  
   const newArticle: Article = {
     ...articleData,
+    slug,
     id: Date.now().toString(36) + Math.random().toString(36).substr(2),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),

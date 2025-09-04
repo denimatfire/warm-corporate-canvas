@@ -54,8 +54,8 @@
   }
 
   const Article_medium = () => {
-    const navigate = useNavigate();
-    const { id } = useParams();
+      const navigate = useNavigate();
+  const { slug } = useParams();
     const [readingProgress, setReadingProgress] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
@@ -74,14 +74,14 @@
     const articleRef = useRef<HTMLDivElement>(null);
     const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-    // Find the current article based on ID
+    // Find the current article based on slug
     useEffect(() => {
       const fetchArticle = async () => {
         setIsLoading(true);
         
-        if (id) {
+        if (slug) {
           try {
-            const foundArticle = await articlesApi.getById(id);
+            const foundArticle = await articlesApi.getBySlugOrId(slug);
             setArticle(foundArticle);
             
             // Update meta tags for social media sharing
@@ -124,14 +124,14 @@
       return () => {
         resetMetaTags();
       };
-    }, [id]);
+    }, [slug]);
 
     // Redirect if article not found (only after loading is complete)
     useEffect(() => {
-      if (!isLoading && article === null && id) {
+      if (!isLoading && article === null && slug) {
         navigate('/writing');
       }
-    }, [article, id, navigate, isLoading]);
+    }, [article, slug, navigate, isLoading]);
 
     // Handle back navigation with fallback
     const handleBackNavigation = () => {

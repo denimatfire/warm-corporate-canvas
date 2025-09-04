@@ -63,14 +63,14 @@ const Writing = () => {
 
   const handleArticleClick = (article: Article) => {
     // Always navigate to medium view (now the default route)
-    navigate(`/article/${article.id}`);
+    navigate(`/article/${article.slug}`);
   };
 
   const handleReadMoreClick = (e: React.MouseEvent, article: Article) => {
     e.stopPropagation();
     
     // Always navigate to medium view (now the default route)
-    navigate(`/article/${article.id}`);
+    navigate(`/article/${article.slug}`);
   };
 
   // Format date for display
