@@ -142,3 +142,4 @@ module.exports = {
   fetchDynamicContent,
   STATIC_PAGES
 };
+

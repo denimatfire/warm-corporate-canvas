@@ -252,3 +252,4 @@ build: {
 ---
 
 *This SEO optimization ensures the portfolio website is fully optimized for search engines, social media platforms, and provides an excellent user experience across all devices.*
+

@@ -362,3 +362,4 @@ const updateMetaTag = (property: string, content: string) => {
   
   meta.setAttribute('content', content);
 };
+
