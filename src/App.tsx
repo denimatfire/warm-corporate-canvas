@@ -6,10 +6,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import WritingPage from "./pages/Writing";
 import PhotosPage from "./pages/Photos";
+import ProjectsPage from "./pages/Projects";
+import ProjectDetail from "./pages/ProjectDetail";
 import InteractiveCV from "./pages/InteractiveCV";
 import Article_medium from "./components/Article_medium";
 import ArticleManagement from "./pages/ArticleManagement";
 import PhotoManagement from "./pages/PhotoManagement";
+import ProjectManagement from "./pages/ProjectManagement";
 import ContactViewer from "./pages/ContactViewer";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
@@ -34,6 +37,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/writing" element={<WritingPage />} />
           <Route path="/photos" element={<PhotosPage />} />
+          <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/project/:slug" element={<ProjectDetail />} />
           <Route path="/cv" element={<InteractiveCV />} />
           <Route path="/article/:slug" element={<Article_medium />} />
 
@@ -46,6 +51,11 @@ const App = () => (
           <Route path="/admin/photos" element={
             <ProtectedRoute requiredRole="writer" showLogin={true}>
               <PhotoManagement />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/projects" element={
+            <ProtectedRoute requiredRole="writer" showLogin={true}>
+              <ProjectManagement />
             </ProtectedRoute>
           } />
           <Route path="/admin/contacts" element={

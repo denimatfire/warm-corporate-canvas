@@ -3,6 +3,7 @@ import Hero, { Timeline } from "@/components/Hero";
 import About from "@/components/About";
 import Writing from "@/components/Writing";
 import Photos from "@/components/Photos";
+import Projects from "@/components/Projects";
 import Contact from "@/components/Contact";
 
 const Portfolio = () => {
@@ -14,6 +15,7 @@ const Portfolio = () => {
       <About />
       <Writing />
       <Photos />
+      <Projects />
       <Contact />
     </div>
   );

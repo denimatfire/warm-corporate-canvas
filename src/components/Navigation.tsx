@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, User, FileText, Camera, Calendar, Settings, UserCircle } from "lucide-react";
+import { ChevronDown, User, FileText, Camera, Calendar, Settings, UserCircle, Presentation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -200,6 +200,13 @@ const Navigation = () => {
                   <Camera className="w-4 h-4 mr-2" />
                   Photos
                 </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => navigate('/projects')}
+                  className="cursor-pointer hover:bg-secondary"
+                >
+                  <Presentation className="w-4 h-4 mr-2" />
+                  Projects & Presentations
+                </DropdownMenuItem>
                 
                 <DropdownMenuSeparator />
                 
@@ -223,6 +230,13 @@ const Navigation = () => {
                     >
                       <Camera className="w-4 h-4 mr-2" />
                       Photo Management
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => navigate('/admin/projects')}
+                      className="cursor-pointer hover:bg-secondary"
+                    >
+                      <Presentation className="w-4 h-4 mr-2" />
+                      Project Management
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
@@ -286,6 +300,10 @@ const Navigation = () => {
             <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/photos'))} className="justify-start">
               Photos
             </Button>
+            <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/projects'))} className="justify-start">
+              <Presentation className="w-4 h-4 mr-2" />
+              Projects & Presentations
+            </Button>
             
             {/* Mobile Page Manager Section */}
             <div className="border-t border-border pt-2 mt-2">
@@ -305,6 +323,14 @@ const Navigation = () => {
               >
                 <Camera className="w-4 h-4 mr-2" />
                 Photo Management
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => handleNavigation(() => navigate('/admin/projects'))} 
+                className="justify-start text-sm"
+              >
+                <Presentation className="w-4 h-4 mr-2" />
+                Project Management
               </Button>
             </div>
             

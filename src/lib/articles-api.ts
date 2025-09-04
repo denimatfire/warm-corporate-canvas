@@ -339,9 +339,9 @@ export const articlesApi = {
   // Helper function to delete images from Supabase Storage
   async deleteImagesFromStorage(imagePaths: string[]): Promise<void> {
     try {
-      // Use the batchDeleteImages function from image-upload.ts
-      const { batchDeleteImages } = await import('./image-upload');
-      const result = await batchDeleteImages(imagePaths);
+      // Use the deleteFiles function from file-upload.ts
+      const { deleteFiles } = await import('./file-upload');
+      const result = await deleteFiles(imagePaths);
       
       if (result.failed.length > 0) {
         console.warn(`⚠️ Failed to delete ${result.failed.length} images:`, result.failed);
