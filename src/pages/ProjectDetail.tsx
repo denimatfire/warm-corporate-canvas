@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import PresentationViewer from "@/components/PresentationViewer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import Navigation from "@/components/Navigation";
@@ -28,6 +29,7 @@ const ProjectDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const [showPresentationViewer, setShowPresentationViewer] = useState(false);
 
   useEffect(() => {
     if (slug) {
@@ -135,8 +137,8 @@ const ProjectDetail = () => {
     if (project.presentation_type === 'external_url' && project.presentation_url) {
       window.open(project.presentation_url, '_blank');
     } else if (project.presentation_type === 'file' && project.presentation_file_path) {
-      // For file uploads, we could open in a new tab or show a preview
-      window.open(project.presentation_file_path, '_blank');
+      // Show the presentation viewer for file uploads
+      setShowPresentationViewer(true);
     }
   };
 
@@ -396,6 +398,14 @@ const ProjectDetail = () => {
           </div>
         </div>
       </div>
+      
+      {/* Presentation Viewer Modal */}
+      {showPresentationViewer && project && (
+        <PresentationViewer
+          project={project}
+          onClose={() => setShowPresentationViewer(false)}
+        />
+      )}
     </div>
   );
 };

@@ -187,6 +187,13 @@ const Navigation = () => {
                   Interactive CV
                 </DropdownMenuItem>
                 <DropdownMenuItem 
+                  onClick={() => navigate('/career')}
+                  className="cursor-pointer hover:bg-secondary"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Career Timeline
+                </DropdownMenuItem>
+                <DropdownMenuItem 
                   onClick={() => navigate('/writing')}
                   className="cursor-pointer hover:bg-secondary"
                 >
@@ -293,6 +300,10 @@ const Navigation = () => {
             <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/cv'))} className="justify-start">
               <UserCircle className="w-4 h-4 mr-2" />
               Interactive CV
+            </Button>
+            <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/career'))} className="justify-start">
+              <Calendar className="w-4 h-4 mr-2" />
+              Career Timeline
             </Button>
             <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/writing'))} className="justify-start">
               Writing

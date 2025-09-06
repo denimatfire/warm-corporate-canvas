@@ -9,6 +9,7 @@ import PhotosPage from "./pages/Photos";
 import ProjectsPage from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import InteractiveCV from "./pages/InteractiveCV";
+import Career from "./pages/Career";
 import Article_medium from "./components/Article_medium";
 import ArticleManagement from "./pages/ArticleManagement";
 import PhotoManagement from "./pages/PhotoManagement";
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/project/:slug" element={<ProjectDetail />} />
           <Route path="/cv" element={<InteractiveCV />} />
+          <Route path="/career" element={<Career />} />
           <Route path="/article/:slug" element={<Article_medium />} />
 
   

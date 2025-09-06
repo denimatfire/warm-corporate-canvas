@@ -36,7 +36,7 @@ const Hero = () => {
               <Button 
                 size="lg"
                 className="bg-primary text-primary-foreground hover:bg-primary-hover transition-all hover-glow"
-                onClick={() => document.getElementById('timeline')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => window.location.href = '/career'}
               >
                 Explore My Journey
               </Button>
