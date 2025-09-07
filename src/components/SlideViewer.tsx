@@ -18,6 +18,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Project } from "@/lib/projects-api";
 import { supabase } from "@/lib/articles-api";
+import PDFViewer from "@/components/PDFViewer";
 
 interface SlideViewerProps {
   project: Project;
@@ -114,8 +115,8 @@ const SlideViewer = ({ project, isFullscreen = false }: SlideViewerProps) => {
   }, [isViewerLoading]);
 
   const handlePdfFile = async () => {
-    // For PDFs, we'll use Google Docs viewer or PDF.js
-    // This is a simplified implementation - in production, you'd want to use PDF.js
+    // For PDFs, we'll use direct URL access since we have PDFViewer component
+    // The PDFViewer component will handle the actual PDF rendering
     try {
       const accessibleUrl = await getAccessibleUrl(project.presentation_file_path!);
       
@@ -124,25 +125,12 @@ const SlideViewer = ({ project, isFullscreen = false }: SlideViewerProps) => {
         return;
       }
       
-      // For PDFs, try different viewer approaches
-      let pdfViewerUrl = accessibleUrl;
-      
-      // Try Google Docs viewer as a fallback for better compatibility
-      try {
-        const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(accessibleUrl)}&embedded=true`;
-        // Test if Google viewer works
-        const response = await fetch(googleViewerUrl, { method: 'HEAD' });
-        if (response.ok) {
-          pdfViewerUrl = googleViewerUrl;
-        }
-      } catch (error) {
-        console.warn('Google Docs viewer not available, using direct URL');
-      }
-      
+      // For PDFs, we'll let the PDFViewer component handle the rendering
+      // This is just a placeholder - the actual PDF viewing happens in PDFViewer
       setSlides([{
         id: 0,
-        imageUrl: pdfViewerUrl,
-        thumbnailUrl: accessibleUrl // Use direct URL for thumbnail
+        imageUrl: accessibleUrl,
+        thumbnailUrl: accessibleUrl
       }]);
     } catch (error) {
       console.error('Error handling PDF file:', error);
@@ -289,47 +277,16 @@ const SlideViewer = ({ project, isFullscreen = false }: SlideViewerProps) => {
         });
       
       if (fileType === 'application/pdf') {
-        // For PDFs, try different approaches
-        if (viewerAttempt === 0) {
-          // First attempt: Direct file access with PDF viewer
-          const pdfViewerUrl = `${fileUrl}#toolbar=0&navpanes=0&scrollbar=0`;
-          console.log('PDF direct access URL:', pdfViewerUrl);
-          return pdfViewerUrl;
-        } else if (viewerAttempt === 1) {
-          // Second attempt: Google Docs viewer
-          const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileUrl)}&embedded=true`;
-          console.log('PDF Google Docs viewer URL:', viewerUrl);
-          return viewerUrl;
-        } else if (viewerAttempt === 2) {
-          // Third attempt: Mozilla PDF.js viewer
-          const pdfJsUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(fileUrl)}`;
-          console.log('PDF.js viewer URL:', pdfJsUrl);
-          return pdfJsUrl;
-        } else {
-          // Fourth attempt: Direct file access
-          console.log('PDF direct access URL (fallback):', fileUrl);
-          return fileUrl;
-        }
+        // For PDFs, use direct file access - the PDFViewer component will handle rendering
+        console.log('PDF direct access URL:', fileUrl);
+        return fileUrl;
       } else if (fileType.includes('powerpoint') || fileType.includes('presentation')) {
         // PowerPoint files need special handling - browsers can't render them directly
         console.warn('PowerPoint file detected - browsers cannot render PPT files directly');
         
-        // Try different viewers based on attempt number
-        let viewerUrl;
-        if (viewerAttempt === 0) {
-          // First attempt: Google Docs viewer
-          viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileUrl)}&embedded=true`;
-        } else if (viewerAttempt === 1) {
-          // Second attempt: Microsoft Office Online viewer
-          viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`;
-        } else if (viewerAttempt === 2) {
-          // Third attempt: Try to open in new tab with Office Online
-          viewerUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileUrl)}`;
-        } else {
-          // Fourth attempt: Direct file access (will likely fail)
-          viewerUrl = fileUrl;
-        }
-        console.log(`PowerPoint viewer URL (attempt ${viewerAttempt}):`, viewerUrl);
+        // Try Microsoft Office Online viewer as the primary option
+        const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`;
+        console.log('PowerPoint Office Online viewer URL:', viewerUrl);
         return viewerUrl;
       } else if (fileType.includes('image')) {
         // For images, return the direct URL
@@ -785,6 +742,11 @@ const SlideViewer = ({ project, isFullscreen = false }: SlideViewerProps) => {
         </CardContent>
       </Card>
     );
+  }
+
+  // Check if this is a PDF file and use PDFViewer
+  if (project.presentation_type === 'file' && project.presentation_file_type === 'application/pdf') {
+    return <PDFViewer project={project} />;
   }
 
   return (

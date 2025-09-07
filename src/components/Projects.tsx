@@ -40,6 +40,7 @@ const Projects = ({ showAll = false }: ProjectsProps) => {
     queryKey: showAll ? ["published-projects"] : ["published-projects-fallback"],
     queryFn: getPublishedProjects,
     retry: 2
+    
   });
 
   // Use featured projects if available, otherwise use published projects
@@ -57,7 +58,13 @@ const Projects = ({ showAll = false }: ProjectsProps) => {
       // This would be called when viewing the presentation
       // projectsApi.incrementViewCount(project.id);
     }
-    navigate(`/presentation/${project.slug}`);
+    
+    // Route to PDF viewer for PDF files, otherwise to regular presentation viewer
+    if (project.presentation_type === 'file' && project.presentation_file_type === 'application/pdf') {
+      navigate(`/pdf/${project.slug}`);
+    } else {
+      navigate(`/presentation/${project.slug}`);
+    }
   };
 
 

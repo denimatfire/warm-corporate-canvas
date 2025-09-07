@@ -49,6 +49,12 @@ export default defineConfig(({ mode }) => ({
       'react-router-dom',
       'framer-motion',
       '@tanstack/react-query',
+      'react-pdf',
+      'pdfjs-dist',
     ],
+  },
+  // Handle PDF.js worker
+  worker: {
+    format: 'es',
   },
 }));
