@@ -64,11 +64,22 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   // Responsive scale calculation
   useEffect(() => {
     const calculateScale = () => {
-      if (isMobile) {
+      const width = window.innerWidth;
+      
+      if (width < 480) {
+        // Very small mobile devices
+        setScale(0.5);
+      } else if (width < 768) {
+        // Mobile devices
+        setScale(0.6);
+      } else if (width < 1024) {
+        // iPad and small tablets
         setScale(0.7);
-      } else if (window.innerWidth < 1024) {
+      } else if (width < 1440) {
+        // Desktop and large tablets
         setScale(0.8);
       } else {
+        // Large desktop screens
         setScale(0.9);
       }
     };
@@ -76,7 +87,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     calculateScale();
     window.addEventListener('resize', calculateScale);
     return () => window.removeEventListener('resize', calculateScale);
-  }, [isMobile]);
+  }, []);
 
   // Fetch PDF URL
   const fetchPdfUrl = useCallback(async () => {
@@ -313,10 +324,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   }
 
   return (
-    <div className={`${isModal ? 'h-96' : 'min-h-[500px] lg:min-h-[600px]'} flex flex-col`}>
+    <div className={`${isModal ? 'h-96' : 'min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]'} flex flex-col`}>
       {/* PDF Document */}
-      <div className="flex-1 flex items-start justify-center bg-gray-50 rounded-lg overflow-auto p-4">
-        <div className="relative w-full max-w-4xl">
+      <div className="flex-1 flex items-start justify-center bg-gray-50 rounded-lg overflow-auto p-2 sm:p-4">
+        <div className="relative w-full max-w-xs sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
           <Document
             file={pdfUrl}
             onLoadSuccess={onDocumentLoadSuccess}
@@ -344,7 +355,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                   <Button
                     onClick={goToPrevPage}
                     disabled={pageNumber <= 1}
-                    className="absolute -left-12 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 border border-gray-200 shadow-lg z-10 disabled:bg-gray-100 disabled:border-gray-300"
+                    className="absolute -left-8 sm:-left-12 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 border border-gray-200 shadow-lg z-10 disabled:bg-gray-100 disabled:border-gray-300"
                     size="sm"
                   >
                     <ChevronLeft className="w-4 h-4 text-gray-700 disabled:text-gray-400" />
@@ -354,7 +365,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                   <Button
                     onClick={goToNextPage}
                     disabled={pageNumber >= numPages}
-                    className="absolute -right-12 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 border border-gray-200 shadow-lg z-10 disabled:bg-gray-100 disabled:border-gray-300"
+                    className="absolute -right-8 sm:-right-12 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 border border-gray-200 shadow-lg z-10 disabled:bg-gray-100 disabled:border-gray-300"
                     size="sm"
                   >
                     <ChevronRight className="w-4 h-4 text-gray-700 disabled:text-gray-400" />
@@ -375,12 +386,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       <div className="mt-4 flex flex-col items-center gap-4">
         {/* Navigation Buttons - Centered */}
         {numPages > 1 && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
             <Button
               onClick={goToFirstPage}
               disabled={pageNumber <= 1}
               variant="outline"
               size="sm"
+              className="text-xs sm:text-sm"
             >
               First
             </Button>
@@ -389,24 +401,29 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               disabled={pageNumber <= 1}
               variant="outline"
               size="sm"
+              className="text-xs sm:text-sm"
             >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Previous
+              <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+              <span className="hidden sm:inline">Previous</span>
+              <span className="sm:hidden">Prev</span>
             </Button>
             <Button
               onClick={goToNextPage}
               disabled={pageNumber >= numPages}
               variant="outline"
               size="sm"
+              className="text-xs sm:text-sm"
             >
-              Next
-              <ChevronRight className="w-4 h-4 ml-1" />
+              <span className="hidden sm:inline">Next</span>
+              <span className="sm:hidden">Next</span>
+              <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
             </Button>
             <Button
               onClick={goToLastPage}
               disabled={pageNumber >= numPages}
               variant="outline"
               size="sm"
+              className="text-xs sm:text-sm"
             >
               Last
             </Button>
