@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PresentationViewerProps {
   project: {
@@ -21,6 +22,7 @@ interface PresentationViewerProps {
 const PresentationViewer = ({ project, onClose }: PresentationViewerProps) => {
   const [viewerType, setViewerType] = useState<'google' | 'office' | 'download'>('google');
   const [isLoading, setIsLoading] = useState(false);
+  const isMobile = useIsMobile();
 
   const getViewerUrl = () => {
     if (project.presentation_type === 'external_url' && project.presentation_url) {
@@ -72,7 +74,7 @@ const PresentationViewer = ({ project, onClose }: PresentationViewerProps) => {
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-      <div className="bg-background rounded-lg shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+      <div className={`bg-background rounded-lg shadow-2xl w-full max-w-6xl ${isMobile ? 'h-[95vh]' : 'h-[90vh]'} flex flex-col`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-3">
@@ -147,16 +149,20 @@ const PresentationViewer = ({ project, onClose }: PresentationViewerProps) => {
         {/* Content */}
         <div className="flex-1 p-4">
           {project.presentation_type === 'external_url' && project.presentation_url ? (
-            <div className="h-full">
+            <div className={`h-full ${isMobile ? 'mobile-pdf-container' : ''}`}>
               <iframe
                 src={project.presentation_url}
-                className="w-full h-full border-0 rounded-lg"
+                className={`w-full h-full border-0 rounded-lg ${isMobile ? 'mobile-pdf-iframe' : ''}`}
                 title={project.title}
+                style={isMobile ? {
+                  minHeight: '100vh',
+                  touchAction: 'pan-x pan-y'
+                } : {}}
                 onLoad={() => setIsLoading(false)}
               />
             </div>
           ) : project.presentation_type === 'file' && viewerUrl ? (
-            <div className="h-full">
+            <div className={`h-full ${isMobile ? 'mobile-pdf-container' : ''}`}>
               {viewerType === 'download' ? (
                 <Card className="h-full flex items-center justify-center">
                   <CardContent className="text-center space-y-4">
@@ -187,8 +193,12 @@ const PresentationViewer = ({ project, onClose }: PresentationViewerProps) => {
                   
                   <iframe
                     src={viewerUrl}
-                    className="w-full h-full border-0 rounded-lg"
+                    className={`w-full h-full border-0 rounded-lg ${isMobile ? 'mobile-pdf-iframe' : ''}`}
                     title={project.title}
+                    style={isMobile ? {
+                      minHeight: '100vh',
+                      touchAction: 'pan-x pan-y'
+                    } : {}}
                     onLoad={() => setIsLoading(false)}
                     onError={() => setIsLoading(false)}
                   />

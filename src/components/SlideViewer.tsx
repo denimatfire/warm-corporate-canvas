@@ -489,7 +489,7 @@ const SlideViewer = ({ project, isFullscreen = false }: SlideViewerProps) => {
     }
 
     return (
-      <div className="relative h-full">
+      <div className="relative h-full overflow-hidden">
         {isViewerLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
             <div className="text-center">
@@ -500,39 +500,52 @@ const SlideViewer = ({ project, isFullscreen = false }: SlideViewerProps) => {
           </div>
         )}
         
-        <iframe
-          ref={iframeRef}
-          src={viewerUrl}
-          className="w-full h-full border-0 rounded-lg"
-          title={project.title}
-          onLoad={() => {
-            setIsViewerLoading(false);
-            if (loadTimeout) {
-              clearTimeout(loadTimeout);
-              setLoadTimeout(null);
-            }
+        {/* Mobile-friendly PDF container with proper touch handling */}
+        <div 
+          className={`w-full h-full ${isMobile ? 'overflow-auto touch-pan-y' : 'overflow-hidden'}`}
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain'
           }}
-          onError={() => {
-            setIsViewerLoading(false);
-            if (loadTimeout) {
-              clearTimeout(loadTimeout);
-              setLoadTimeout(null);
-            }
-            // Try different approaches
-            if (useSandbox) {
-              setUseSandbox(false);
-              setIsViewerLoading(true);
-            } else if (viewerAttempt < 2) {
-              setViewerAttempt(viewerAttempt + 1);
-              setIsViewerLoading(true);
-            } else {
-              setError('Unable to load presentation. The file may be inaccessible or the viewer service is unavailable.');
-            }
-          }}
-          {...(useSandbox ? {
-            sandbox: "allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation allow-top-navigation-by-user-activation allow-downloads"
-          } : {})}
-        />
+        >
+          <iframe
+            ref={iframeRef}
+            src={viewerUrl}
+            className={`w-full h-full border-0 rounded-lg ${isMobile ? 'pointer-events-auto' : ''}`}
+            title={project.title}
+            style={{
+              minHeight: isMobile ? '100vh' : '100%',
+              touchAction: isMobile ? 'pan-x pan-y' : 'auto'
+            }}
+            onLoad={() => {
+              setIsViewerLoading(false);
+              if (loadTimeout) {
+                clearTimeout(loadTimeout);
+                setLoadTimeout(null);
+              }
+            }}
+            onError={() => {
+              setIsViewerLoading(false);
+              if (loadTimeout) {
+                clearTimeout(loadTimeout);
+                setLoadTimeout(null);
+              }
+              // Try different approaches
+              if (useSandbox) {
+                setUseSandbox(false);
+                setIsViewerLoading(true);
+              } else if (viewerAttempt < 2) {
+                setViewerAttempt(viewerAttempt + 1);
+                setIsViewerLoading(true);
+              } else {
+                setError('Unable to load presentation. The file may be inaccessible or the viewer service is unavailable.');
+              }
+            }}
+            {...(useSandbox ? {
+              sandbox: "allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation allow-top-navigation-by-user-activation allow-downloads"
+            } : {})}
+          />
+        </div>
       </div>
     );
   };
@@ -547,24 +560,36 @@ const SlideViewer = ({ project, isFullscreen = false }: SlideViewerProps) => {
     return (
       <div className="relative h-full">
         {/* Main slide display */}
-        <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
+        <div className={`h-full flex items-center justify-center bg-gray-50 rounded-lg ${isPdf ? 'overflow-hidden' : 'overflow-hidden'}`}>
           {isPdf ? (
-            // For PDFs, use iframe or embed
-            <iframe
-              src={slides[currentSlide].imageUrl}
-              className="w-full h-full border-0"
-              title={`PDF Slide ${currentSlide + 1}`}
-              onLoad={() => {
-                setIsViewerLoading(false);
-                setError(null);
+            // For PDFs, use iframe with mobile-friendly scrolling
+            <div 
+              className={`w-full h-full ${isMobile ? 'overflow-auto touch-pan-y' : 'overflow-hidden'}`}
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                overscrollBehavior: 'contain'
               }}
-              onError={(e) => {
-                console.error('PDF load error:', e);
-                console.error('Failed PDF URL:', slides[currentSlide].imageUrl);
-                setError('Failed to load PDF. The file may be corrupted or inaccessible.');
-                setIsViewerLoading(false);
-              }}
-            />
+            >
+              <iframe
+                src={slides[currentSlide].imageUrl}
+                className={`w-full h-full border-0 ${isMobile ? 'pointer-events-auto' : ''}`}
+                title={`PDF Slide ${currentSlide + 1}`}
+                style={{
+                  minHeight: isMobile ? '100vh' : '100%',
+                  touchAction: isMobile ? 'pan-x pan-y' : 'auto'
+                }}
+                onLoad={() => {
+                  setIsViewerLoading(false);
+                  setError(null);
+                }}
+                onError={(e) => {
+                  console.error('PDF load error:', e);
+                  console.error('Failed PDF URL:', slides[currentSlide].imageUrl);
+                  setError('Failed to load PDF. The file may be corrupted or inaccessible.');
+                  setIsViewerLoading(false);
+                }}
+              />
+            </div>
           ) : (
             // For images, use img tag
             <img
@@ -763,7 +788,7 @@ const SlideViewer = ({ project, isFullscreen = false }: SlideViewerProps) => {
   }
 
   return (
-    <div className="h-[500px] lg:h-[600px]">
+    <div className={`${isMobile ? 'h-[70vh] min-h-[400px]' : 'h-[500px] lg:h-[600px]'}`}>
       {/* Main viewer */}
       <div className="h-full">
         {project.presentation_type === 'external_url' || 

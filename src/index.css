@@ -585,6 +585,41 @@
   .mobile-accessible {
     @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
   }
+
+  /* Mobile PDF scrolling optimizations */
+  .mobile-pdf-container {
+    @apply overflow-auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-x pan-y;
+  }
+  
+  .mobile-pdf-iframe {
+    @apply pointer-events-auto;
+    min-height: 100vh;
+    touch-action: pan-x pan-y;
+  }
+  
+  /* Touch-friendly scrolling for mobile devices */
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Mobile presentation viewer optimizations */
+  .mobile-presentation-viewer {
+    @apply h-[70vh] min-h-[400px];
+  }
+  
+  .mobile-presentation-container {
+    @apply overflow-hidden;
+  }
+  
+  .mobile-presentation-content {
+    @apply overflow-auto touch-pan-y;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
 }
 
 /* Mobile-specific media queries for better control */
