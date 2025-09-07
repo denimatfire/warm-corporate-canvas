@@ -279,6 +279,46 @@ export const generateSitemapEntries = async () => {
 };
 
 /**
+ * Apply SEO optimization for presentation pages
+ */
+export const applyPresentationSEO = (projectData: any) => {
+  const seoData: MetaTagData = {
+    title: `${projectData.title} - Presentation`,
+    description: projectData.description || `View the presentation: ${projectData.title}`,
+    image: projectData.cover_image,
+    url: `${window.location.origin}/presentation/${projectData.slug}`,
+    type: 'article',
+    author: 'Your Name', // You might want to get this from user data
+    publishedTime: projectData.created_at,
+    modifiedTime: projectData.updated_at,
+    tags: projectData.tags || [],
+    category: projectData.category,
+    keywords: projectData.tags || []
+  };
+  
+  updateMetaTags(seoData);
+  updateStructuredData(seoData);
+};
+
+/**
+ * Apply SEO for projects page
+ */
+const applyProjectsPageSEO = () => {
+  const metaData: MetaTagData = {
+    title: 'Projects & Presentations - Dhrubajyoti Das',
+    description: 'Explore my portfolio of projects, presentations, and technical demonstrations. From academic research to professional case studies.',
+    image: '/placeholder.svg',
+    url: `${window.location.origin}/projects`,
+    type: 'website',
+    author: 'Dhrubajyoti Das',
+    keywords: 'projects, presentations, portfolio, technical demonstrations, academic research, case studies'
+  };
+
+  updateMetaTags(metaData);
+  updateStructuredData(metaData);
+};
+
+/**
  * Add performance hints for better Core Web Vitals
  */
 export const addPerformanceHints = () => {
@@ -303,7 +343,7 @@ export const addPerformanceHints = () => {
 /**
  * Initialize SEO for the current page
  */
-export const initializeSEO = (pageType: 'home' | 'writing' | 'photos' | 'article' | 'photo', data?: any) => {
+export const initializeSEO = (pageType: 'home' | 'writing' | 'photos' | 'article' | 'photo' | 'presentation' | 'projects', data?: any) => {
   // Add performance hints
   addPerformanceHints();
   
@@ -323,6 +363,12 @@ export const initializeSEO = (pageType: 'home' | 'writing' | 'photos' | 'article
       break;
     case 'photo':
       if (data) applyPhotoSEO(data);
+      break;
+    case 'presentation':
+      if (data) applyPresentationSEO(data);
+      break;
+    case 'projects':
+      applyProjectsPageSEO();
       break;
   }
 };

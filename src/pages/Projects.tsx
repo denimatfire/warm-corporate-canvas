@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navigation from "@/components/Navigation";
 import { initializeSEO } from "@/lib/seo-utils";
 import { getPublishedProjects, getProjectCategories, getProjectTags, searchProjects, Project } from "@/lib/projects-api";
+import { supabase } from "@/lib/articles-api";
 
 const Projects = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -25,18 +26,28 @@ const Projects = () => {
   }, []);
 
   // Fetch projects with filters
-  const { data: projects = [], isLoading } = useQuery({
+  const { data: projects = [], isLoading, error } = useQuery({
     queryKey: ["projects", { searchQuery, selectedCategory, selectedTag, sortBy }],
     queryFn: async () => {
+      console.log('Fetching projects with filters:', { searchQuery, selectedCategory, selectedTag, sortBy });
       if (searchQuery.trim()) {
-        return await searchProjects(searchQuery, {
+        const searchResults = await searchProjects(searchQuery, {
           category: selectedCategory !== "all" ? selectedCategory : undefined,
           status: "published"
         });
+        console.log('Search results:', searchResults);
+        return searchResults;
       }
-      return await getPublishedProjects();
+      const publishedProjects = await getPublishedProjects();
+      console.log('Published projects:', publishedProjects);
+      return publishedProjects;
     }
   });
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Projects state:', { projects, isLoading, error });
+  }, [projects, isLoading, error]);
 
   // Fetch categories and tags
   const { data: categories = [] } = useQuery({
@@ -78,16 +89,21 @@ const Projects = () => {
   };
 
   const handleProjectClick = (project: Project) => {
-    // Increment view count would be handled in the project viewer
-    window.location.href = `/project/${project.slug}`;
+    // Navigate to presentation viewer
+    window.location.href = `/presentation/${project.slug}`;
   };
 
   const handleDownload = async (project: Project) => {
     if (project.presentation_type === 'file' && project.presentation_file_path) {
       try {
+        // Generate the full public URL from the file path
+        const { data: urlData } = supabase.storage
+          .from('Article_images')
+          .getPublicUrl(project.presentation_file_path);
+        
         // Create download link
         const link = document.createElement('a');
-        link.href = project.presentation_file_path;
+        link.href = urlData.publicUrl;
         link.download = project.presentation_file_name || `${project.slug}.pdf`;
         document.body.appendChild(link);
         link.click();

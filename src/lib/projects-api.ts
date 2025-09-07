@@ -110,13 +110,21 @@ export const projectsApi = {
   // Get published projects only (for public display)
   getPublished: async (): Promise<Project[]> => {
     try {
+      console.log('Fetching published projects from database...');
       const { data, error } = await supabase
         .from('projects')
         .select('*')
         .eq('status', 'published')
         .order('published_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('Published projects query result:', { data, error });
+
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      
+      console.log('Returning published projects:', data || []);
       return data || [];
     } catch (error) {
       console.error('Failed to fetch published projects:', error);
@@ -336,7 +344,7 @@ export const projectsApi = {
 
         // Delete old presentation file
         if (existingProject.presentation_file_path && existingProject.presentation_file_path !== presentationFilePath) {
-          await FileUploadService.deleteFile(existingProject.presentation_file_path);
+          await FileUploadService.deleteFile(existingProject.presentation_file_path, 'Article_images');
         }
       } else if (projectData.presentation_url !== undefined) {
         presentationUrl = projectData.presentation_url;
@@ -406,20 +414,15 @@ export const projectsApi = {
       }
 
       // Delete files from storage
-      const filesToDelete = [];
-      if (existingProject.cover_image_path) {
-        filesToDelete.push(existingProject.cover_image_path);
-      }
-      if (existingProject.presentation_file_path) {
-        filesToDelete.push(existingProject.presentation_file_path);
-      }
-
-      if (filesToDelete.length > 0) {
-        try {
-          await FileUploadService.deleteFiles(filesToDelete);
-        } catch (error) {
-          console.warn('Failed to delete some files:', error);
+      try {
+        if (existingProject.cover_image_path) {
+          await FileUploadService.deleteFile(existingProject.cover_image_path, 'Article_images');
         }
+        if (existingProject.presentation_file_path) {
+          await FileUploadService.deleteFile(existingProject.presentation_file_path, 'Article_images');
+        }
+      } catch (error) {
+        console.warn('Failed to delete some files:', error);
       }
 
       // Delete from database

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, FileText, Eye, Download, ArrowRight, Settings, Presentation } from "lucide-react";
+import { ExternalLink, FileText, Download, Eye, ArrowRight, Settings, Presentation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,32 +39,12 @@ const Projects = ({ showAll = false }: ProjectsProps) => {
   const handleProjectClick = (project: Project) => {
     // Increment view count
     if (project.id) {
-      // This would be called when viewing the project
+      // This would be called when viewing the presentation
       // projectsApi.incrementViewCount(project.id);
     }
-    navigate(`/project/${project.slug}`);
+    navigate(`/presentation/${project.slug}`);
   };
 
-  const handleDownload = async (project: Project) => {
-    if (project.presentation_type === 'file' && project.presentation_file_path) {
-      try {
-        // Increment download count
-        // projectsApi.incrementDownloadCount(project.id);
-        
-        // Create download link
-        const link = document.createElement('a');
-        link.href = project.presentation_file_path;
-        link.download = project.presentation_file_name || `${project.slug}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (error) {
-        console.error('Download failed:', error);
-      }
-    } else if (project.presentation_type === 'external_url' && project.presentation_url) {
-      window.open(project.presentation_url, '_blank');
-    }
-  };
 
   const getPresentationIcon = (project: Project) => {
     if (project.presentation_type === 'file') {
@@ -135,54 +115,30 @@ const Projects = ({ showAll = false }: ProjectsProps) => {
             {displayProjects.map((project) => (
               <Card 
                 key={project.id} 
-                className="group cursor-pointer overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                className="group cursor-pointer overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 hover:scale-105"
                 onClick={() => handleProjectClick(project)}
               >
                 {/* Cover Image */}
-                <div className="aspect-video overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5">
+                <div className="aspect-video overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 relative">
                   {project.cover_image ? (
                     <img
                       src={project.cover_image}
                       alt={project.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Presentation className="w-16 h-16 text-primary/50" />
+                      <Presentation className="w-16 h-16 text-primary/50 group-hover:text-primary transition-colors duration-300" />
                     </div>
                   )}
                   
-                  {/* Overlay with action buttons */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleProjectClick(project);
-                        }}
-                        className="flex items-center gap-1"
-                      >
-                        <Eye className="w-4 h-4" />
-                        View
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownload(project);
-                        }}
-                        className="flex items-center gap-1"
-                      >
-                        {project.presentation_type === 'file' ? (
-                          <Download className="w-4 h-4" />
-                        ) : (
-                          <ExternalLink className="w-4 h-4" />
-                        )}
-                        {project.presentation_type === 'file' ? 'Download' : 'Open'}
-                      </Button>
+                  {/* Subtle overlay on hover */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                  
+                  {/* Play icon overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
+                      <Presentation className="w-8 h-8 text-primary" />
                     </div>
                   </div>
                 </div>

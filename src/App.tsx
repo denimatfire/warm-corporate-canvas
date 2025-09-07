@@ -7,7 +7,7 @@ import Index from "./pages/Index";
 import WritingPage from "./pages/Writing";
 import PhotosPage from "./pages/Photos";
 import ProjectsPage from "./pages/Projects";
-import ProjectDetail from "./pages/ProjectDetail";
+import PresentationViewerPage from "./pages/PresentationViewerPage";
 import InteractiveCV from "./pages/InteractiveCV";
 import Career from "./pages/Career";
 import Article_medium from "./components/Article_medium";
@@ -39,7 +39,7 @@ const App = () => (
           <Route path="/writing" element={<WritingPage />} />
           <Route path="/photos" element={<PhotosPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/project/:slug" element={<ProjectDetail />} />
+          <Route path="/presentation/:slug" element={<PresentationViewerPage />} />
           <Route path="/cv" element={<InteractiveCV />} />
           <Route path="/career" element={<Career />} />
           <Route path="/article/:slug" element={<Article_medium />} />
