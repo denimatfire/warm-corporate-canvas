@@ -31,6 +31,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const [isAuth, setIsAuth] = useState(false);
   const [canAccess, setCanAccess] = useState(false);
   const [currentUser, setCurrentUser] = useState(getCurrentUser());
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +40,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   const checkAuth = async () => {
     try {
+      setIsLoading(true);
       const authenticated = await isAuthenticated();
       const currentUser = getCurrentUser();
       
@@ -77,7 +79,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       setCanAccess(hasAccess);
       setCurrentUser(currentUser);
       
+      // If not authenticated and login is required, redirect
       if (!authenticated && showLogin) {
+        console.log('🔍 Redirecting to login...');
         navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
         return;
       }
@@ -87,9 +91,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       setCanAccess(false);
       setCurrentUser(null);
       if (showLogin) {
+        console.log('🔍 Redirecting to login after error...');
         navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
         return;
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -159,10 +166,34 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center space-y-6"
+        >
+          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+            <Shield className="w-10 h-10 text-primary animate-pulse" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-foreground">
+              Checking Access...
+            </h1>
+            <p className="text-muted-foreground">
+              Verifying your permissions
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   // If user is not authenticated and login is required, redirect to login page
   if (!isAuth && showLogin) {
-    navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
-    return null;
+    return null; // Navigation will happen in useEffect
   }
 
   // If no access and no login, show access denied

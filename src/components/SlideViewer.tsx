@@ -206,9 +206,7 @@ const SlideViewer = ({ project, isFullscreen = false }: SlideViewerProps) => {
           goToLastSlide();
           break;
         case 'Escape':
-          if (isFullscreen) {
-            document.exitFullscreen();
-          }
+          // No fullscreen functionality
           break;
       }
     };
@@ -765,7 +763,7 @@ const SlideViewer = ({ project, isFullscreen = false }: SlideViewerProps) => {
   }
 
   return (
-    <div className={`${isFullscreen ? 'h-full' : 'h-[600px] lg:h-[700px]'}`}>
+    <div className="h-[500px] lg:h-[600px]">
       {/* Main viewer */}
       <div className="h-full">
         {project.presentation_type === 'external_url' || 
@@ -777,10 +775,10 @@ const SlideViewer = ({ project, isFullscreen = false }: SlideViewerProps) => {
       </div>
 
       {/* Thumbnail navigation for image slides */}
-      {!isFullscreen && renderThumbnailNavigation()}
+      {renderThumbnailNavigation()}
 
       {/* Keyboard shortcuts help */}
-      {!isFullscreen && slides.length > 1 && (
+      {slides.length > 1 && (
         <div className="mt-4 text-center">
           <p className="text-xs text-gray-500">
             Use ← → arrow keys to navigate • Home/End for first/last slide

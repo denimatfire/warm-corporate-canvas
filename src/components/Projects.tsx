@@ -28,10 +28,25 @@ const Projects = ({ showAll = false }: ProjectsProps) => {
   }, []);
 
   // Fetch projects based on showAll prop
-  const { data: projects = [], isLoading } = useQuery({
-    queryKey: showAll ? ["published-projects"] : ["featured-projects"],
-    queryFn: showAll ? getPublishedProjects : getFeaturedProjects
+  // For home page, try featured projects first, then fall back to published projects
+  const { data: featuredProjects = [], isLoading: featuredLoading, error: featuredError } = useQuery({
+    queryKey: ["featured-projects"],
+    queryFn: getFeaturedProjects,
+    enabled: !showAll, // Only fetch featured projects for home page
+    retry: 1
   });
+
+  const { data: publishedProjects = [], isLoading: publishedLoading, error: publishedError } = useQuery({
+    queryKey: showAll ? ["published-projects"] : ["published-projects-fallback"],
+    queryFn: getPublishedProjects,
+    retry: 2
+  });
+
+  // Use featured projects if available, otherwise use published projects
+  const projects: Project[] = showAll ? publishedProjects : (featuredProjects.length > 0 ? featuredProjects : publishedProjects);
+  const isLoading = showAll ? publishedLoading : (featuredLoading || publishedLoading);
+  const error = showAll ? publishedError : (featuredError || publishedError);
+
 
   // Display projects (limit to 3 if not showAll)
   const displayProjects = showAll ? projects : projects.slice(0, 3);
@@ -96,6 +111,26 @@ const Projects = ({ showAll = false }: ProjectsProps) => {
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-muted-foreground">Loading projects...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <Presentation className="w-16 h-16 text-red-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">Error Loading Projects</h3>
+            <p className="text-muted-foreground mb-6">
+              There was an error loading the projects. Please try refreshing the page.
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Refresh Page
+            </Button>
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mt-4 p-4 bg-red-50 rounded-lg text-left max-w-md mx-auto">
+                <p className="text-sm text-red-600">
+                  <strong>Debug Info:</strong><br />
+                  Error: {error.message}<br />
+                  Query Key: {showAll ? "published-projects" : "home-projects"}
+                </p>
+              </div>
+            )}
           </div>
         ) : displayProjects.length === 0 ? (
           <div className="text-center py-12">
