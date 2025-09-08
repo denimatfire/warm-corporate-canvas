@@ -463,25 +463,6 @@
             className="px-6 py-12 text-center"
           >
             
-            {/* Cover Image */}
-            {article.cover_image && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="mb-8"
-              >
-                <img
-                  src={article.cover_image}
-                  alt={`Cover for ${article.title}`}
-                  className="w-full max-w-4xl mx-auto h-64 md:h-80 lg:h-96 object-cover rounded-lg shadow-lg"
-                  onError={(e) => {
-                    console.error('Failed to load cover image:', article.cover_image);
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              </motion.div>
-            )}
             
             {/* Title - Medium's signature large, bold typography */}
             <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight max-w-4xl mx-auto font-serif">

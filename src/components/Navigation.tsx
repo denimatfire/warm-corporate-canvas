@@ -18,18 +18,9 @@ import {
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [currentDate, setCurrentDate] = useState(new Date());
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Update date every day
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 24 * 60 * 60 * 1000); // Update every 24 hours
-
-    return () => clearInterval(timer);
-  }, []);
 
   // Close mobile menu on scroll with animation
   useEffect(() => {
@@ -87,30 +78,11 @@ const Navigation = () => {
     action();
   };
 
-  // Function to get time-based greeting
+  // Function to get greeting
   const getTimeBasedGreeting = () => {
-    const hour = new Date().getHours();
-    
-    if (hour >= 5 && hour < 12) {
-      return "Good Morning";
-    } else if (hour >= 12 && hour < 17) {
-      return "Good Afternoon";
-    } else if (hour >= 17 && hour < 21) {
-      return "Good Evening";
-    } else {
-      return "Good Night";
-    }
+    return "Good Day";
   };
 
-  // Format date as Day, Month Date, Year
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
 
   const scrollToSection = (sectionId: string) => {
     if (window.location.pathname !== '/') {
@@ -143,29 +115,40 @@ const Navigation = () => {
             </span>
           </div>
 
-          {/* Date Display - Left side */}
-          <div className="hidden md:flex items-center space-x-2 text-muted-foreground">
-            <Calendar className="w-4 h-4" />
-            <span className="text-sm font-medium font-serif">
-              {formatDate(currentDate)}
-            </span>
-          </div>
 
           {/* Navigation Menu */}
           <div className="hidden md:flex items-center space-x-8">
             <Button 
               variant="ghost" 
-              onClick={() => scrollToSection('hero')}
-              className="text-foreground hover:text-primary transition-colors"
+              onClick={() => navigate('/projects')}
+              className="text-foreground hover:text-primary transition-colors flex items-center gap-2"
             >
-              Home
+              <Presentation className="w-4 h-4" />
+              Projects
             </Button>
             <Button 
               variant="ghost" 
-              onClick={() => scrollToSection('about')}
-              className="text-foreground hover:text-primary transition-colors"
+              onClick={() => navigate('/writing')}
+              className="text-foreground hover:text-primary transition-colors flex items-center gap-2"
             >
-              About Me
+              <FileText className="w-4 h-4" />
+              Writing
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/photos')}
+              className="text-foreground hover:text-primary transition-colors flex items-center gap-2"
+            >
+              <Camera className="w-4 h-4" />
+              Photos
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => scrollToSection('contact')}
+              className="text-foreground hover:text-primary transition-colors flex items-center gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              Contact
             </Button>
             
             {/* Explore Dropdown */}
@@ -173,8 +156,9 @@ const Navigation = () => {
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="text-foreground hover:text-primary transition-colors flex items-center gap-1"
+                  className="text-foreground hover:text-primary transition-colors flex items-center gap-2"
                 >
+                  <UserCircle className="w-4 h-4" />
                   Explore <ChevronDown className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -191,28 +175,7 @@ const Navigation = () => {
                   className="cursor-pointer hover:bg-secondary"
                 >
                   <Calendar className="w-4 h-4 mr-2" />
-                  Career Timeline
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => navigate('/writing')}
-                  className="cursor-pointer hover:bg-secondary"
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Writing
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => navigate('/photos')}
-                  className="cursor-pointer hover:bg-secondary"
-                >
-                  <Camera className="w-4 h-4 mr-2" />
-                  Photos
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => navigate('/projects')}
-                  className="cursor-pointer hover:bg-secondary"
-                >
-                  <Presentation className="w-4 h-4 mr-2" />
-                  Projects & Presentations
+                  My Journey
                 </DropdownMenuItem>
                 
                 <DropdownMenuSeparator />
@@ -247,18 +210,8 @@ const Navigation = () => {
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                
-
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <Button 
-              variant="outline"
-              onClick={() => scrollToSection('contact')}
-              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all"
-            >
-              Contact
-            </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -285,36 +238,36 @@ const Navigation = () => {
           <div className={`flex flex-col space-y-2 pt-4 transform transition-all duration-200 ease-in-out ${
             isOpen ? 'translate-y-0' : '-translate-y-4'
           }`}>
-            {/* Mobile Date */}
-            <div className="flex items-center space-x-2 text-muted-foreground mb-3 px-2">
-              <Calendar className="w-4 h-4" />
-              <span className="text-sm font-serif">{formatDate(currentDate)}</span>
-            </div>
             
-            <Button variant="ghost" onClick={() => handleNavigation(() => scrollToSection('hero'))} className="justify-start">
-              Home
-            </Button>
-            <Button variant="ghost" onClick={() => handleNavigation(() => scrollToSection('about'))} className="justify-start">
-              About Me
-            </Button>
-            <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/cv'))} className="justify-start">
-              <UserCircle className="w-4 h-4 mr-2" />
-              Interactive CV
-            </Button>
-            <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/career'))} className="justify-start">
-              <Calendar className="w-4 h-4 mr-2" />
-              Career Timeline
+            <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/projects'))} className="justify-start">
+              <Presentation className="w-4 h-4 mr-2" />
+              Projects
             </Button>
             <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/writing'))} className="justify-start">
+              <FileText className="w-4 h-4 mr-2" />
               Writing
             </Button>
             <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/photos'))} className="justify-start">
+              <Camera className="w-4 h-4 mr-2" />
               Photos
             </Button>
-            <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/projects'))} className="justify-start">
-              <Presentation className="w-4 h-4 mr-2" />
-              Projects & Presentations
+            <Button variant="ghost" onClick={() => handleNavigation(() => scrollToSection('contact'))} className="justify-start">
+              <FileText className="w-4 h-4 mr-2" />
+              Contact
             </Button>
+            
+            {/* Mobile Explore Section */}
+            <div className="border-t border-border pt-2 mt-2">
+              <div className="px-2 text-xs font-medium text-muted-foreground mb-2">Explore</div>
+              <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/cv'))} className="justify-start">
+                <UserCircle className="w-4 h-4 mr-2" />
+                Interactive CV
+              </Button>
+              <Button variant="ghost" onClick={() => handleNavigation(() => navigate('/career'))} className="justify-start">
+                <Calendar className="w-4 h-4 mr-2" />
+                My Journey
+              </Button>
+            </div>
             
             {/* Mobile Page Manager Section */}
             <div className="border-t border-border pt-2 mt-2">
@@ -344,12 +297,6 @@ const Navigation = () => {
                 Project Management
               </Button>
             </div>
-            
-
-            
-            <Button variant="outline" onClick={() => handleNavigation(() => scrollToSection('contact'))} className="justify-start mt-2">
-              Contact
-            </Button>
           </div>
         </div>
       </div>
