@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import Navigation from "@/components/Navigation";
 import { 
   Mail, 
   Phone, 
@@ -15,10 +16,13 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
-  ExternalLink
+  ExternalLink,
+  ArrowLeft
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const InteractiveCV = () => {
+  const navigate = useNavigate();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     experience: true,
     education: true,
@@ -41,9 +45,30 @@ const InteractiveCV = () => {
     }
   };
 
+  const handleBackNavigation = () => {
+    // Try to go back, if no history, go to home page
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="max-w-4xl mx-auto px-6 py-12">
+      <Navigation />
+      <div className="max-w-4xl mx-auto px-6 py-12 pt-24">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={handleBackNavigation}
+            className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+        </div>
         {/* Header Section */}
         <Card className="mb-8 shadow-lg border-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <CardContent className="p-8">
