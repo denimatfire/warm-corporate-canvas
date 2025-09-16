@@ -2,6 +2,18 @@
   publish = "dist"
   command = "npm run build"
 
+# Prerender pages for social media crawlers
+[[plugins]]
+  package = "@netlify/plugin-gatsby"
+
+# Serve static article pages for social media crawlers
+[[redirects]]
+  from = "/article/*"
+  to = "/article/:splat.html"
+  status = 200
+  conditions = {User-Agent = ["facebookexternalhit*", "Twitterbot*", "LinkedInBot*", "WhatsApp*", "TelegramBot*"]}
+
+# Fallback to SPA for regular users
 [[redirects]]
   from = "/*"
   to = "/index.html"
