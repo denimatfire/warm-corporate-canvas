@@ -2,18 +2,19 @@
   publish = "dist"
   command = "npm run build"
 
-# Prerender pages for social media crawlers
-[[plugins]]
-  package = "@netlify/plugin-gatsby"
-
-# Serve static article pages for social media crawlers
+# Serve static article pages with proper meta tags
 [[redirects]]
-  from = "/article/*"
-  to = "/article/:splat.html"
+  from = "/article/how-i-cracked-the-gate-exam-in-just-45-days-a-bold-strategy"
+  to = "/article/how-i-cracked-the-gate-exam-in-just-45-days-a-bold-strategy.html"
   status = 200
-  conditions = {User-Agent = ["facebookexternalhit*", "Twitterbot*", "LinkedInBot*", "WhatsApp*", "TelegramBot*"]}
 
-# Fallback to SPA for regular users
+# Add more article redirects here as needed
+# [[redirects]]
+#   from = "/article/your-next-article-slug"
+#   to = "/article/your-next-article-slug.html"
+#   status = 200
+
+# Fallback to SPA for all other routes
 [[redirects]]
   from = "/*"
   to = "/index.html"
