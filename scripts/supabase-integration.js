@@ -39,7 +39,6 @@ const initializeSupabase = async () => {
 const fetchArticlesFromSupabase = async (supabase) => {
   try {
     // This would be your actual Supabase query
-    /*
     const { data, error } = await supabase
       .from('articles')
       .select('*')
@@ -60,93 +59,6 @@ const fetchArticlesFromSupabase = async (supabase) => {
       readTime: article.read_time,
       category: article.category
     }));
-    */
-    
-    // Simulated data for now
-    console.log('📰 Fetching articles from Supabase...');
-    return [
-      {
-        id: 'how-i-cracked-the-gate-exam-in-just-45-days-a-bold-strategy',
-        title: 'How I Cracked the GATE Exam in Just 45 Days: A Bold Strategy',
-        excerpt: 'Discover the unconventional approach that helped me crack one of India\'s toughest engineering exams in record time. A bold strategy that actually worked.',
-        coverImage: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&h=630&fit=crop&crop=entropy&auto=format',
-        author: 'Dhrubajyoti Das',
-        publishedAt: '2024-01-15T00:00:00Z',
-        updatedAt: '2024-01-15T00:00:00Z',
-        tags: ['GATE exam', 'engineering', 'study strategy', 'exam preparation', 'education'],
-        readTime: 8,
-        category: 'Education'
-      },
-      {
-        id: 'mastering-react-performance',
-        title: 'Mastering React Performance: Advanced Optimization Techniques',
-        excerpt: 'Learn advanced React performance optimization techniques including memoization, virtualization, and code splitting for lightning-fast applications.',
-        coverImage: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200&h=630&fit=crop',
-        author: 'Dhrubajyoti Das',
-        publishedAt: '2024-02-01T00:00:00Z',
-        updatedAt: '2024-02-01T00:00:00Z',
-        tags: ['React', 'Performance', 'JavaScript', 'Frontend', 'Optimization'],
-        readTime: 12,
-        category: 'Technology'
-      }
-    ];
-  } catch (error) {
-    console.error('Error fetching articles from Supabase:', error);
-    return [];
-  }
-};
-
-/**
- * Fetch photos from Supabase photos table
- */
-const fetchPhotosFromSupabase = async (supabase) => {
-  try {
-    // This would be your actual Supabase query
-    /*
-    const { data, error } = await supabase
-      .from('photos')
-      .select('*')
-      .eq('is_published', true)
-      .order('published_at', { ascending: false });
-
-    if (error) throw error;
-    
-    return data.map(photo => ({
-      id: photo.id,
-      title: photo.title,
-      caption: photo.caption,
-      imageUrl: photo.image_url,
-      category: photo.category,
-      tags: photo.tags,
-      publishedAt: photo.published_at,
-      location: photo.metadata?.location
-    }));
-    */
-    
-    // Simulated data for now
-    console.log('📸 Fetching photos from Supabase...');
-    return [
-      {
-        id: 'sunset-mountain-peak',
-        title: 'Golden Sunset at Mountain Peak',
-        caption: 'A breathtaking golden hour captured during my hiking expedition to the mountain peak.',
-        imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=630&fit=crop',
-        category: 'Nature',
-        tags: ['sunset', 'mountain', 'hiking', 'golden hour', 'landscape'],
-        publishedAt: '2024-01-20T00:00:00Z',
-        location: 'Himalayan Range'
-      },
-      {
-        id: 'urban-architecture-study',
-        title: 'Modern Urban Architecture Study',
-        caption: 'Exploring geometric patterns and contemporary design in urban architecture.',
-        imageUrl: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200&h=630&fit=crop',
-        category: 'Architecture',
-        tags: ['architecture', 'urban', 'modern', 'geometric', 'design'],
-        publishedAt: '2024-01-25T00:00:00Z',
-        location: 'City Center'
-      }
-    ];
   } catch (error) {
     console.error('Error fetching photos from Supabase:', error);
     return [];
