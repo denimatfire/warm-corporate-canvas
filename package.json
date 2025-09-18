@@ -16,6 +16,7 @@
     "meta:test": "node scripts/inject-meta-tags.js && node scripts/validate-meta-tags.js",
     "meta:setup": "node scripts/setup-production.js",
     "meta:enable-production": "node scripts/enable-production.js",
+    "meta:compare": "node scripts/compare-meta-tags.js",
     "lint": "eslint .",
     "preview": "vite preview",
     "generate-sitemap": "node scripts/generate-sitemap.js",
