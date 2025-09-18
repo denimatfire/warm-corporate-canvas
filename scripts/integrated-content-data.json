@@ -1,0 +1,162 @@
+{
+  "lastUpdated": "2025-09-18T14:26:41.722Z",
+  "totalItems": 9,
+  "articles": [
+    {
+      "id": "how-i-cracked-the-gate-exam-in-just-45-days-a-bold-strategy",
+      "title": "How I Cracked the GATE Exam in Just 45 Days: A Bold Strategy",
+      "excerpt": "Discover the unconventional approach that helped me crack one of India's toughest engineering exams in record time. A bold strategy that actually worked.",
+      "coverImage": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&h=630&fit=crop&crop=entropy&auto=format",
+      "author": "Dhrubajyoti Das",
+      "publishedAt": "2024-01-15T00:00:00Z",
+      "updatedAt": "2024-01-15T00:00:00Z",
+      "tags": [
+        "GATE exam",
+        "engineering",
+        "study strategy",
+        "exam preparation",
+        "education"
+      ],
+      "readTime": 8,
+      "category": "Education"
+    },
+    {
+      "id": "mastering-react-hooks",
+      "title": "Mastering React Hooks: A Complete Guide",
+      "excerpt": "Learn how to use React Hooks effectively to build modern, efficient React applications with cleaner code.",
+      "coverImage": "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200&h=630&fit=crop",
+      "author": "Dhrubajyoti Das",
+      "publishedAt": "2024-01-20T00:00:00Z",
+      "updatedAt": "2024-01-20T00:00:00Z",
+      "tags": [
+        "React",
+        "JavaScript",
+        "Web Development",
+        "Frontend",
+        "Hooks"
+      ],
+      "readTime": 12,
+      "category": "Technology"
+    },
+    {
+      "id": "building-scalable-apis",
+      "title": "Building Scalable APIs with Node.js and TypeScript",
+      "excerpt": "A comprehensive guide to building robust, scalable REST APIs using Node.js, TypeScript, and modern best practices.",
+      "coverImage": "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=1200&h=630&fit=crop",
+      "author": "Dhrubajyoti Das",
+      "publishedAt": "2024-01-25T00:00:00Z",
+      "updatedAt": "2024-01-25T00:00:00Z",
+      "tags": [
+        "Node.js",
+        "TypeScript",
+        "API",
+        "Backend",
+        "Scalability"
+      ],
+      "readTime": 15,
+      "category": "Technology"
+    }
+  ],
+  "photos": [
+    {
+      "id": "sunset-mountain-view",
+      "title": "Golden Hour at Mountain Peak",
+      "caption": "A breathtaking sunset captured from the mountain peak during my hiking adventure.",
+      "imageUrl": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=630&fit=crop",
+      "category": "Nature",
+      "tags": [
+        "sunset",
+        "mountain",
+        "hiking",
+        "nature",
+        "golden hour"
+      ],
+      "publishedAt": "2024-01-10T00:00:00Z",
+      "location": "Himalayan Range"
+    },
+    {
+      "id": "urban-architecture",
+      "title": "Modern City Architecture",
+      "caption": "Exploring the geometric patterns and clean lines of contemporary urban architecture.",
+      "imageUrl": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200&h=630&fit=crop",
+      "category": "Architecture",
+      "tags": [
+        "architecture",
+        "urban",
+        "modern",
+        "city",
+        "geometric"
+      ],
+      "publishedAt": "2024-01-12T00:00:00Z",
+      "location": "Downtown District"
+    },
+    {
+      "id": "street-photography",
+      "title": "Life in Motion",
+      "caption": "Candid moments of everyday life captured through the lens of street photography.",
+      "imageUrl": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200&h=630&fit=crop",
+      "category": "Street",
+      "tags": [
+        "street photography",
+        "candid",
+        "urban life",
+        "documentary"
+      ],
+      "publishedAt": "2024-01-14T00:00:00Z",
+      "location": "City Center"
+    }
+  ],
+  "projects": [
+    {
+      "id": "portfolio-website",
+      "slug": "portfolio-website",
+      "title": "Personal Portfolio Website",
+      "description": "A modern, responsive portfolio website built with React, TypeScript, and Tailwind CSS. Features dynamic content management, photo galleries, and project showcases.",
+      "coverImage": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop",
+      "tags": [
+        "React",
+        "TypeScript",
+        "Tailwind CSS",
+        "Web Development",
+        "Portfolio"
+      ],
+      "category": "Web Development",
+      "publishedAt": "2024-01-05T00:00:00Z",
+      "presentationType": "external_url"
+    },
+    {
+      "id": "task-management-app",
+      "slug": "task-management-app",
+      "title": "Advanced Task Management Application",
+      "description": "A full-stack task management application with real-time collaboration, file attachments, and advanced filtering capabilities.",
+      "coverImage": "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=1200&h=630&fit=crop",
+      "tags": [
+        "React",
+        "Node.js",
+        "MongoDB",
+        "Real-time",
+        "Collaboration"
+      ],
+      "category": "Full Stack",
+      "publishedAt": "2024-01-08T00:00:00Z",
+      "presentationType": "file"
+    },
+    {
+      "id": "data-visualization-dashboard",
+      "slug": "data-visualization-dashboard",
+      "title": "Interactive Data Visualization Dashboard",
+      "description": "A comprehensive dashboard for data visualization using D3.js and React, featuring interactive charts, real-time updates, and export capabilities.",
+      "coverImage": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=630&fit=crop",
+      "tags": [
+        "D3.js",
+        "React",
+        "Data Visualization",
+        "Dashboard",
+        "Analytics"
+      ],
+      "category": "Data Science",
+      "publishedAt": "2024-01-12T00:00:00Z",
+      "presentationType": "external_url"
+    }
+  ]
+}
