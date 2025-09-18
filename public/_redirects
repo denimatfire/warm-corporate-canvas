@@ -1,2 +1,17 @@
-# public/_redirects
-/*  /index.html  200!  Prerender: true
+# Netlify Redirects Configuration for Meta Tags
+# This ensures social media crawlers get the static HTML files with proper meta tags
+
+# Static HTML files for social media crawlers (with User-Agent detection)
+/article/building-scalable-apis  /article/building-scalable-apis.html  200!  Condition=User-Agent:*bot*,*crawler*,*spider*,*facebook*,*twitter*,*linkedin*,*whatsapp*,*telegram*
+/article/how-i-cracked-the-gate-exam-in-just-45-days-a-bold-strategy  /article/how-i-cracked-the-gate-exam-in-just-45-days-a-bold-strategy.html  200!  Condition=User-Agent:*bot*,*crawler*,*spider*,*facebook*,*twitter*,*linkedin*,*whatsapp*,*telegram*
+/article/mastering-react-hooks  /article/mastering-react-hooks.html  200!  Condition=User-Agent:*bot*,*crawler*,*spider*,*facebook*,*twitter*,*linkedin*,*whatsapp*,*telegram*
+/photos/sample-photo-1  /photos/sample-photo-1.html  200!  Condition=User-Agent:*bot*,*crawler*,*spider*,*facebook*,*twitter*,*linkedin*,*whatsapp*,*telegram*
+/photos/street-photography  /photos/street-photography.html  200!  Condition=User-Agent:*bot*,*crawler*,*spider*,*facebook*,*twitter*,*linkedin*,*whatsapp*,*telegram*
+/photos/sunset-mountain-view  /photos/sunset-mountain-view.html  200!  Condition=User-Agent:*bot*,*crawler*,*spider*,*facebook*,*twitter*,*linkedin*,*whatsapp*,*telegram*
+/photos/urban-architecture  /photos/urban-architecture.html  200!  Condition=User-Agent:*bot*,*crawler*,*spider*,*facebook*,*twitter*,*linkedin*,*whatsapp*,*telegram*
+/projects/data-visualization-dashboard  /projects/data-visualization-dashboard.html  200!  Condition=User-Agent:*bot*,*crawler*,*spider*,*facebook*,*twitter*,*linkedin*,*whatsapp*,*telegram*
+/projects/portfolio-website  /projects/portfolio-website.html  200!  Condition=User-Agent:*bot*,*crawler*,*spider*,*facebook*,*twitter*,*linkedin*,*whatsapp*,*telegram*
+/projects/task-management-app  /projects/task-management-app.html  200!  Condition=User-Agent:*bot*,*crawler*,*spider*,*facebook*,*twitter*,*linkedin*,*whatsapp*,*telegram*
+
+# Fallback: All other requests go to React SPA
+/*  /index.html  200
