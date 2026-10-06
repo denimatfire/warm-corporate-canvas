@@ -42,18 +42,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       const authenticated = await isAuthenticated();
       const currentUser = getCurrentUser();
       
-      console.log('🔍 Auth check:', { authenticated, currentUser });
-      
-      // Check if user has the required role
-      console.log('🔍 Role check details:', {
-        currentUser: !!currentUser,
-        userRole: currentUser?.role,
-        requiredRole,
-        adminCheck: requiredRole === 'admin' ? currentUser?.role === 'admin' : 'N/A',
-        writerCheck: requiredRole === 'writer' ? ['admin', 'writer'].includes(currentUser?.role || '') : 'N/A',
-        viewerCheck: requiredRole === 'viewer' ? ['admin', 'writer', 'viewer'].includes(currentUser?.role || '') : 'N/A'
-      });
-      
       const hasRequiredRole = currentUser && (
         requiredRole === 'admin' ? currentUser.role === 'admin' :
         requiredRole === 'writer' ? ['admin', 'writer'].includes(currentUser.role) :
@@ -61,17 +49,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         true
       );
       
-      console.log('🔍 Role check result:', { hasRequiredRole });
-      
       const hasAccess = authenticated && hasRequiredRole;
-      
-      console.log('🔍 Final access check:', { 
-        authenticated,
-        hasRequiredRole, 
-        hasAccess, 
-        requiredRole, 
-        userRole: currentUser?.role
-      });
       
       setIsAuth(authenticated);
       setCanAccess(hasAccess);
