@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { X, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ZoomIn, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import SectionHeading from "./SectionHeading";
+import Reveal from "./Reveal";
 
 interface PhotosProps {
   showAll?: boolean;
@@ -124,76 +126,74 @@ const Photos = ({ showAll = false }: PhotosProps) => {
   }, [selectedPhoto, currentPhotoIndex]);
 
   return (
-    <section id="photos" className={`py-20 ${isMobile ? 'px-4' : 'px-6'} bg-gradient-section`}>
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className={`text-center ${isMobile ? 'mb-12' : 'mb-16'} animate-fade-in`}>
-          <h2 
-            className={`${isMobile ? 'text-3xl lg:text-4xl' : 'text-4xl lg:text-5xl'} font-bold text-foreground mb-6 cursor-pointer hover:text-primary transition-colors`}
-            onClick={() => navigate('/photos')}
-          >
-            Photo <span className="text-primary">Gallery</span>
-          </h2>
-          <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-muted-foreground max-w-3xl mx-auto`}>
-            Capturing moments and perspectives through the lens. A collection of photographs 
-            from travels, adventures, and everyday beauty that inspires me.
-          </p>
-        </div>
+    <section id="photos" className={`relative py-24 ${isMobile ? 'px-4' : 'px-6'}`}>
+      <div className="max-w-6xl mx-auto">
+        <SectionHeading
+          eyebrow="Photos"
+          title={
+            <>
+              Through the <span className="text-gradient">lens</span>
+            </>
+          }
+          description="Capturing moments and perspectives through the lens. A collection of photographs from travels, adventures, and everyday beauty that inspires me."
+          action={
+            showAll ? undefined : (
+              <button
+                onClick={() => navigate('/photos')}
+                className="group inline-flex items-center gap-2 rounded-full border border-foreground/15 px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-primary/50 hover:text-primary"
+              >
+                All {photos.length} photos
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </button>
+            )
+          }
+        />
 
-        {/* Photo Counter */}
-        <div className="text-center mb-8 animate-slide-up">
-          <div className="text-sm text-muted-foreground">
-            {photos.slice(0, showAll ? photos.length : 3).length} photos
-          </div>
-        </div>
-
-        {/* Photo Grid */}
-        <div className={`grid ${isMobile ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'} gap-4 ${isMobile ? 'gap-4' : 'gap-6'} animate-slide-up`}>
-          {photos.slice(0, showAll ? photos.length : 3).map((photo, index) => (
-            <div
-              key={photo.id}
-              className="group cursor-pointer animate-slide-up bg-card rounded-lg border border-border overflow-hidden hover:shadow-lg transition-all duration-300"
-              style={{ animationDelay: `${index * 0.1}s` }}
-              onClick={() => setSelectedPhoto(photo)}
-            >
-              {/* Image Container */}
-              <div className="relative aspect-square overflow-hidden">
-                <img
-                  src={photo.src}
-                  alt={photo.alt}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                
-                {/* Lightroom-style Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                    <h3 className={`font-semibold ${isMobile ? 'text-xs' : 'text-sm'} mb-1`}>{photo.title}</h3>
-                    <p className="text-xs text-gray-200 opacity-90">{photo.category}</p>
+        {/* Photo Grid: on the home page the first photo gets a large tile */}
+        <div
+          className={`grid gap-4 ${
+            showAll ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2'
+          }`}
+        >
+          {photos.slice(0, showAll ? photos.length : 3).map((photo, index) => {
+            const featured = !showAll && index === 0;
+            return (
+              <Reveal
+                key={photo.id}
+                delay={index * 0.06}
+                className={featured ? 'sm:col-span-2 lg:row-span-2' : ''}
+              >
+                <button
+                  onClick={() => setSelectedPhoto(photo)}
+                  className={`group relative block w-full overflow-hidden rounded-3xl border border-foreground/10 text-left ${
+                    featured ? 'aspect-square sm:aspect-[16/10] lg:aspect-auto lg:h-full' : 'aspect-square'
+                  }`}
+                >
+                  <img
+                    src={photo.src}
+                    alt={photo.alt}
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                  <div className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 opacity-0 backdrop-blur transition-opacity group-hover:opacity-100">
+                    <ZoomIn className="h-4 w-4 text-white" />
                   </div>
-                </div>
-                
-                {/* Zoom Icon */}
-                <div className="absolute top-3 right-3 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <ZoomIn className="w-4 h-4 text-white" />
-                </div>
-              </div>
-              
-              {/* Photo Info */}
-              <div className={`${isMobile ? 'p-3' : 'p-4'}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-primary uppercase tracking-wide">
-                    {photo.category}
-                  </span>
-                </div>
-                <h3 className={`font-semibold text-foreground ${isMobile ? 'text-xs' : 'text-sm'} mb-1 line-clamp-1`}>
-                  {photo.title}
-                </h3>
-                <p className="text-xs text-muted-foreground line-clamp-2">
-                  {photo.caption}
-                </p>
-              </div>
-            </div>
-          ))}
+                  <div className="absolute inset-x-0 bottom-0 p-5">
+                    <span className="mb-2 inline-block rounded-full bg-white/15 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-white backdrop-blur">
+                      {photo.category}
+                    </span>
+                    <h3 className={`font-display font-semibold text-white ${featured ? 'text-2xl' : 'text-lg'}`}>
+                      {photo.title}
+                    </h3>
+                    {featured && (
+                      <p className="mt-1 line-clamp-2 max-w-lg text-sm text-white/75">{photo.caption}</p>
+                    )}
+                  </div>
+                </button>
+              </Reveal>
+            );
+          })}
         </div>
 
         {/* Google Photos-style Modal */}

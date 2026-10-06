@@ -1,13 +1,16 @@
 import Navigation from "@/components/Navigation";
 import Writing from "@/components/Writing";
+import Footer from "@/components/Footer";
 
 const WritingPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-hero text-foreground">
+    <div className="theme-aurora relative min-h-screen overflow-x-clip">
+      <div className="aurora opacity-50" />
       <Navigation />
-      <div className="pt-20">
+      <main className="relative pt-20">
         <Writing />
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 };

@@ -21,9 +21,7 @@ let currentUser: User | null = null;
 // Initialize user from Supabase session
 const initializeFromSession = async () => {
   try {
-    console.log('🔍 Initializing from session...');
     const { data: { session }, error } = await supabase.auth.getSession();
-    console.log('🔍 Session check:', { hasSession: !!session, error });
     
     if (session?.user && !error) {
       // Convert Supabase user to our User format
@@ -36,9 +34,6 @@ const initializeFromSession = async () => {
         createdAt: session.user.created_at,
         lastLogin: session.user.last_sign_in_at
       };
-      console.log('✅ User initialized from session:', currentUser);
-    } else {
-      console.log('❌ No valid session found');
     }
   } catch (error) {
     console.error('Failed to initialize from session:', error);
@@ -51,8 +46,6 @@ initializeFromSession();
 // Login function using Supabase
 export const login = async (credentials: LoginCredentials): Promise<{ success: boolean; user?: User; error?: string }> => {
   try {
-    console.log('🔐 Attempting Supabase login with:', credentials.email);
-    console.log('🔐 Credentials object:', credentials);
     
     if (!credentials.email || !credentials.password) {
       console.error('❌ Missing credentials:', { email: !!credentials.email, password: !!credentials.password });
@@ -64,7 +57,6 @@ export const login = async (credentials: LoginCredentials): Promise<{ success: b
       password: credentials.password
     });
 
-    console.log('🔐 Supabase response:', { data, error });
 
     if (error) {
       console.error('❌ Supabase login error:', error);
@@ -83,12 +75,9 @@ export const login = async (credentials: LoginCredentials): Promise<{ success: b
         lastLogin: data.user.last_sign_in_at
       };
 
-      console.log('✅ Login successful:', currentUser);
-      console.log('✅ Current user set to:', currentUser);
       return { success: true, user: currentUser };
     }
 
-    console.log('❌ No user data in response');
     return { success: false, error: 'Login failed. No user data received.' };
   } catch (error) {
     console.error('❌ Unexpected login error:', error);
@@ -104,7 +93,6 @@ export const logout = async (): Promise<void> => {
       console.error('Logout error:', error);
     }
     currentUser = null;
-    console.log('✅ Logout successful');
   } catch (error) {
     console.error('Logout failed:', error);
   }
@@ -157,7 +145,6 @@ export const refreshCurrentUser = async (): Promise<void> => {
         createdAt: user.created_at,
         lastLogin: user.last_sign_in_at
       };
-      console.log('✅ Current user refreshed:', currentUser);
     }
   } catch (error) {
     console.error('Failed to refresh current user:', error);
