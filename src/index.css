@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -82,6 +83,50 @@
   }
 }
 
+/* "Aurora" theme for the public pages (home, writing, photos).
+   Scoped to a wrapper class so the article reader and admin keep the light theme. */
+@layer base {
+  .theme-aurora {
+    --background: 240 24% 5%;
+    --foreground: 240 20% 96%;
+
+    --card: 240 18% 9%;
+    --card-foreground: 240 20% 96%;
+    --popover: 240 18% 9%;
+    --popover-foreground: 240 20% 96%;
+
+    --primary: 174 80% 52%;          /* Mint */
+    --primary-foreground: 240 24% 6%;
+    --primary-hover: 174 80% 60%;
+
+    --secondary: 240 14% 14%;
+    --secondary-foreground: 240 20% 96%;
+    --secondary-hover: 240 14% 18%;
+
+    --accent: 262 84% 70%;           /* Violet */
+    --accent-foreground: 240 24% 6%;
+
+    --muted: 240 14% 13%;
+    --muted-foreground: 240 8% 68%;
+
+    --border: 240 12% 17%;
+    --input: 240 12% 20%;
+    --ring: 174 80% 52%;
+
+    --gradient-accent: linear-gradient(110deg, hsl(174 80% 55%), hsl(220 90% 68%) 45%, hsl(280 85% 72%));
+    --shadow-glow: 0 0 40px -6px hsl(174 80% 52% / 0.45);
+
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    color-scheme: dark;
+  }
+
+  /* Match the page background so overscroll doesn't flash the light theme */
+  body:has(.theme-aurora) {
+    background: hsl(240 24% 5%);
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -98,6 +143,95 @@
 }
 
 @layer components {
+  /* Aurora backdrop: soft moving color fields behind a section */
+  .aurora {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    /* Fade out at the edges so the glow blends into neighbouring sections */
+    mask-image: linear-gradient(to bottom, black 55%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent);
+  }
+  .aurora-soft {
+    mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent);
+  }
+  .aurora::before,
+  .aurora::after {
+    content: "";
+    position: absolute;
+    width: 60vmax;
+    height: 60vmax;
+    border-radius: 9999px;
+    filter: blur(90px);
+    opacity: 0.35;
+    animation: aurora-drift 22s ease-in-out infinite alternate;
+  }
+  .aurora::before {
+    top: -25vmax;
+    left: -15vmax;
+    background: radial-gradient(circle, hsl(174 80% 45%), transparent 65%);
+  }
+  .aurora::after {
+    bottom: -30vmax;
+    right: -20vmax;
+    background: radial-gradient(circle, hsl(270 85% 60%), transparent 65%);
+    animation-delay: -11s;
+  }
+
+  /* Faint grid that fades out toward the edges */
+  .grid-fade {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(hsl(var(--foreground) / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--foreground) / 0.05) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 75%);
+  }
+
+  .text-gradient {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Frosted card used across the aurora pages */
+  .glass {
+    background: hsl(var(--card) / 0.55);
+    border: 1px solid hsl(var(--foreground) / 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* Card whose border lights up on hover */
+  .glow-card {
+    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .glow-card:hover {
+    border-color: hsl(var(--primary) / 0.45);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 50px -20px hsl(var(--primary) / 0.35);
+  }
+
+  .gradient-ring {
+    position: relative;
+  }
+  .gradient-ring::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: var(--gradient-accent);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
   /* QuillEditor custom styles */
   .quill-wrapper .ql-editor {
     min-height: 400px;
@@ -320,5 +454,21 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes aurora-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(8vmax, 6vmax, 0) scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora::before,
+  .aurora::after {
+    animation: none;
   }
 }

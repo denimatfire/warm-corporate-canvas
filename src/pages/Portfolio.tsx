@@ -4,17 +4,21 @@ import About from "@/components/About";
 import Writing from "@/components/Writing";
 import Photos from "@/components/Photos";
 import Contact from "@/components/Contact";
+import Footer from "@/components/Footer";
 
 const Portfolio = () => {
   return (
-    <div className="min-h-screen bg-gradient-hero text-foreground">
+    <div className="theme-aurora min-h-screen overflow-x-clip">
       <Navigation />
-      <Hero />
-      <Timeline />
-      <About />
-      <Writing />
-      <Photos />
-      <Contact />
+      <main>
+        <Hero />
+        <Timeline />
+        <About />
+        <Writing limit={3} />
+        <Photos />
+        <Contact />
+      </main>
+      <Footer />
     </div>
   );
 };

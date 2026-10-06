@@ -1,13 +1,16 @@
 import Navigation from "@/components/Navigation";
 import Photos from "@/components/Photos";
+import Footer from "@/components/Footer";
 
 const PhotosPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-hero text-foreground">
+    <div className="theme-aurora relative min-h-screen overflow-x-clip">
+      <div className="aurora opacity-50" />
       <Navigation />
-      <div className="pt-20">
+      <main className="relative pt-20">
         <Photos showAll={true} />
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 };
