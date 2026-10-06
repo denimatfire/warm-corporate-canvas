@@ -21,6 +21,7 @@ export default {
 			fontFamily: {
 				inter: ['Inter', 'sans-serif'],
 				pacifico: ['Pacifico', 'cursive'],
+				display: ['"Space Grotesk"', 'Inter', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

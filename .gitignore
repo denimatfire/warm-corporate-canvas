@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables (set these in Netlify instead)
+.env
+.env.*
+!env.example

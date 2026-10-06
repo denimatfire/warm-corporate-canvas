@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import DOMPurify from "dompurify"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -7,12 +8,13 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Converts plain text content into properly formatted HTML
- * Handles line breaks, headings, lists, and basic formatting
+ * Handles line breaks, headings, lists, and basic formatting.
+ * The result is sanitized so it is safe to render with dangerouslySetInnerHTML.
  */
 export function formatArticleContent(content: string): string {
   if (!content) return '';
   
-  return content
+  const html = content
     // Convert double line breaks to paragraph breaks
     .split('\n\n')
     .map(paragraph => {
@@ -58,4 +60,6 @@ export function formatArticleContent(content: string): string {
       return `<p>${formattedParagraph}</p>`;
     })
     .join('');
+
+  return DOMPurify.sanitize(html);
 }
