@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { Timeline } from "@/components/Hero";
+import Footer from "@/components/Footer";
 import { initializeSEO } from "@/lib/seo-utils";
 
 const Career = () => {
@@ -10,11 +11,13 @@ const Career = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-hero text-foreground">
+    <div className="theme-aurora relative min-h-screen overflow-x-clip">
+      <div className="aurora opacity-50" />
       <Navigation />
-      <div className="pt-20">
+      <main className="relative pt-20">
         <Timeline />
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 };
