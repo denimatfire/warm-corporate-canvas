@@ -1,466 +1,338 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Filter, Grid, List, SortAsc, SortDesc, Eye, Download, ExternalLink, FileText, Calendar, Tag, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link, useSearchParams } from "react-router-dom";
+import { Search, X, Download, ExternalLink, FileText, Eye, ArrowUpRight, Presentation } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 import { initializeSEO } from "@/lib/seo-utils";
-import { getPublishedProjects, getProjectCategories, getProjectTags, searchProjects, Project } from "@/lib/projects-api";
+import { getPublishedProjects, Project } from "@/lib/projects-api";
 import { supabase } from "@/lib/articles-api";
 
+type SortKey = "recent" | "popular" | "title";
+
+const sortOptions: { value: SortKey; label: string }[] = [
+  { value: "recent", label: "Newest first" },
+  { value: "popular", label: "Most viewed" },
+  { value: "title", label: "Title A–Z" },
+];
+
+const isPdf = (project: Project) =>
+  project.presentation_type === "file" && project.presentation_file_type === "application/pdf";
+
+// PDFs open in the PDF viewer, everything else in the presentation viewer
+const viewerPath = (project: Project) => (isPdf(project) ? `/pdf/${project.slug}` : `/presentation/${project.slug}`);
+
+const formatDate = (date: string) =>
+  new Date(date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+
+const formatFileSize = (bytes: number) => {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+};
+
+const handleDownload = (project: Project) => {
+  if (project.presentation_type === "file" && project.presentation_file_path) {
+    const { data } = supabase.storage.from("Article_images").getPublicUrl(project.presentation_file_path);
+    const link = document.createElement("a");
+    link.href = data.publicUrl;
+    link.download = project.presentation_file_name || `${project.slug}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } else if (project.presentation_type === "external_url" && project.presentation_url) {
+    window.open(project.presentation_url, "_blank", "noopener,noreferrer");
+  }
+};
+
 const Projects = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedTag, setSelectedTag] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<string>("recent");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [isSearching, setIsSearching] = useState(false);
+  // Filters live in the URL so refresh, back/forward and shared links keep them
+  const [params, setParams] = useSearchParams();
+  const query = params.get("q") ?? "";
+  const category = params.get("category") ?? "";
+  const tag = params.get("tag") ?? "";
+  const sort = (params.get("sort") as SortKey) || "recent";
+
+  const updateParam = (key: string, value: string) => {
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value) next.set(key, value);
+        else next.delete(key);
+        return next;
+      },
+      { replace: key === "q" }
+    );
+  };
 
   useEffect(() => {
-    // Initialize SEO for projects page
-    initializeSEO('projects');
+    initializeSEO("projects");
   }, []);
 
-  // Fetch projects with filters
+  // One request; searching, filtering and sorting all happen in the browser
   const { data: projects = [], isLoading, error } = useQuery({
-    queryKey: ["projects", { searchQuery, selectedCategory, selectedTag, sortBy }],
-    queryFn: async () => {
-      console.log('Fetching projects with filters:', { searchQuery, selectedCategory, selectedTag, sortBy });
-      if (searchQuery.trim()) {
-        const searchResults = await searchProjects(searchQuery, {
-          category: selectedCategory !== "all" ? selectedCategory : undefined,
-          status: "published"
-        });
-        console.log('Search results:', searchResults);
-        return searchResults;
-      }
-      const publishedProjects = await getPublishedProjects();
-      console.log('Published projects:', publishedProjects);
-      return publishedProjects;
-    }
+    queryKey: ["published-projects"],
+    queryFn: getPublishedProjects,
   });
 
-  // Debug logging
-  useEffect(() => {
-    console.log('Projects state:', { projects, isLoading, error });
-  }, [projects, isLoading, error]);
+  const categories = useMemo(() => {
+    const counts = new Map<string, number>();
+    projects.forEach((p) => p.category && counts.set(p.category, (counts.get(p.category) ?? 0) + 1));
+    return [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  }, [projects]);
 
-  // Fetch categories and tags
-  const { data: categories = [] } = useQuery({
-    queryKey: ["project-categories"],
-    queryFn: getProjectCategories
-  });
+  const visibleProjects = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    const matches = projects.filter((p) => {
+      if (category && p.category !== category) return false;
+      if (tag && !p.tags.includes(tag)) return false;
+      if (!term) return true;
+      return [p.title, p.description, p.category ?? "", ...p.tags].some((field) =>
+        field?.toLowerCase().includes(term)
+      );
+    });
+    return matches.sort((a, b) => {
+      if (sort === "popular") return (b.view_count || 0) - (a.view_count || 0);
+      if (sort === "title") return a.title.localeCompare(b.title);
+      return new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime();
+    });
+  }, [projects, query, category, tag, sort]);
 
-  const { data: tags = [] } = useQuery({
-    queryKey: ["project-tags"],
-    queryFn: getProjectTags
-  });
+  const hasFilters = Boolean(query || category || tag);
+  const clearFilters = () => setParams(sort === "recent" ? {} : { sort });
 
-  // Sort projects
-  const sortedProjects = [...projects].sort((a, b) => {
-    switch (sortBy) {
-      case "recent":
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      case "popular":
-        return (b.view_count || 0) - (a.view_count || 0);
-      case "title":
-        return a.title.localeCompare(b.title);
-      case "category":
-        return (a.category || "").localeCompare(b.category || "");
-      default:
-        return 0;
-    }
-  });
-
-  // Filter projects by category and tag
-  const filteredProjects = sortedProjects.filter(project => {
-    const categoryMatch = selectedCategory === "all" || project.category === selectedCategory;
-    const tagMatch = selectedTag === "all" || project.tags.includes(selectedTag);
-    return categoryMatch && tagMatch;
-  });
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setIsSearching(query.length > 0);
-  };
-
-  const handleProjectClick = (project: Project) => {
-    // Navigate to presentation viewer
-    window.location.href = `/presentation/${project.slug}`;
-  };
-
-  const handleDownload = async (project: Project) => {
-    if (project.presentation_type === 'file' && project.presentation_file_path) {
-      try {
-        // Generate the full public URL from the file path
-        const { data: urlData } = supabase.storage
-          .from('Article_images')
-          .getPublicUrl(project.presentation_file_path);
-        
-        // Create download link
-        const link = document.createElement('a');
-        link.href = urlData.publicUrl;
-        link.download = project.presentation_file_name || `${project.slug}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (error) {
-        console.error('Download failed:', error);
-      }
-    } else if (project.presentation_type === 'external_url' && project.presentation_url) {
-      window.open(project.presentation_url, '_blank');
-    }
-  };
-
-  const getPresentationIcon = (project: Project) => {
-    if (project.presentation_type === 'file') {
-      return <FileText className="w-4 h-4" />;
-    }
-    return <ExternalLink className="w-4 h-4" />;
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
+  const chipClass = (active: boolean) =>
+    `shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+      active
+        ? "border-transparent bg-foreground text-background"
+        : "border-foreground/10 text-muted-foreground hover:border-foreground/25 hover:text-foreground"
+    }`;
 
   return (
-    <div className="min-h-screen bg-gradient-hero text-foreground">
+    <div className="theme-aurora min-h-screen overflow-x-clip">
       <Navigation />
-      <div className="pt-20">
-        {/* Hero Section */}
-        <section className="py-16 px-6 bg-gradient-to-br from-primary/10 to-primary/5">
-          <div className="max-w-7xl mx-auto text-center">
-            <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6">
-              Projects & <span className="text-primary">Presentations</span>
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Explore my portfolio of projects, presentations, and technical demonstrations. 
-              From academic research to professional case studies.
-            </p>
-            
-            {/* Search Bar */}
-            <div className="max-w-2xl mx-auto">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Search projects, presentations, or topics..."
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-12 pr-4 py-3 text-lg"
-                />
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Filters and Controls */}
-        <section className="py-8 px-6 border-b border-border">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-              {/* Filters */}
-              <div className="flex flex-wrap gap-4">
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="All Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+      <main className="mx-auto max-w-4xl px-4 pb-24 pt-32 sm:px-6">
+        <header className="mb-10">
+          <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-primary">Projects</p>
+          <h1 className="font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+            Projects &amp; <span className="text-gradient">presentations</span>
+          </h1>
+          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+            Explore my portfolio of projects, presentations, and technical demonstrations.
+            From academic research to professional case studies.
+          </p>
+        </header>
 
-                <Select value={selectedTag} onValueChange={setSelectedTag}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="All Tags" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Tags</SelectItem>
-                    {tags.slice(0, 20).map((tag) => (
-                      <SelectItem key={tag} value={tag}>
-                        {tag}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+        {/* Search and sort */}
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <label className="relative flex-1">
+            <span className="sr-only">Search projects</span>
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => updateParam("q", e.target.value)}
+              placeholder="Search by title, topic or tag…"
+              className="w-full rounded-full border border-foreground/10 bg-foreground/5 py-3 pl-12 pr-4 text-foreground placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </label>
+          <label className="relative">
+            <span className="sr-only">Sort projects</span>
+            <select
+              value={sort}
+              onChange={(e) => updateParam("sort", e.target.value === "recent" ? "" : e.target.value)}
+              className="w-full appearance-none rounded-full border border-foreground/10 bg-foreground/5 py-3 pl-5 pr-10 text-sm text-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 sm:w-auto"
+            >
+              {sortOptions.map((option) => (
+                <option key={option.value} value={option.value} className="bg-[hsl(var(--card))]">
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">▾</span>
+          </label>
+        </div>
 
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="recent">Most Recent</SelectItem>
-                    <SelectItem value="popular">Most Popular</SelectItem>
-                    <SelectItem value="title">Title A-Z</SelectItem>
-                    <SelectItem value="category">Category</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        {/* Category filter */}
+        {categories.length > 0 && (
+          <nav aria-label="Filter by category" className="-mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+            <button onClick={() => updateParam("category", "")} className={chipClass(!category)} aria-pressed={!category}>
+              All <span className="ml-1 opacity-60">{projects.length}</span>
+            </button>
+            {categories.map(([name, count]) => (
+              <button
+                key={name}
+                onClick={() => updateParam("category", category === name ? "" : name)}
+                className={chipClass(category === name)}
+                aria-pressed={category === name}
+              >
+                {name} <span className="ml-1 opacity-60">{count}</span>
+              </button>
+            ))}
+          </nav>
+        )}
 
-              {/* View Mode Toggle */}
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={viewMode === "grid" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("grid")}
-                >
-                  <Grid className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("list")}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Results Section */}
-        <section className="py-8 px-6">
-          <div className="max-w-7xl mx-auto">
-            {/* Results Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-semibold text-foreground">
-                  {isSearching ? `Search Results for "${searchQuery}"` : "All Projects"}
-                </h2>
-                <p className="text-muted-foreground">
-                  {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''} found
-                </p>
-              </div>
-            </div>
-
-            {/* Projects Grid/List */}
-            {isLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                <p className="mt-4 text-muted-foreground">Loading projects...</p>
-              </div>
-            ) : filteredProjects.length === 0 ? (
-              <div className="text-center py-12">
-                <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">No projects found</h3>
-                <p className="text-muted-foreground">
-                  {isSearching ? 'Try adjusting your search terms or filters.' : 'No projects have been published yet.'}
-                </p>
-              </div>
-            ) : (
-              <div className={viewMode === "grid" 
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                : "space-y-4"
-              }>
-                {filteredProjects.map((project) => (
-                  viewMode === "grid" ? (
-                    // Grid View
-                    <Card 
-                      key={project.id} 
-                      className="group cursor-pointer overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-                      onClick={() => handleProjectClick(project)}
-                    >
-                      {/* Cover Image */}
-                      <div className="aspect-video overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5">
-                        {project.cover_image ? (
-                          <img
-                            src={project.cover_image}
-                            alt={project.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <FileText className="w-16 h-16 text-primary/50" />
-                          </div>
-                        )}
-                      </div>
-
-                      <CardHeader className="p-4 pb-2">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <CardTitle className="text-lg line-clamp-2 group-hover:text-primary transition-colors">
-                            {project.title}
-                          </CardTitle>
-                          <Badge 
-                            variant={project.presentation_type === 'file' ? 'default' : 'secondary'}
-                            className="flex items-center gap-1 text-xs"
-                          >
-                            {getPresentationIcon(project)}
-                            {project.presentation_type === 'file' ? 'File' : 'Link'}
-                          </Badge>
-                        </div>
-                        
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {project.description}
-                        </p>
-                      </CardHeader>
-
-                      <CardContent className="p-4 pt-0">
-                        <div className="space-y-3">
-                          {/* Category */}
-                          {project.category && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
-                                {project.category}
-                              </span>
-                            </div>
-                          )}
-                          
-                          {/* Tags */}
-                          {project.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              {project.tags.slice(0, 2).map((tag) => (
-                                <Badge key={tag} variant="outline" className="text-xs">
-                                  {tag}
-                                </Badge>
-                              ))}
-                              {project.tags.length > 2 && (
-                                <Badge variant="outline" className="text-xs">
-                                  +{project.tags.length - 2}
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Stats */}
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <div className="flex items-center gap-3">
-                              <span className="flex items-center gap-1">
-                                <Eye className="w-3 h-3" />
-                                {project.view_count || 0}
-                              </span>
-                              {project.presentation_type === 'file' && (
-                                <span className="flex items-center gap-1">
-                                  <Download className="w-3 h-3" />
-                                  {project.download_count || 0}
-                                </span>
-                              )}
-                            </div>
-                            <span>
-                              {new Date(project.created_at).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    // List View
-                    <Card 
-                      key={project.id} 
-                      className="group cursor-pointer hover:shadow-md transition-all duration-300"
-                      onClick={() => handleProjectClick(project)}
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex gap-4">
-                          {/* Thumbnail */}
-                          <div className="w-32 h-24 flex-shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-primary/20 to-primary/5">
-                            {project.cover_image ? (
-                              <img
-                                src={project.cover_image}
-                                alt={project.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <FileText className="w-8 h-8 text-primary/50" />
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Content */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
-                                {project.title}
-                              </h3>
-                              <Badge 
-                                variant={project.presentation_type === 'file' ? 'default' : 'secondary'}
-                                className="flex items-center gap-1 text-xs flex-shrink-0"
-                              >
-                                {getPresentationIcon(project)}
-                                {project.presentation_type === 'file' ? 'File' : 'Link'}
-                              </Badge>
-                            </div>
-                            
-                            <p className="text-muted-foreground line-clamp-2 mb-3">
-                              {project.description}
-                            </p>
-
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              {project.category && (
-                                <span className="text-primary font-medium">
-                                  {project.category}
-                                </span>
-                              )}
-                              <span className="flex items-center gap-1">
-                                <Eye className="w-4 h-4" />
-                                {project.view_count || 0} views
-                              </span>
-                              {project.presentation_type === 'file' && (
-                                <span className="flex items-center gap-1">
-                                  <Download className="w-4 h-4" />
-                                  {project.download_count || 0} downloads
-                                </span>
-                              )}
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                {new Date(project.created_at).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Action Buttons */}
-                          <div className="flex flex-col gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleProjectClick(project);
-                              }}
-                              className="flex items-center gap-1"
-                            >
-                              <Eye className="w-4 h-4" />
-                              View
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDownload(project);
-                              }}
-                              className="flex items-center gap-1"
-                            >
-                              {project.presentation_type === 'file' ? (
-                                <Download className="w-4 h-4" />
-                              ) : (
-                                <ExternalLink className="w-4 h-4" />
-                              )}
-                              {project.presentation_type === 'file' ? 'Download' : 'Open'}
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
-                ))}
-              </div>
+        {/* Result summary */}
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-b border-foreground/10 pb-4 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2">
+            <span aria-live="polite">
+              {isLoading ? "Loading…" : `${visibleProjects.length} project${visibleProjects.length === 1 ? "" : "s"}`}
+            </span>
+            {tag && (
+              <button
+                onClick={() => updateParam("tag", "")}
+                className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/25"
+              >
+                #{tag} <X className="h-3 w-3" />
+                <span className="sr-only">Remove tag filter</span>
+              </button>
             )}
           </div>
-        </section>
-      </div>
+          {hasFilters && (
+            <button onClick={clearFilters} className="text-sm font-medium text-foreground underline-offset-4 hover:underline">
+              Clear filters
+            </button>
+          )}
+        </div>
+
+        {/* Project list */}
+        {isLoading ? (
+          <ul className="divide-y divide-foreground/10">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <li key={i} className="flex animate-pulse gap-5 py-6">
+                <div className="hidden h-24 w-36 shrink-0 rounded-2xl bg-foreground/5 sm:block" />
+                <div className="flex-1 space-y-3">
+                  <div className="h-3 w-32 rounded bg-foreground/10" />
+                  <div className="h-5 w-2/3 rounded bg-foreground/10" />
+                  <div className="h-3 w-full rounded bg-foreground/5" />
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : error ? (
+          <div className="py-16 text-center">
+            <p className="text-lg text-foreground">Couldn't load projects.</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 rounded-full border border-foreground/15 px-5 py-2 text-sm text-foreground hover:border-primary/50"
+            >
+              Try again
+            </button>
+          </div>
+        ) : visibleProjects.length === 0 ? (
+          <div className="py-16 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Presentation className="h-6 w-6" />
+            </div>
+            <p className="text-lg text-foreground">
+              {hasFilters ? "No projects match these filters" : "No projects have been published yet"}
+            </p>
+            {hasFilters && (
+              <button
+                onClick={clearFilters}
+                className="mt-4 rounded-full border border-foreground/15 px-5 py-2 text-sm text-foreground hover:border-primary/50"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        ) : (
+          <ul className="divide-y divide-foreground/10">
+            {visibleProjects.map((project) => (
+              <li key={project.id} className="group relative flex gap-5 py-6">
+                <div className="hidden h-24 w-36 shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-primary/20 via-accent/10 to-transparent sm:block">
+                  {project.cover_image ? (
+                    <img
+                      src={project.cover_image}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Presentation className="h-8 w-8 text-primary/60" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                    {project.category && <span className="font-medium uppercase tracking-wider text-primary">{project.category}</span>}
+                    {project.category && <span aria-hidden>·</span>}
+                    <span>{formatDate(project.published_at || project.created_at)}</span>
+                    <span aria-hidden>·</span>
+                    <span className="inline-flex items-center gap-1">
+                      {project.presentation_type === "file" ? <FileText className="h-3 w-3" /> : <ExternalLink className="h-3 w-3" />}
+                      {isPdf(project) ? "PDF" : project.presentation_type === "file" ? "File" : "Link"}
+                      {project.presentation_file_size ? ` · ${formatFileSize(project.presentation_file_size)}` : ""}
+                    </span>
+                  </div>
+
+                  <h2 className="font-display text-xl font-semibold leading-snug text-foreground">
+                    {/* The stretched link makes the whole row clickable */}
+                    <Link
+                      to={viewerPath(project)}
+                      className="after:absolute after:inset-0 after:content-[''] focus:outline-none group-hover:text-primary focus-visible:after:rounded-2xl focus-visible:after:ring-2 focus-visible:after:ring-primary/50"
+                    >
+                      {project.title}
+                    </Link>
+                  </h2>
+                  {project.description && (
+                    <p className="mt-2 line-clamp-2 leading-relaxed text-muted-foreground">{project.description}</p>
+                  )}
+
+                  <div className="relative z-10 mt-4 flex flex-wrap items-center gap-2">
+                    {project.tags.slice(0, 4).map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => updateParam("tag", tag === t ? "" : t)}
+                        className={`rounded-full px-2.5 py-1 text-xs transition-colors ${
+                          tag === t ? "bg-primary/20 text-primary" : "bg-foreground/5 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        #{t}
+                      </button>
+                    ))}
+                    <span className="ml-auto flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1" title="Views">
+                        <Eye className="h-3.5 w-3.5" /> {project.view_count || 0}
+                      </span>
+                      {(project.presentation_file_path || project.presentation_url) && (
+                        <button
+                          onClick={() => handleDownload(project)}
+                          className="inline-flex items-center gap-1 font-medium text-foreground hover:text-primary"
+                        >
+                          {project.presentation_type === "file" ? (
+                            <>
+                              <Download className="h-3.5 w-3.5" /> Download
+                            </>
+                          ) : (
+                            <>
+                              <ExternalLink className="h-3.5 w-3.5" /> Open link
+                            </>
+                          )}
+                        </button>
+                      )}
+                      <Link
+                        to={viewerPath(project)}
+                        className="inline-flex items-center gap-1 font-medium text-foreground hover:text-primary"
+                      >
+                        View <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </span>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </main>
+
+      <Footer />
     </div>
   );
 };
